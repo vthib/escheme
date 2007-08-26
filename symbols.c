@@ -17,7 +17,6 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "symbol.h"
 #include "escheme.h"
 
 static size_t symboltype = 0;
@@ -31,7 +30,7 @@ static escm_atom *symbol_eval(escm *, const char *);
 static inline int issymbol(int);
 
 void
-escm_symbol_init(escm *e)
+escm_symbols_init(escm *e)
 {
     escm_type *t;
 
@@ -45,6 +44,12 @@ escm_symbol_init(escm *e)
     t->feval = (Escm_Fun_Eval) symbol_eval;
 
     symboltype = escm_type_add(e, t);
+
+    (void) escm_procedure_new(e, "symbol?", 1, 1, escm_symbol_p);
+#ifdef ESCM_USE_STRINGS
+    (void) escm_procedure_new(e, "symbol->string", 1, 1, escm_symbol_to_string);
+    (void) escm_procedure_new(e, "string->symbol", 1, 1, escm_string_to_symbol);
+#endif
 }
 
 size_t
@@ -52,6 +57,45 @@ escm_symbol_tget(void)
 {
     return symboltype;
 }
+
+escm_atom *
+escm_symbol_make(escm *e, const char *str)
+{
+    return escm_atom_new(e, symboltype, xstrdup(str));
+}
+
+escm_atom *
+escm_symbol_p(escm *e, escm_atom *args)
+{
+    escm_atom *a;
+
+    a = escm_cons_pop(e, &args);
+    return ESCM_ISSYM(a) ? e->TRUE : e->FALSE;
+}
+
+#ifdef ESCM_USE_STRINGS
+escm_atom *
+escm_symbol_to_string(escm *e, escm_atom *args)
+{
+    escm_atom *sym;
+
+    sym = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSYM(sym), sym, e);
+
+    return escm_atom_new(e, ESCM_TYPE_STRING, xstrdup(ESCM_SYM_VAL(sym)));
+}
+
+escm_atom *
+escm_string_to_symbol(escm *e, escm_atom *args)
+{
+    escm_atom *str;
+
+    str = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(str), str, e);
+
+    return escm_atom_new(e, ESCM_TYPE_SYMBOL, xstrdup(ESCM_STR_VAL(str)));
+}
+#endif
 
 static void
 symbol_print(escm *e, char *symbol, FILE *stream)
@@ -95,7 +139,7 @@ symbol_eval(escm *e, const char *sym)
 
     atom = escm_env_get(e->env, sym);
     if (!atom) {
-	escm_input_print(e->input, "unknown symbol `%s'.", sym);
+	fprintf(stderr, "unknown symbol `%s'.\n", sym);
 	e->err = -1;
 	return NULL;
     }

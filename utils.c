@@ -88,4 +88,19 @@ xstrdup(const char *s)
     return copy;
 }
 
+int
+xstrcasecmp(const char *s1, const char *s2)
+{
+    char *c1, *c2;
+
+    for (c1 = (char *) s1, c2 = (char *) s2; *c1 != '\0'; c1++, c2++) {
+	if (*c2 == '\0')
+	    return 1;
+	else if (*c1 != *c2)
+	    return (*c1 > *c2) ? 1 : -1;
+    }
+
+    return (*c2 != '\0') ? -1 : 0;
+}
+
 /**@}*/

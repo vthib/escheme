@@ -17,7 +17,6 @@
 #include <assert.h>
 #include <string.h>
 
-#include "environment.h"
 #include "escheme.h"
 
 struct escm_node {
@@ -34,7 +33,7 @@ static void env_mark(escm *, escm_env *);
 static void env_print(escm *, escm_env *, FILE *);
 
 void
-escm_env_init(escm *e)
+escm_environments_init(escm *e)
 {
     escm_type *t;
 

@@ -17,7 +17,6 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "number.h"
 #include "escheme.h"
 
 static size_t numbertype = 0;
@@ -28,7 +27,7 @@ static int number_parsetest(escm *, int);
 static escm_atom *number_parse(escm *);
 
 void
-escm_number_init(escm *e)
+escm_numbers_init(escm *e)
 {
     escm_type *t;
 
@@ -73,6 +72,28 @@ size_t
 escm_number_tget(void)
 {
     return numbertype;
+}
+
+escm_atom *
+escm_int_make(escm *e, long i)
+{
+    escm_number *n;
+
+    n = xmalloc(sizeof *n);
+    n->fixnum = 1, n->d.ival = i;
+
+    return escm_atom_new(e, numbertype, n);
+}
+
+escm_atom *
+escm_real_make(escm *e, double r)
+{
+    escm_number *n;
+
+    n = xmalloc(sizeof *n);
+    n->fixnum = 0, n->d.rval = r;
+
+    return escm_atom_new(e, numbertype, n);
 }
 
 escm_atom *
@@ -523,7 +544,10 @@ number_parse(escm *e)
     if (*ec == '\0')
 	atom = escm_atom_new(e, numbertype, n);
     else {
-	e->input->d.file.car -= strlen(sym) - (ec - sym) - 1;
+	if (e->input->type == INPUT_FILE)
+	    e->input->d.file.car -= strlen(sym) - (ec - sym) - 1;
+	else
+	    e->input->d.str.cur = (char *) e->input->d.str.str + (ec - sym + 1);
 	escm_input_print(e->input, "Character `%c' unexpected.", *ec);
 	e->err = -1;
 	free(n);

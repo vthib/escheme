@@ -23,8 +23,6 @@
 #include "utils.h"
 #include "input.h"
 
-enum { INPUT_FILE, INPUT_STR };
-
 #define MAX_BUFFSIZE 4096
 
 static char strbuf[MAX_BUFFSIZE];
@@ -141,9 +139,9 @@ escm_input_getc(escm_input *f)
 		f->d.file.car++;
 	}
     } else {
-	c = (int) (f->end) ? '\0' : *f->d.str.cur++;
 	if (*f->d.str.cur == '\0')
 	    f->end = 1;
+	c = (int) (f->end) ? EOF : *f->d.str.cur++;
     }
 
     return c;
@@ -270,20 +268,20 @@ escm_input_getint(escm_input *file)
  * @brief get a char from the input ("space" is ' ' and "newline" is '\n')
  */
 char
-escm_input_getchar(escm_input *file)
+escm_input_getchar(escm_input *input)
 {
     char *str;
     char c;
     size_t len;
 
-    assert(file != NULL);
+    assert(input != NULL);
 
-    str = escm_input_getstr_fun(file, isalpha);
+    str = escm_input_getstr_fun(input, isalpha);
     len = strlen(str);
 
     if (len < 1) {
-	escm_input_print(file, "character missing after #\\.");
-	c = '\0';
+	free(str);
+	return escm_input_getc(input);
     } else if (len == 1)
 	c = *str;
     else {
@@ -296,14 +294,14 @@ escm_input_getchar(escm_input *file)
 	else if (strcmp(str, "space") == 0)
 	    c = ' ';
 	else {
-	    escm_input_print(file, "unknown character #\\%s.", str);
+	    escm_input_print(input, "unknown character #\\%s.", str);
 	    c = '\0';
 	}
     }
 
     free(str);
     return c;
-}   
+}
 
 /**
  * @brief rewind the input structure
@@ -434,7 +432,7 @@ escm_input_print(escm_input *f, const char *s, ...)
 	(void) vfprintf(stderr, s, va);
 	fprintf(stderr, "\n");
 
-	for (p = (char *) f->d.str.str; p < f->d.str.cur; p++)
+	for (p = (char *) f->d.str.str; p < (f->d.str.cur - 1); p++)
 	    fprintf(stderr, " ");
 	fprintf(stderr, "^\n");
     }

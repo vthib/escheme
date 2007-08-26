@@ -60,4 +60,12 @@ escm_atom *escm_reverse(escm *, escm_atom *);
 escm_atom *escm_list_tail(escm *, escm_atom *);
 escm_atom *escm_list_ref(escm *, escm_atom *);
 
+escm_atom *escm_memq(escm *, escm_atom *);
+escm_atom *escm_memv(escm *, escm_atom *);
+escm_atom *escm_member(escm *, escm_atom *);
+
+escm_atom *escm_assq(escm *, escm_atom *);
+escm_atom *escm_assv(escm *, escm_atom *);
+escm_atom *escm_assoc(escm *, escm_atom *);
+
 #endif /* ESCHEME_CONS_H */

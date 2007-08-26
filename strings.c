@@ -14,27 +14,28 @@
  * You should have received a copy of the GNU General Public License
  * along with Escheme; If not, see <http://www.gnu.org/licenses/>.
  */
+#include <assert.h>
 #include <string.h>
 #include <ctype.h>
 
-#include "strings.h"
 #include "escheme.h"
 
 static size_t stringtype = 0;
 
-static void string_print(escm *, char *, FILE *);
-static int string_equal(escm *, char *, char *, unsigned int);
+static void string_free(escm_string *);
+static void string_print(escm *, escm_string *, FILE *);
+static int string_equal(escm *, escm_string *, escm_string *, unsigned int);
 static int string_parsetest(escm *, int);
 static escm_atom *string_parse(escm *);
 
 void
-escm_string_init(escm *e)
+escm_strings_init(escm *e)
 {
     escm_type *t;
 
     t = xmalloc(sizeof *t);
     t->fmark = NULL;
-    t->ffree = (Escm_Fun_Free) free;
+    t->ffree = (Escm_Fun_Free) string_free;
     t->fprint = (Escm_Fun_Print) string_print;
     t->fequal = (Escm_Fun_Equal) string_equal;
     t->fparsetest = string_parsetest;
@@ -42,6 +43,44 @@ escm_string_init(escm *e)
     t->feval = NULL;
 
     stringtype = escm_type_add(e, t);
+
+    (void) escm_procedure_new(e, "string?", 1, 1, escm_string_p);
+#ifdef ESCM_USE_CHARACTERS
+# ifdef ESCM_USE_NUMBERS
+    (void) escm_procedure_new(e, "make-string", 1, 2, escm_make_string);
+    (void) escm_procedure_new(e, "string-ref", 2, 2, escm_string_ref);
+    (void) escm_procedure_new(e, "string-set!", 3, 3, escm_string_set_x);
+# endif
+    (void) escm_procedure_new(e, "string", 0, -1, escm_prim_string);
+#endif /* USE_CHARACTERS */
+
+#ifdef ESCM_USE_NUMBERS
+    (void) escm_procedure_new(e, "string-length", 1, 1, escm_string_length);
+#endif
+
+    (void) escm_procedure_new(e, "string=?", 2, 2, escm_string_eq_p);
+    (void) escm_procedure_new(e, "string<?", 2, 2, escm_string_lt_p);
+    (void) escm_procedure_new(e, "string>?", 2, 2, escm_string_gt_p);
+    (void) escm_procedure_new(e, "string<=?", 2, 2, escm_string_le_p);
+    (void) escm_procedure_new(e, "string>=?", 2, 2, escm_string_ge_p);
+
+    (void) escm_procedure_new(e, "string-ci=?", 2, 2, escm_string_ci_eq_p);
+    (void) escm_procedure_new(e, "string-ci<?", 2, 2, escm_string_ci_lt_p);
+    (void) escm_procedure_new(e, "string-ci>?", 2, 2, escm_string_ci_gt_p);
+    (void) escm_procedure_new(e, "string-ci<=?", 2, 2, escm_string_ci_le_p);
+    (void) escm_procedure_new(e, "string-ci>=?", 2, 2, escm_string_ci_ge_p);
+
+#ifdef ESCM_USE_NUMBERS
+    (void) escm_procedure_new(e, "substring", 3, 3, escm_substring);
+#endif
+    (void) escm_procedure_new(e, "string-append", 0, -1, escm_string_append);
+    (void) escm_procedure_new(e, "string-copy", 1, 1, escm_string_copy);
+#ifdef ESCM_USE_CHARACTERS
+    (void) escm_procedure_new(e, "string-fill!", 2, 2, escm_string_fill_x);
+#endif
+
+    (void) escm_procedure_new(e, "string->list", 1, 1, escm_string_to_list);
+    (void) escm_procedure_new(e, "list->string", 1, 1, escm_list_to_string);
 }
 
 size_t
@@ -50,31 +89,481 @@ escm_string_tget(void)
     return stringtype;
 }
 
+escm_atom *
+escm_string_make(escm *e, const char *str, size_t len)
+{
+    escm_string *s;
+
+    s = xmalloc(sizeof *s);
+    s->str = xstrdup(str), s->len = len;
+
+    return escm_atom_new(e, stringtype, s);
+}
+
+escm_atom *
+escm_string_p(escm *e, escm_atom *args)
+{
+    escm_atom *a;
+
+    a = escm_cons_pop(e, &args);
+    return ESCM_ISSTR(a) ? e->TRUE : e->FALSE;
+}
+
+#if defined ESCM_USE_CHARACTERS && defined ESCM_USE_NUMBERS
+escm_atom *
+escm_make_string(escm *e, escm_atom *args)
+{
+    escm_atom *length, *c;
+    char *str;
+    long k;
+
+    length = escm_cons_pop(e, &args);
+    escm_assert(ESCM_NUMBER_ISINT(length), length, e);
+    k = ESCM_NUMBER_IVAL(length);
+    escm_assert(k >= 0, length, e);
+
+    c = escm_cons_pop(e, &args);
+    if (c)
+	escm_assert(ESCM_ISCHAR(c), c, e);
+
+    str = xmalloc((k + 1) * sizeof *str);
+    memset(str, (c != NULL) ? ESCM_CHAR_VAL(c) : 0, k);
+    str[k] = '\0';
+
+    c = escm_string_make(e, str, k);
+    free(str);
+    return c;
+}
+#endif
+
+#ifdef ESCM_USE_CHARACTERS
+escm_atom *
+escm_prim_string(escm *e, escm_atom *args)
+{
+    escm_atom *c;
+    escm_cons *cons;
+    char *str;
+    size_t len;
+
+    len = 0;
+    for (cons = ESCM_CONS_VAL(args); cons; cons = ESCM_CONS_NEXT(cons)) {
+	escm_assert(ESCM_ISCHAR(cons->car), cons->car, e);
+	len++;
+    }
+
+    str = xmalloc((len + 1) * sizeof *str);
+
+    len = 0;
+    for (c = escm_cons_pop(e, &args); c; c = escm_cons_pop(e, &args))
+	str[len++] = ESCM_CHAR_VAL(c);
+    str[len] = '\0';
+
+    c = escm_string_make(e, str, len);
+    free(str);
+    return c;
+}
+#endif
+
+#ifdef ESCM_USE_NUMBERS
+escm_atom *
+escm_string_length(escm *e, escm_atom *args)
+{
+    escm_atom *str;
+
+    str = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(str), str, e);
+
+    return escm_int_make(e, ESCM_STR_LEN(str));
+}
+#endif
+
+#if defined ESCM_USE_CHARACTERS && defined ESCM_USE_NUMBERS
+escm_atom *
+escm_string_ref(escm *e, escm_atom *args)
+{
+    escm_atom *str, *k;
+    long i;
+
+    str = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(str), str, e);
+
+    k = escm_cons_pop(e, &args);
+    escm_assert(ESCM_NUMBER_ISINT(k), k, e);
+    i = ESCM_NUMBER_IVAL(k);
+    escm_assert(i >= 0, k, e);
+
+    if ((size_t) i >= ESCM_STR_LEN(str)) {
+	fprintf(stderr, "index %ld is out of range.\n", i);
+	e->err = -1;
+	return NULL;
+    }
+
+    return escm_char_make(e, ESCM_STR_VAL(str)[i]);
+}
+
+escm_atom *
+escm_string_set_x(escm *e, escm_atom *args)
+{
+    escm_atom *str, *k, *c;
+    long i;
+
+    str = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(str), str, e);
+
+    k = escm_cons_pop(e, &args);
+    escm_assert(ESCM_NUMBER_ISINT(k), k, e);
+    i = ESCM_NUMBER_IVAL(k);
+    escm_assert(i >= 0, k, e);
+
+    c = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISCHAR(c), c, e);
+
+    if ((size_t) i >= ESCM_STR_LEN(str)) {
+	fprintf(stderr, "index %ld is out of range.\n", i);
+	e->err = -1;
+	return NULL;
+    }
+
+    ESCM_STR_VAL(str)[i] = ESCM_CHAR_VAL(c);
+    return NULL;
+}
+#endif
+
+escm_atom *
+escm_string_eq_p(escm *e, escm_atom *args)
+{
+    escm_atom *s1, *s2;
+
+    s1 = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(s1), s1, e);
+    s2 = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(s2), s2, e);
+
+    return (string_equal(e, s1->ptr, s2->ptr, 2)) ? e->TRUE : e->FALSE;
+}
+
+escm_atom *
+escm_string_lt_p(escm *e, escm_atom *args)
+{
+    escm_atom *a1, *a2;
+    int i;
+
+    a1 = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(a1), a1, e);
+    a2 = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(a2), a2, e);
+
+    if (a1 == a2)
+	return e->FALSE;
+
+    i = strcmp(ESCM_STR_VAL(a1), ESCM_STR_VAL(a2));
+    return (i < 0) ? e->TRUE : e->FALSE;
+}
+
+escm_atom *
+escm_string_gt_p(escm *e, escm_atom *args)
+{
+    escm_atom *a1, *a2;
+    int i;
+
+    a1 = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(a1), a1, e);
+    a2 = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(a2), a2, e);
+
+    if (a1 == a2)
+	return e->FALSE;
+
+    i = strcmp(ESCM_STR_VAL(a1), ESCM_STR_VAL(a2));
+    return (i > 0) ? e->TRUE : e->FALSE;
+}
+
+escm_atom *
+escm_string_le_p(escm *e, escm_atom *args)
+{
+    escm_atom *a1, *a2;
+    int i;
+
+    a1 = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(a1), a1, e);
+    a2 = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(a2), a2, e);
+
+    if (a1 == a2)
+	return e->FALSE;
+
+    i = strcmp(ESCM_STR_VAL(a1), ESCM_STR_VAL(a2));
+    return (i <= 0) ? e->TRUE : e->FALSE;
+}
+
+escm_atom *
+escm_string_ge_p(escm *e, escm_atom *args)
+{
+    escm_atom *a1, *a2;
+    int i;
+
+    a1 = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(a1), a1, e);
+    a2 = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(a2), a2, e);
+
+    if (a1 == a2)
+	return e->FALSE;
+
+    i = strcmp(ESCM_STR_VAL(a1), ESCM_STR_VAL(a2));
+    return (i >= 0) ? e->TRUE : e->FALSE;
+}
+
+escm_atom *
+escm_string_ci_eq_p(escm *e, escm_atom *args)
+{
+    escm_atom *a1, *a2;
+    char *s1, *s2;
+    size_t i;
+
+    a1 = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(a1), a1, e);
+    a2 = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(a2), a2, e);
+
+    if (a1 == a2 || ESCM_STR_LEN(a1) != ESCM_STR_LEN(a2))
+	return e->TRUE;
+
+    s1 = ESCM_STR_VAL(a1), s2 = ESCM_STR_VAL(a2);
+    for (i = 0; i < ESCM_STR_LEN(a1); i++) {
+	if (tolower(s1[i]) != tolower(s2[i]))
+	    return e->FALSE;
+    }
+
+    return e->TRUE;
+}
+
+escm_atom *
+escm_string_ci_lt_p(escm *e, escm_atom *args)
+{
+    escm_atom *a1, *a2;
+    int i;
+
+    a1 = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(a1), a1, e);
+    a2 = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(a2), a2, e);
+
+    if (a1 == a2)
+	return e->FALSE;
+
+    i = xstrcasecmp(ESCM_STR_VAL(a1), ESCM_STR_VAL(a2));
+    return (i < 0) ? e->TRUE : e->FALSE;
+}
+
+escm_atom *
+escm_string_ci_gt_p(escm *e, escm_atom *args)
+{
+    escm_atom *a1, *a2;
+    int i;
+
+    a1 = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(a1), a1, e);
+    a2 = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(a2), a2, e);
+
+    if (a1 == a2)
+	return e->FALSE;
+
+    i = xstrcasecmp(ESCM_STR_VAL(a1), ESCM_STR_VAL(a2));
+    return (i > 0) ? e->TRUE : e->FALSE;
+}
+
+escm_atom *
+escm_string_ci_le_p(escm *e, escm_atom *args)
+{
+    escm_atom *a1, *a2;
+    int i;
+
+    a1 = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(a1), a1, e);
+    a2 = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(a2), a2, e);
+
+    if (a1 == a2)
+	return e->FALSE;
+
+    i = xstrcasecmp(ESCM_STR_VAL(a1), ESCM_STR_VAL(a2));
+    return (i <= 0) ? e->TRUE : e->FALSE;
+}
+
+escm_atom *
+escm_string_ci_ge_p(escm *e, escm_atom *args)
+{
+    escm_atom *a1, *a2;
+    int i;
+
+    a1 = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(a1), a1, e);
+    a2 = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(a2), a2, e);
+
+    if (a1 == a2)
+	return e->FALSE;
+
+    i = xstrcasecmp(ESCM_STR_VAL(a1), ESCM_STR_VAL(a2));
+    return (i >= 0) ? e->TRUE : e->FALSE;
+}
+
+#ifdef ESCM_USE_NUMBERS
+escm_atom *
+escm_substring(escm *e, escm_atom *args)
+{
+    long start, end;
+    escm_atom *str, *a;
+    char *s;
+
+    str = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(str), str, e);
+
+    a = escm_cons_pop(e, &args);
+    escm_assert(ESCM_NUMBER_ISINT(a), a, e);
+    start = ESCM_NUMBER_IVAL(a);
+    if (start < 0 || (size_t) start > ESCM_STR_LEN(str)) {
+	fprintf(stderr, "index %ld out of range.\n", start);
+	e->err = -1;
+	return NULL;
+    }
+
+    a = escm_cons_pop(e, &args);
+    escm_assert(ESCM_NUMBER_ISINT(a), a, e);
+    end = ESCM_NUMBER_IVAL(a);
+    if (end < 0 || (size_t) end > ESCM_STR_LEN(str) || end < start) {
+	fprintf(stderr, "index %ld out of range.\n", end);
+	e->err = -1;
+	return NULL;
+    }
+
+    s = xmalloc((end - start + 1) * sizeof *s);
+    memcpy(s, &(ESCM_STR_VAL(str)[start]), end - start);
+    s[end - start] = '\0';
+
+    a = escm_string_make(e, s, end - start);
+    free(s);
+    return a;
+}
+#endif
+
+escm_atom *
+escm_string_append(escm *e, escm_atom *args)
+{
+    size_t len;
+    escm_cons *c;
+    escm_atom *ret;
+    char *s;
+
+    len = 0;
+    for (c = ESCM_CONS_VAL(args); c; c = ESCM_CONS_NEXT(c)) {
+	escm_assert(ESCM_ISSTR(c->car), c->car, e);
+	len += ESCM_STR_LEN(c->car);
+    }
+
+    s = xmalloc((len + 1) * sizeof *s);
+    len = 0;
+    for (c = ESCM_CONS_VAL(args); c; c = ESCM_CONS_NEXT(c)) {
+	memcpy(&(s[len]), ESCM_STR_VAL(c->car), ESCM_STR_LEN(c->car));
+	len += ESCM_STR_LEN(c->car);
+    }
+    s[len] = '\0';
+
+    ret = escm_string_make(e, s, len);
+    free(s);
+    return ret;
+}
+
+escm_atom *
+escm_string_copy(escm *e, escm_atom *args)
+{
+    escm_atom *str;
+
+    str = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(str), str, e);
+
+    return escm_string_make(e, ESCM_STR_VAL(str), ESCM_STR_LEN(str));
+}
+
+#ifdef ESCM_USE_CHARACTERS
+escm_atom *
+escm_string_fill_x(escm *e, escm_atom *args)
+{
+    escm_atom *str, *c;
+
+    str = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(str), str, e);
+    c = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISCHAR(c), c, e);
+
+    memset(ESCM_STR_VAL(str), ESCM_CHAR_VAL(c), ESCM_STR_LEN(str));
+    return NULL;
+}
+#endif
+
+escm_atom *
+escm_string_to_list(escm *e, escm_atom *args)
+{
+    escm_atom *str;
+    char *p;
+
+    str = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(str), str, e);
+
+    escm_ctx_enter(e);
+    for (p = ESCM_STR_VAL(str); *p != '\0'; p++)
+	escm_ctx_put(e, escm_char_make(e, *p));
+
+    return escm_ctx_leave(e);
+}
+
+escm_atom *
+escm_list_to_string(escm *e, escm_atom *args)
+{
+    escm_atom *list;
+
+    list = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISCONS(list), list, e);
+
+    return escm_prim_string(e, list);
+}
+
 static void
-string_print(escm *e, char *string, FILE *stream)
+string_free(escm_string *string)
+{
+    assert(string != NULL);
+
+    free(string->str);
+    free(string);
+}
+
+static void
+string_print(escm *e, escm_string *string, FILE *stream)
 {
     size_t n;
 
     (void) e;
 
-    n = mbstowcs(NULL, string, 0) + 1;
+    n = mbstowcs(NULL, string->str, 0) + 1;
     if (n == 0)
-	fprintf(stream, "\"%s\"", string);
+	fprintf(stream, "\"%s\"", string->str);
     else {
 	wchar_t *wc;
 	wc = xcalloc(n, sizeof *wc);
-	(void) mbstowcs(wc, string, n); /* check -1 ? */
+	(void) mbstowcs(wc, string->str, n); /* check -1 ? */
 
 	fprintf(stream, "\"%ls\"", wc);
 
 	free(wc);
     }
 
-    fprintf(stream, "-> %ld", (n != 0) ? n - 1 : strlen(string));
+    fprintf(stream, "-> %ld", (n != 0) ? n - 1 : string->len);
 }
 
 static int
-string_equal(escm *e, char *s1, char *s2, unsigned int lvl)
+string_equal(escm *e, escm_string *s1, escm_string *s2, unsigned int lvl)
 {
     (void) e;
 
@@ -82,7 +571,7 @@ string_equal(escm *e, char *s1, char *s2, unsigned int lvl)
     case 0: case 1: /* eq? & eqv?: true if same pointer */
 	return s1 == s2;
     case 2: default: /* equal? */
-	return !strcmp(s1, s2);
+	return (s1->len == s2->len && 0 == strcmp(s1->str, s2->str));
     }
 }
 
@@ -97,11 +586,14 @@ string_parsetest(escm *e, int c)
 static escm_atom *
 string_parse(escm *e)
 {
+    escm_atom *ret;
     char *str;
 
     (void) escm_input_getc(e->input); /* skip '"' */
     str = escm_input_gettext(e->input, "\"");
     (void) escm_input_getc(e->input); /* skip '"' */
 
-    return escm_atom_new(e, stringtype, str);
+    ret = escm_string_make(e, str, strlen(str));
+    free(str);
+    return ret;
 }

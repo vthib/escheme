@@ -17,7 +17,6 @@
 #include <assert.h>
 #include <string.h>
 
-#include "primitives.h"
 #include "escheme.h"
 
 static escm_atom *named_let(escm *e, escm_atom *, escm_atom *);
@@ -27,8 +26,12 @@ escm_primitives_load(escm *e)
 {
     escm_atom *o;
 
-    e->QUOTE = escm_procedure_new(e, "quote", 1, 1, escm_quote);
-    ESCM_PROC_VAL(e->QUOTE)->d.c.quoted = 0x1;
+    o = escm_procedure_new(e, "quote", 1, 1, escm_quote);
+    ESCM_PROC_VAL(o)->d.c.quoted = 0x1;
+    o = escm_procedure_new(e, "quasiquote", 1, 1, escm_quasiquote);
+    ESCM_PROC_VAL(o)->d.c.quoted = 0x1;
+    o = escm_procedure_new(e, "unquote", 1, 1, escm_unquote);
+    ESCM_PROC_VAL(o)->d.c.quoted = 0x1;
 
     e->LAMBDA = escm_procedure_new(e, "lambda", 2, -1, escm_lambda);
     ESCM_PROC_VAL(e->LAMBDA)->d.c.quoted = 0x7;
@@ -75,6 +78,108 @@ escm_quote(escm *e, escm_atom *arg)
     ESCM_CONS_VAL(arg)->car->ro = 1;
 
     return ESCM_CONS_VAL(arg)->car;
+}
+
+escm_atom *
+escm_quasiquote(escm *e, escm_atom *args)
+{
+    escm_atom *arg, *pair, *a;
+    escm_cons *c;
+
+    arg = escm_cons_pop(e, &args);
+    if (!ESCM_ISCONS(arg)) {
+	arg->ro = 1;
+	return arg;
+    }
+
+    escm_ctx_enter(e);
+    e->ctx->quasiquote = 1;
+
+    pair = escm_cons_new(e, NULL, e->NIL); /* use for recursion */
+    escm_gc_gard(e, pair);
+
+    for (c = ESCM_CONS_VAL(arg); c; c = ESCM_CONS_NEXT(c)) {
+	if (!ESCM_ISCONS(c->cdr)) {
+	    e->dotted = 1;
+	    escm_ctx_put(e, c->cdr);
+	} else if (ESCM_ISSYM(c->car)) {
+	    if (0 == strcmp(ESCM_SYM_VAL(c->car), "unquote")) {
+		a = escm_unquote(e, c->cdr);
+		if (!a)
+		    goto err;
+		e->dotted = 1;
+		escm_ctx_put(e, a);
+	    } else if (0 == strcmp(ESCM_SYM_VAL(c->car), "unquote-splicing")) {
+		fprintf(stderr, "unquote-splicing found after a dotted "
+			"notation.\n");
+		goto err;
+	    } else
+		goto add;
+	} else if (ESCM_ISCONS(c->car) && c->car != e->NIL) {
+	    escm_atom *list;
+
+	    list = c->car;
+	    a = escm_cons_pop(e, &list);
+	    if (ESCM_ISSYM(a)) {
+		if (0 == strcmp(ESCM_SYM_VAL(a), "unquote")) {
+ 		    a = escm_unquote(e, list);
+		    if (!a)
+			goto err;
+		    escm_ctx_put(e, a);
+		} else if (0 == strcmp(ESCM_SYM_VAL(a), "unquote-splicing")) {
+ 		    a = escm_unquote(e, list);
+		    if (!a)
+			goto err;
+		    else if (!ESCM_ISCONS(a)) {
+			fprintf(stderr, "unquote-splicing expect a argument of "
+				"type <list>.\n");
+			goto err;
+		    }
+		    escm_ctx_put_splicing(e, a);
+		} else
+		    goto rec;
+	    } else {
+	    rec:
+		ESCM_CONS_VAL(pair)->car = c->car;
+		escm_ctx_put(e, escm_quasiquote(e, pair));
+	    }
+	} else {
+	add:
+	    escm_ctx_put(e, c->car);
+	}
+    }
+
+    escm_gc_ungard(e, pair);
+    return escm_ctx_leave(e);
+
+err:
+    escm_ctx_discard(e);
+    return NULL;
+}
+
+escm_atom *
+escm_unquote(escm *e, escm_atom *args)
+{
+    escm_atom *arg, *res;
+
+    if (!e->ctx || e->ctx->quasiquote == 0) {
+	fprintf(stderr, "error: unquote not allowed outside a quasiquote.\n");
+	e->err = -1;
+	return NULL;
+    }
+
+    arg = escm_cons_pop(e, &args);
+    res = escm_atom_eval(e, arg);
+    if (!res) {
+	if (e->err != -1) {
+	    escm_atom_display(e, arg, stderr);
+	    fprintf(stderr, ": expression not allowed in this context.\n");
+	    e->err = -1;
+	}
+	return NULL;
+    }
+
+    return res;
 }
 
 escm_atom *
@@ -637,7 +742,7 @@ end:
 }
 
 escm_atom *
-escm_eqv_p(escm *e, escm_atom *args)
+escm_eq_p(escm *e, escm_atom *args)
 {
     escm_atom *a1, *a2;
 
@@ -648,7 +753,7 @@ escm_eqv_p(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_eq_p(escm *e, escm_atom *args)
+escm_eqv_p(escm *e, escm_atom *args)
 {
     escm_atom *a1, *a2;
 

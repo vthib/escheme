@@ -19,6 +19,8 @@
 
 #include "types.h"
 
+enum { INPUT_FILE, INPUT_STR };
+
 struct escm_input {
     union {
 	struct {

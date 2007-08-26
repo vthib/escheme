@@ -17,7 +17,6 @@
 #include <assert.h>
 #include <ctype.h>
 
-#include "escm.h"
 #include "escheme.h"
 
 #ifndef ESCM_NSEG
@@ -28,21 +27,13 @@
 # define ESCM_CPSEG 5000
 #endif
 
-struct escm_context {
-    escm_atom *first;
-    escm_atom *last;
-
-    struct escm_context *prev;
-
-    unsigned int dotted : 1;
-};
-
 struct escm_slist {
     escm_atom *atom;
     struct escm_slist *prev;
 };
 
 static unsigned char *alloc_seg(escm *);
+static escm_atom *enterin(escm *, const char *);
 
 escm *
 escm_new(void)
@@ -56,23 +47,27 @@ escm_new(void)
 	e->segments[i] = alloc_seg(e);
 
     /* XXX: do not change the order, or change the macros ESCM_TYPE_CONS etc! */
-    escm_env_init(e);
+    escm_environments_init(e);
     e->env = escm_env_new(e, NULL);
 
     escm_cons_init(e);
-    escm_procedure_init(e);
+    escm_procedures_init(e);
 
-#ifdef ESCM_USE_NUMBER
-    escm_number_init(e);
+#ifdef ESCM_USE_NUMBERS
+    escm_numbers_init(e); /* numbers needs to be declared before symbols, so
+			     that they can parse numbers */
 #endif
-#ifdef ESCM_USE_SYMBOL
-    escm_symbol_init(e);
+
+    escm_symbols_init(e);
+
+#ifdef ESCM_USE_STRINGS
+    escm_strings_init(e);
 #endif
-#ifdef ESCM_USE_STRING
-    escm_string_init(e);
+#ifdef ESCM_USE_BOOLEANS
+    escm_booleans_init(e);
 #endif
-#ifdef ESCM_USE_BOOLEAN
-    escm_boolean_init(e);
+#ifdef ESCM_USE_CHARACTERS
+    escm_chars_init(e);
 #endif
 
     escm_primitives_load(e);
@@ -170,21 +165,28 @@ escm_parse(escm *e)
 	if (c == '.') {
 	    e->dotted = 1;
 	    c = escm_input_getc(e->input);
-	} 
+	} else if (c == ';') {
+	    while (c != '\n')
+		c = escm_input_getc(e->input);
+	}
     } while (isspace(c) && e->input->end == 0);
     if (e->input->end)
 	return NULL;
 
-    if (c == '\'') {
-	escm_ctx_enter(e);
-	escm_ctx_put(e, e->QUOTE);
-	atom = escm_parse(e);
-	if (!atom) {
-	    escm_ctx_discard(e);
-	    return NULL;
+    if (c == '\'')
+	atom = enterin(e, "quote");
+    else if (c == '`')
+	atom = enterin(e, "quasiquote");
+    else if (c == ',') {
+	int c2;
+
+	c2 = escm_input_getc(e->input);
+	if (c2 == '@')
+	    atom = enterin(e, "unquote-splicing");
+	else {
+	    escm_input_ungetc(e->input, c2);
+	    atom = enterin(e, "unquote");
 	}
-	escm_ctx_put(e, atom);
-	atom = escm_ctx_leave(e);
     } else {
 	atom = NULL;
 	for (i = 0; i < e->ntypes && !atom; i++) {
@@ -231,7 +233,7 @@ escm_type_add(escm *e, escm_type *type)
 void
 escm_ctx_enter(escm *e)
 {
-    struct escm_context *ctx;
+    escm_context *ctx;
 
     assert(e != NULL);
 
@@ -282,8 +284,11 @@ escm_ctx_put_splicing(escm *e, escm_atom *atom)
     assert(e != NULL);
     assert(atom != NULL);
 
-    if (!e->ctx)
+    if (!e->ctx || atom == e->NIL)
 	return;
+
+    if (!ESCM_ISCONS(atom))
+	escm_ctx_put(e, atom);
 
     e->dotted = 0;
 
@@ -292,7 +297,7 @@ escm_ctx_put_splicing(escm *e, escm_atom *atom)
     else {
 	if (!ESCM_ISCONS(e->ctx->last)) { /* it's a "foo . bar" */
 	    escm_input_print(e->input, "')' expected.\n");
-	    e->err = -1;
+	    e->err = 1;
 	    return;
 	}
 	ESCM_CONS_VAL(e->ctx->last)->cdr = atom;
@@ -313,7 +318,7 @@ escm_ctx_put_splicing(escm *e, escm_atom *atom)
 escm_atom *
 escm_ctx_first(escm *e)
 {
-    assert (e != NULL);
+    assert(e != NULL);
     if (!e->ctx)
 	return NULL;
 
@@ -336,7 +341,7 @@ escm_ctx_leave(escm *e)
 void
 escm_ctx_discard(escm *e)
 {
-    struct escm_context *old;
+    escm_context *old;
 
     assert(e != NULL);
     if (!e->ctx)
@@ -352,7 +357,7 @@ void
 escm_gc_collect(escm *e)
 {
     escm_atom *white, *black, *c, *next;
-    struct escm_context *ctx;
+    escm_context *ctx;
     struct escm_slist *li;
 
     /* we mark all the known atoms */
@@ -364,9 +369,7 @@ escm_gc_collect(escm *e)
 	escm_atom_mark(e, li->atom);
 
     escm_atom_mark(e, e->env);
-
     escm_atom_mark(e, e->NIL);
-    escm_atom_mark(e, e->QUOTE);
 
     /* then we separate blacks and whites */
     white = NULL, black = NULL;
@@ -420,7 +423,7 @@ escm_gc_ungard(escm *e, escm_atom *a)
     free(li);
 }
 
-/*--- privates functions ---*/
+/* privates functions */
 
 static unsigned char *
 alloc_seg(escm *e)
@@ -437,4 +440,22 @@ alloc_seg(escm *e)
     }
 
     return (unsigned char *) seg;
+}
+
+static escm_atom *
+enterin(escm *e, const char *name)
+{
+    escm_atom *atom;
+
+    assert(e != NULL);
+
+    escm_ctx_enter(e);
+    escm_ctx_put(e, escm_atom_new(e, ESCM_TYPE_SYMBOL, xstrdup(name)));
+    atom = escm_parse(e);
+    if (!atom) {
+	escm_ctx_discard(e);
+	return NULL;
+    }
+    escm_ctx_put(e, atom);
+    return escm_ctx_leave(e);
 }

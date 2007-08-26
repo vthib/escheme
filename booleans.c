@@ -17,7 +17,6 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "boolean.h"
 #include "escheme.h"
 
 #define ESCM_BOOL_T ((void *) 1)
@@ -31,7 +30,7 @@ static int boolean_parsetest(escm *, int);
 static escm_atom *boolean_parse(escm *);
 
 void
-escm_boolean_init(escm *e)
+escm_booleans_init(escm *e)
 {
     escm_type *t;
 

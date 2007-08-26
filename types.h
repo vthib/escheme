@@ -20,11 +20,11 @@
 #include <stdio.h>
 
 #ifdef ESCM_R5RS
-# define ESCM_USE_BOOLEAN
-# define ESCM_USE_VECTOR
-# define ESCM_USE_STRING
-# define ESCM_USE_NUMBER
-# define ESCM_USE_SYMBOL
+# define ESCM_USE_BOOLEANS
+# define ESCM_USE_CHARACTERS
+# define ESCM_USE_VECTORS
+# define ESCM_USE_STRINGS
+# define ESCM_USE_NUMBERS
 
 # define ESCM_CIRCULAR_LIST 1 /* 0: no handle, 1: just in list? and length
 				 2: check also when printing */
@@ -34,16 +34,25 @@
 # define ESCM_CIRCULAR_LIST 0 /* default */
 #endif
 
-#if defined ESCM_INTBOOL && definex ESCM_USE_BOOLEAN
+#if defined ESCM_INTBOOL && defined ESCM_USE_BOOLEANS
 # undef ESCM_INTBOOL /* use boolean instead of integers */
 #endif
 
-#if !defined ESCM_USE_BOOLEAN && !defined ESCM_INTBOOL
+#if !defined ESCM_USE_BOOLEANS && !defined ESCM_INTBOOL
 # error "At least one of the boolean and number types need to be activated."
 #endif
 
+
 /* typedefs */
+
+#if __WORDSIZE == 64
+typedef long escm_intptr;
+#else
+typedef int escm_intptr;
+#endif
+
 typedef struct escm escm;
+typedef struct escm_context escm_context;
 typedef struct escm_atom escm_atom;
 typedef struct escm_hash escm_hash;
 typedef struct escm_input escm_input;

@@ -14,8 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with Escheme; If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef ESCHEME_STRING_H
-# define ESCHEME_STRING_H
+#ifndef ESCHEME_STRINGS_H
+# define ESCHEME_STRINGS_H
 
 #include "types.h"
 
@@ -23,9 +23,43 @@
 
 #define ESCM_ISSTR(x) ((x)->type == ESCM_TYPE_STRING)
 
-#define ESCM_STR_VAL(x) ((const char *) (x)->ptr)
+#define ESCM_STR_VAL(x) (((escm_string *) (x)->ptr)->str)
+#define ESCM_STR_LEN(x) (((escm_string *) (x)->ptr)->len)
 
-void escm_string_init(escm *);
+typedef struct escm_string {
+    char *str;
+    size_t len;
+} escm_string;
+
+void escm_strings_init(escm *);
 size_t escm_string_tget(void);
+escm_atom *escm_string_make(escm *, const char *, size_t);
 
-#endif /* ESCHEME_STRING_H */
+escm_atom *escm_string_p(escm *, escm_atom *);
+escm_atom *escm_make_string(escm *, escm_atom *);
+escm_atom *escm_prim_string(escm *, escm_atom *);
+escm_atom *escm_string_length(escm *, escm_atom *);
+escm_atom *escm_string_ref(escm *, escm_atom *);
+escm_atom *escm_string_set_x(escm *, escm_atom *);
+
+escm_atom *escm_string_eq_p(escm *, escm_atom *);
+escm_atom *escm_string_lt_p(escm *, escm_atom *);
+escm_atom *escm_string_gt_p(escm *, escm_atom *);
+escm_atom *escm_string_le_p(escm *, escm_atom *);
+escm_atom *escm_string_ge_p(escm *, escm_atom *);
+
+escm_atom *escm_string_ci_eq_p(escm *, escm_atom *);
+escm_atom *escm_string_ci_lt_p(escm *, escm_atom *);
+escm_atom *escm_string_ci_gt_p(escm *, escm_atom *);
+escm_atom *escm_string_ci_le_p(escm *, escm_atom *);
+escm_atom *escm_string_ci_ge_p(escm *, escm_atom *);
+
+escm_atom *escm_substring(escm *, escm_atom *);
+escm_atom *escm_string_append(escm *, escm_atom *);
+escm_atom *escm_string_copy(escm *, escm_atom *);
+escm_atom *escm_string_fill_x(escm *, escm_atom *);
+
+escm_atom *escm_string_to_list(escm *, escm_atom *);
+escm_atom *escm_list_to_string(escm *, escm_atom *);
+
+#endif /* ESCHEME_STRINGS_H */

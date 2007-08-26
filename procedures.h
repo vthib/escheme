@@ -14,8 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with Escheme; If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef ESCHEME_PROCEDURE_H
-# define ESCHEME_PROCEDURE_H
+#ifndef ESCHEME_PROCEDURES_H
+# define ESCHEME_PROCEDURES_H
 
 #include "types.h"
 
@@ -48,7 +48,7 @@ typedef struct escm_procedure {
     enum { ESCM_PRIMITIVE, ESCM_CLOSURE } type;
 } escm_procedure;
 
-void escm_procedure_init(escm *);
+void escm_procedures_init(escm *);
 
 escm_atom *escm_procedure_new(escm *, const char *, unsigned int, int,
 			     Escm_Fun_Prim);
@@ -57,4 +57,4 @@ escm_atom *escm_procedure_exec(escm *, escm_atom *, escm_atom *, int);
 
 escm_atom *escm_apply(escm *, escm_atom *);
 
-#endif /* ESCHEME_PROCEDURE_H */
+#endif /* ESCHEME_PROCEDURES_H */

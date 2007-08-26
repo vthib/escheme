@@ -53,8 +53,18 @@ struct escm_type {
     Escm_Fun_Eval feval;
 };
 
+struct escm_context {
+    escm_atom *first;
+    escm_atom *last;
+
+    escm_context *prev;
+
+    unsigned int quasiquote : 1;
+    unsigned int dotted : 1;
+};
+
 struct escm {
-    struct escm_context *ctx;
+    escm_context *ctx;
     struct escm_slist *gard;
 
     escm_input *input;
@@ -65,7 +75,6 @@ struct escm {
     escm_atom *heap;
 
     escm_atom *NIL; /* a NULL pair */
-    escm_atom *QUOTE; /* the quote primitive */
     escm_atom *LAMBDA; /* the lambda primitive (needed by 'define') */
 
     escm_atom *TRUE; /* the true boolean or a non null integer */
@@ -74,11 +83,11 @@ struct escm {
     escm_type **types;
     size_t ntypes;
 
-    unsigned int parens;
     int err;
 
     unsigned int dotted : 1;
     unsigned int quiet : 1;
+    unsigned int quasiquote : 1;
 };
 
 escm *escm_new(void);

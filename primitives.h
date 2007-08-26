@@ -22,6 +22,9 @@
 void escm_primitives_load(escm *);
 
 escm_atom *escm_quote(escm *, escm_atom *);
+escm_atom *escm_quasiquote(escm *, escm_atom *);
+escm_atom *escm_unquote(escm *, escm_atom *);
+
 escm_atom *escm_lambda(escm *, escm_atom *);
 
 escm_atom *escm_define(escm *, escm_atom *);
@@ -41,8 +44,8 @@ escm_atom *escm_or(escm *, escm_atom *);
 escm_atom *escm_begin(escm *, escm_atom *);
 escm_atom *escm_do(escm *, escm_atom *);
 
-escm_atom *escm_eqv_p(escm *, escm_atom *);
 escm_atom *escm_eq_p(escm *, escm_atom *);
+escm_atom *escm_eqv_p(escm *, escm_atom *);
 escm_atom *escm_equal_p(escm *, escm_atom *);
 
 #endif /* ESCHEME_PRIMITIVES_H */

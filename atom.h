@@ -34,6 +34,8 @@ void escm_atom_free(escm *, escm_atom *);
 void escm_atom_mark(escm *, escm_atom *);
 escm_atom *escm_atom_eval(escm *, escm_atom *);
 void escm_atom_display(escm *, escm_atom *, FILE *);
+
+/* 0: eq, 1: eqv, 2:equal */
 int escm_atom_equal(escm *, escm_atom *, escm_atom *, unsigned int);
 
 #endif /* ESCHEME_ATOM_H */

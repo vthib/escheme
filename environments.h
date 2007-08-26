@@ -14,18 +14,31 @@
  * You should have received a copy of the GNU General Public License
  * along with Escheme; If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef ESCHEME_SYMBOL_H
-# define ESCHEME_SYMBOL_H
+#ifndef ESCHEME_ENVIRONMENTS_H
+# define ESCHEME_ENVIRONMENTS_H
 
 #include "types.h"
 
-#define ESCM_TYPE_SYMBOL escm_symbol_tget()
+typedef struct escm_env {
+    union {
+	escm_hash *toplvl;
+	struct {
+	    struct escm_node *first;
+	    struct escm_node *last;
+	} lst;
+    } d;
 
-#define ESCM_ISSYM(x) ((x)->type == ESCM_TYPE_SYMBOL)
+    escm_atom *prev;
+} escm_env;
 
-#define ESCM_SYM_VAL(x) ((const char *) (x)->ptr)
+void escm_environments_init(escm *);
 
-void escm_symbol_init(escm *);
-size_t escm_symbol_tget(void);
+escm_atom *escm_env_new(escm *, escm_atom *);
 
-#endif /* ESCHEME_SYMBOL_H */
+escm_atom *escm_env_get(escm_atom *, const char *);
+void escm_env_set(escm_atom *, const char *, escm_atom *);
+
+escm_atom *escm_env_enter(escm *, escm_atom *);
+void escm_env_leave(escm *, escm_atom *);
+
+#endif /* ESCHEME_ENVIRONMENTS_H */

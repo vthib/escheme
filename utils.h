@@ -46,6 +46,8 @@
 /*@only@*/ void *xrealloc(void *, size_t);
 /*@only@*/ char *xstrdup(const char *);
 
+int xstrcasecmp(const char *, const char *);
+
 #define xfree(p) free(p), (p) = NULL;
 
 #endif /* ESCHEME_UTILS_H */

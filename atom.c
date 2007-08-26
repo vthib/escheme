@@ -20,7 +20,6 @@
 #include <assert.h>
 
 #include "escheme.h"
-#include "atom.h"
 
 static inline void mark(escm *, size_t, void *);
 

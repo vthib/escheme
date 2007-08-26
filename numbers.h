@@ -14,8 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with Escheme; If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef ESCHEME_NUMBER_H
-# define ESCHEME_NUMBER_H
+#ifndef ESCHEME_NUMBERS_H
+# define ESCHEME_NUMBERS_H
 
 #include "types.h"
 
@@ -44,8 +44,11 @@ typedef struct escm_number {
     unsigned int fixnum : 1;
 } escm_number;
 
-void escm_number_init(escm *);
+void escm_numbers_init(escm *);
 size_t escm_number_tget(void);
+
+escm_atom *escm_int_make(escm *, long);
+escm_atom *escm_real_make(escm *, double);
 
 escm_atom *escm_add(escm *, escm_atom *);
 escm_atom *escm_sub(escm *, escm_atom *);
@@ -58,4 +61,4 @@ escm_atom *escm_gt(escm *, escm_atom *);
 escm_atom *escm_le(escm *, escm_atom *);
 escm_atom *escm_ge(escm *, escm_atom *);
 
-#endif /* ESCHEME_NUMBER_H */
+#endif /* ESCHEME_NUMBERS_H */

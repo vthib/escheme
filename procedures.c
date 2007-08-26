@@ -17,7 +17,6 @@
 #include <assert.h>
 #include <string.h>
 
-#include "procedure.h"
 #include "escheme.h"
 
 static void procedure_free(escm_procedure *);
@@ -30,7 +29,7 @@ static escm_atom *runprimitive(escm *, escm_atom *, escm_atom *, int);
 static escm_atom *runlambda(escm *, escm_atom *, escm_atom *, int);
 
 void
-escm_procedure_init(escm *e)
+escm_procedures_init(escm *e)
 {
     escm_type *t;
 

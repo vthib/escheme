@@ -1,0 +1,5 @@
+ - Load "init.scm"
+ - Finish all primitives
+ - Add "vector" type
+ - Build quasiquotes correctly
+ - tolower(big_macro_names)

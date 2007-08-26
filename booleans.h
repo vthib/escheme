@@ -14,8 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with Escheme; If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef ESCHEME_BOOLEAN_H
-# define ESCHEME_BOOLEAN_H
+#ifndef ESCHEME_BOOLEANS_H
+# define ESCHEME_BOOLEANS_H
 
 #include "types.h"
 
@@ -23,15 +23,15 @@
 
 #define ESCM_ISBOOL(x) ((x)->type == ESCM_TYPE_BOOL)
 
-#ifdef ESCM_USE_BOOLEAN
+#ifdef ESCM_USE_BOOLEANS
 # define ESCM_ISTRUE(x) (!x || !ESCM_ISBOOL(x) || (x)->ptr != NULL)
 #endif
 
-void escm_boolean_init(escm *);
+void escm_booleans_init(escm *);
 
 escm_atom *escm_not(escm *, escm_atom *);
 escm_atom *escm_boolean_p(escm *, escm_atom *);
 
 size_t escm_boolean_tget(void);
 
-#endif /* ESCHEME_BOOLEAN_H */
+#endif /* ESCHEME_BOOLEANS_H */
