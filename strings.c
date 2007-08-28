@@ -224,6 +224,12 @@ escm_string_set_x(escm *e, escm_atom *args)
 	return NULL;
     }
 
+    if (str->ro == 1) {
+	fprintf(stderr, "string-set!: Can't modify an immutable string.\n");
+	e->err = -1;
+	return NULL;
+    }
+
     escm_str_val(str)[i] = escm_char_val(c);
     return NULL;
 }
@@ -498,6 +504,12 @@ escm_string_fill_x(escm *e, escm_atom *args)
     c = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCHAR(c), c, e);
 
+    if (str->ro == 1) {
+	fprintf(stderr, "string-set!: Can't modify an immutable string.\n");
+	e->err = -1;
+	return NULL;
+    }
+
     memset(escm_str_val(str), escm_char_val(c), escm_str_len(str));
     return NULL;
 }
@@ -559,7 +571,9 @@ string_print(escm *e, escm_string *string, FILE *stream)
 	free(wc);
     }
 
+#if 0
     fprintf(stream, "-> %ld", (n != 0) ? n - 1 : string->len);
+#endif
 }
 
 static int

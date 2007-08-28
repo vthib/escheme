@@ -95,7 +95,7 @@ escm_quasiquote(escm *e, escm_atom *args)
     escm_ctx_enter(e);
     e->ctx->quasiquote = 1;
 
-    pair = escm_cons_new(e, NULL, e->NIL); /* use for recursion */
+    pair = escm_cons_make(e, NULL, e->NIL); /* use for recursion */
     escm_gc_gard(e, pair);
 
     for (c = escm_cons_val(arg); c; c = escm_cons_next(c)) {
@@ -527,7 +527,7 @@ escm_cond(escm *e, escm_atom *args)
 		    return NULL;
 		}
 		return escm_procedure_exec(e, proc,
-					   escm_cons_new(e, ret, e->NIL), 0);
+					   escm_cons_make(e, ret, e->NIL), 0);
 	    } else
 		return escm_begin(e, clause);
 	}

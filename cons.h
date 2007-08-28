@@ -36,7 +36,7 @@ typedef struct escm_cons {
 
 void escm_cons_init(escm *);
 
-escm_atom *escm_cons_new(escm *, escm_atom *, escm_atom *);
+escm_atom *escm_cons_make(escm *, escm_atom *, escm_atom *);
 
 void escm_cons_put(escm *, escm_atom **, escm_atom *);
 escm_atom *escm_cons_pop(escm *, escm_atom **);

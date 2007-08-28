@@ -14,25 +14,24 @@
  * You should have received a copy of the GNU General Public License
  * along with Escheme; If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef ESCHEME_ESCHEME_H
-# define ESCHEME_ESCHEME_H
+#ifndef ESCHEME_PROMISES_H
+# define ESCHEME_PROMISES_H
 
 #include "types.h"
-#include "utils.h"
-#include "input.h"
-#include "hash.h"
-#include "escm.h"
-#include "atom.h"
-#include "environments.h"
-#include "cons.h"
-#include "procedures.h"
-#include "symbols.h"
-#include "booleans.h"
-#include "numbers.h"
-#include "primitives.h"
-#include "strings.h"
-#include "chars.h"
-#include "promises.h"
-#include "vectors.h"
 
-#endif /* ESCHEME_ESCHEME_H */
+#define ESCM_TYPE_PROMISE escm_promise_tget()
+
+#define ESCM_ISPROMISE(x) ((x)->type == ESCM_TYPE_PROMISE)
+
+typedef struct escm_promise {
+    escm_atom *atom;
+    escm_atom *env;
+} escm_promise;
+
+void escm_promises_init(escm *);
+size_t escm_promise_tget(void);
+
+escm_atom *escm_delay(escm *, escm_atom *);
+escm_atom *escm_force(escm *, escm_atom *);
+
+#endif /* ESCHEME_PROMISES_H */

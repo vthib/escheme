@@ -66,6 +66,9 @@ escm_new(void)
 #ifdef ESCM_USE_BOOLEANS
     escm_booleans_init(e);
 #endif
+#ifdef ESCM_USE_VECTORS
+    escm_vectors_init(e);
+#endif
 #ifdef ESCM_USE_CHARACTERS
     escm_chars_init(e);
 #endif
@@ -263,7 +266,7 @@ escm_ctx_put(escm *e, escm_atom *atom)
 	new = atom;
 	e->dotted = 0;
     } else
-	new = escm_cons_new(e, atom, e->NIL);
+	new = escm_cons_make(e, atom, e->NIL);
 
     if (!e->ctx->first)
 	e->ctx->first = new;

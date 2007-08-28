@@ -80,7 +80,7 @@ escm_cons_init(escm *e)
 }
 
 escm_atom *
-escm_cons_new(escm *e, escm_atom *car, escm_atom *cdr)
+escm_cons_make(escm *e, escm_atom *car, escm_atom *cdr)
 {
     escm_cons *p;
 
@@ -95,7 +95,7 @@ escm_cons_put(escm *e, escm_atom **cons, escm_atom *atom)
 {
     escm_atom *new;
 
-    new = escm_cons_new(e, atom, (*cons) ? *cons : e->NIL);
+    new = escm_cons_make(e, atom, (*cons) ? *cons : e->NIL);
     *cons = new;
 }
 
@@ -153,9 +153,9 @@ escm_set_car_x(escm *e, escm_atom *args)
 
     o = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCONS(o) && escm_cons_val(o) != NULL, o, e);
-    if (o->ro) {
-	escm_atom_display(e, o, stderr);
-	fprintf(stderr, ": Immutable atom.\n");
+
+    if (o->ro == 1) {
+	fprintf(stderr, "set-car!: Can't modify an immutable cons.\n");
 	e->err = -1;
 	return NULL;
     }
@@ -182,9 +182,9 @@ escm_set_cdr_x(escm *e, escm_atom *args)
 
     o = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCONS(o) && escm_cons_val(o) != NULL, o, e);
-    if (o->ro) {
-	escm_atom_display(e, o, stderr);
-	fprintf(stderr, ": Immutable atom.\n");
+
+    if (o->ro == 1) {
+	fprintf(stderr, "set-cdr!: Can't modify an immutable cons.\n");
 	e->err = -1;
 	return NULL;
     }
@@ -337,7 +337,7 @@ escm_reverse(escm *e, escm_atom *args)
 	    e->err = -1;
 	    return NULL;
 	}
-	new = escm_cons_new(e, c->car, (new != NULL) ? new : e->NIL);
+	new = escm_cons_make(e, c->car, (new != NULL) ? new : e->NIL);
     }
 
     return new;
