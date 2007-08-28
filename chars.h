@@ -23,11 +23,11 @@
 
 #define ESCM_ISCHAR(x) ((x)->type == ESCM_TYPE_CHAR)
 
-#define escm_char_val(x) ((unsigned char) (escm_intptr) (x)->ptr)
+#define escm_char_val(x) ((char) (escm_intptr) (x)->ptr)
 
 void escm_chars_init(escm *);
 size_t escm_char_tget(void);
-escm_atom *escm_char_make(escm *, unsigned char);
+escm_atom *escm_char_make(escm *, char);
 
 escm_atom *escm_char_p(escm *, escm_atom *);
 

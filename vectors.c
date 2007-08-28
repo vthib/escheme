@@ -20,7 +20,7 @@
 
 #include "escheme.h"
 
-static unsigned int vectortype = 0;
+static size_t vectortype = 0;
 
 static void vector_free(escm_vector *);
 static void vector_mark(escm *, escm_vector *);
@@ -132,7 +132,7 @@ escm_vector_length(escm *e, escm_atom *args)
     v = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISVECTOR(v), v, e);
 
-    return escm_int_make(e, escm_vector_len(v));
+    return escm_int_make(e, (long) escm_vector_len(v));
 }
 
 escm_atom *

@@ -658,7 +658,8 @@ escm_do(escm *e, escm_atom *args)
 		     escm_gc_ungard(e, env));
 
 	var = escm_cons_pop(e, &atom);
-	escm_assert1(var && ESCM_ISSYM(var), c->car, e, escm_gc_ungard(e, env));
+	escm_assert1(var != NULL && ESCM_ISSYM(var), c->car, e,
+		     escm_gc_ungard(e, env));
 
 	varval = escm_cons_pop(e, &atom);
 	escm_assert1(varval, c->car, e, escm_gc_ungard(e, env));
@@ -686,6 +687,7 @@ escm_do(escm *e, escm_atom *args)
     escm_gc_ungard(e, env);
     prevenv = escm_env_enter(e, env);
 
+    ret = NULL;
     /* now iterate */
     for (;;) {
 	atom = escm_atom_eval(e, escm_cons_val(test)->car);
@@ -698,7 +700,7 @@ escm_do(escm *e, escm_atom *args)
 	} else {
 	    /* execute command */
 	    if (args)
-		escm_begin(e, args);
+		(void) escm_begin(e, args);
 
 	    /* run steps and rebound vars */
 	    escm_ctx_enter(e);

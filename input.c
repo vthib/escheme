@@ -279,6 +279,7 @@ escm_input_getchar(escm_input *input)
     str = escm_input_getstr_fun(input, isalpha);
     len = strlen(str);
 
+    c = '\0';
     if (len < 1) {
 	free(str);
 	return escm_input_getc(input);

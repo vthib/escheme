@@ -115,12 +115,12 @@ escm_make_string(escm *e, escm_atom *args)
 {
     escm_atom *length, *c;
     char *str;
-    long k;
+    size_t k;
 
     length = escm_cons_pop(e, &args);
-    escm_assert(ESCM_NUMBER_ISINT(length), length, e);
-    k = escm_number_ival(length);
-    escm_assert(k >= 0, length, e);
+    escm_assert(ESCM_NUMBER_ISINT(length) && escm_number_ival(length) >= 0,
+		length, e);
+    k = (size_t) escm_number_ival(length);
 
     c = escm_cons_pop(e, &args);
     if (c)
@@ -173,7 +173,7 @@ escm_string_length(escm *e, escm_atom *args)
     str = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(str), str, e);
 
-    return escm_int_make(e, escm_str_len(str));
+    return escm_int_make(e, (long) escm_str_len(str));
 }
 #endif
 
@@ -445,11 +445,11 @@ escm_substring(escm *e, escm_atom *args)
 	return NULL;
     }
 
-    s = xmalloc((end - start + 1) * sizeof *s);
-    memcpy(s, &(escm_str_val(str)[start]), end - start);
+    s = xmalloc((size_t) (end - start + 1) * sizeof *s);
+    memcpy(s, &(escm_str_val(str)[start]), (size_t) end - start);
     s[end - start] = '\0';
 
-    a = escm_string_make(e, s, end - start);
+    a = escm_string_make(e, s, (size_t) end - start);
     free(s);
     return a;
 }

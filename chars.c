@@ -21,8 +21,8 @@
 
 static size_t chartype = 0;
 
-static void char_print(escm *, unsigned char, FILE *);
-static int char_equal(escm *, unsigned char, unsigned char, unsigned int);
+static void char_print(escm *, char, FILE *);
+static int char_equal(escm *, char, char, unsigned int);
 static int char_parsetest(escm *, int);
 static escm_atom *char_parse(escm *);
 
@@ -80,7 +80,7 @@ escm_char_tget(void)
 }
 
 escm_atom *
-escm_char_make(escm *e, unsigned char c)
+escm_char_make(escm *e, char c)
 {
     return escm_atom_new(e, chartype, (void *) (escm_intptr) c);
 }
@@ -336,7 +336,7 @@ escm_char_downcase(escm *e, escm_atom *args)
 }
 
 static void
-char_print(escm *e, unsigned char c, FILE *stream)
+char_print(escm *e, char c, FILE *stream)
 {
     (void) e;
 
@@ -350,7 +350,7 @@ char_print(escm *e, unsigned char c, FILE *stream)
 }
 
 static int
-char_equal(escm *e, unsigned char c1, unsigned char c2, unsigned int lvl)
+char_equal(escm *e, char c1, char c2, unsigned int lvl)
 {
     (void) e;
     (void) lvl;
@@ -376,7 +376,7 @@ char_parsetest(escm *e, int c)
 static escm_atom *
 char_parse(escm *e)
 {
-    unsigned char c;
+    char c;
 
     (void) escm_input_getc(e->input), escm_input_getc(e->input); /* skip #\ */
     c = escm_input_getchar(e->input);

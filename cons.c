@@ -20,7 +20,7 @@
 
 #include "escheme.h"
 
-static unsigned int constype = 0;
+static size_t constype = 0;
 
 static void cons_mark(escm *, escm_cons *);
 static void cons_print(escm *, escm_cons *, FILE *);
@@ -408,8 +408,9 @@ escm_memq(escm *e, escm_atom *args)
     list = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCONS(list), list, e);
 
-    for (c = list; c && c != e->NIL; c = ESCM_ISCONS(escm_cons_val(c)->cdr) ?
-	     escm_cons_val(c)->cdr : NULL) {
+    for (c = list; c != NULL && c != e->NIL;
+	 c = ESCM_ISCONS(escm_cons_val(c)->cdr) ? escm_cons_val(c)->cdr :
+	     NULL) {
 	if (escm_atom_equal(e, escm_cons_val(c)->car, elem, 0))
 	    return c;
     }
