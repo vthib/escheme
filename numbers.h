@@ -25,13 +25,13 @@
 
 #define ESCM_NUMBER_ISINT(x) (ESCM_ISNUMBER(x) && \
 			      ((escm_number *) (x)->ptr)->fixnum == 1)
-#define ESCM_NUMBER_IVAL(x) (((escm_number *) (x)->ptr)->d.ival)
+#define escm_number_ival(x) (((escm_number *) (x)->ptr)->d.ival)
 #define ESCM_NUMBER_RVAL(x) (((escm_number *) (x)->ptr)->d.rval)
 
 #ifdef ESCM_INTBOOL
 # define ESCM_ISTRUE(x) (!x || !ESCM_ISNUMBER(x) || \
 			 (((escm_number *) (x)->ptr)->fixnum == 1) ? \
-			 ESCM_NUMBER_IVAL(x) != 0 : \
+			 escm_number_ival(x) != 0 : \
 			 DBL_EQ(0., ESCM_NUMBER_RVAL(x)))
 #endif
 

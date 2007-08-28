@@ -104,7 +104,7 @@ escm_char_eq_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISCHAR(c1), c1, e);
     escm_assert(ESCM_ISCHAR(c2), c2, e);
 
-    return (ESCM_CHAR_VAL(c1) == ESCM_CHAR_VAL(c2)) ? e->TRUE : e->FALSE;
+    return (escm_char_val(c1) == escm_char_val(c2)) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
@@ -117,7 +117,7 @@ escm_char_lt_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISCHAR(c1), c1, e);
     escm_assert(ESCM_ISCHAR(c2), c2, e);
 
-    return (ESCM_CHAR_VAL(c1) < ESCM_CHAR_VAL(c2)) ? e->TRUE : e->FALSE;
+    return (escm_char_val(c1) < escm_char_val(c2)) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
@@ -130,7 +130,7 @@ escm_char_gt_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISCHAR(c1), c1, e);
     escm_assert(ESCM_ISCHAR(c2), c2, e);
 
-    return (ESCM_CHAR_VAL(c1) > ESCM_CHAR_VAL(c2)) ? e->TRUE : e->FALSE;
+    return (escm_char_val(c1) > escm_char_val(c2)) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
@@ -143,7 +143,7 @@ escm_char_le_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISCHAR(c1), c1, e);
     escm_assert(ESCM_ISCHAR(c2), c2, e);
 
-    return (ESCM_CHAR_VAL(c1) <= ESCM_CHAR_VAL(c2)) ? e->TRUE : e->FALSE;
+    return (escm_char_val(c1) <= escm_char_val(c2)) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
@@ -156,7 +156,7 @@ escm_char_ge_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISCHAR(c1), c1, e);
     escm_assert(ESCM_ISCHAR(c2), c2, e);
 
-    return (ESCM_CHAR_VAL(c1) >= ESCM_CHAR_VAL(c2)) ? e->TRUE : e->FALSE;
+    return (escm_char_val(c1) >= escm_char_val(c2)) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
@@ -169,7 +169,7 @@ escm_char_ci_eq_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISCHAR(c1), c1, e);
     escm_assert(ESCM_ISCHAR(c2), c2, e);
 
-    return (tolower(ESCM_CHAR_VAL(c1)) == tolower(ESCM_CHAR_VAL(c2))) ?
+    return (tolower(escm_char_val(c1)) == tolower(escm_char_val(c2))) ?
 	e->TRUE : e->FALSE;
 }
 
@@ -183,7 +183,7 @@ escm_char_ci_lt_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISCHAR(c1), c1, e);
     escm_assert(ESCM_ISCHAR(c2), c2, e);
 
-    return (tolower(ESCM_CHAR_VAL(c1)) < tolower(ESCM_CHAR_VAL(c2))) ?
+    return (tolower(escm_char_val(c1)) < tolower(escm_char_val(c2))) ?
 	e->TRUE : e->FALSE;
 }
 
@@ -197,7 +197,7 @@ escm_char_ci_gt_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISCHAR(c1), c1, e);
     escm_assert(ESCM_ISCHAR(c2), c2, e);
 
-    return (tolower(ESCM_CHAR_VAL(c1)) > tolower(ESCM_CHAR_VAL(c2))) ?
+    return (tolower(escm_char_val(c1)) > tolower(escm_char_val(c2))) ?
 	e->TRUE : e->FALSE;
 }
 
@@ -211,7 +211,7 @@ escm_char_ci_le_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISCHAR(c1), c1, e);
     escm_assert(ESCM_ISCHAR(c2), c2, e);
 
-    return (tolower(ESCM_CHAR_VAL(c1)) <= tolower(ESCM_CHAR_VAL(c2))) ?
+    return (tolower(escm_char_val(c1)) <= tolower(escm_char_val(c2))) ?
 	e->TRUE : e->FALSE;
 }
 
@@ -225,7 +225,7 @@ escm_char_ci_ge_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISCHAR(c1), c1, e);
     escm_assert(ESCM_ISCHAR(c2), c2, e);
 
-    return (tolower(ESCM_CHAR_VAL(c1)) >= tolower(ESCM_CHAR_VAL(c2))) ?
+    return (tolower(escm_char_val(c1)) >= tolower(escm_char_val(c2))) ?
 	e->TRUE : e->FALSE;
 }
 
@@ -237,7 +237,7 @@ escm_char_alphabetic_p(escm *e, escm_atom *args)
     c = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCHAR(c), c, e);
 
-    return isalpha(ESCM_CHAR_VAL(c)) ? e->TRUE : e->FALSE;
+    return isalpha(escm_char_val(c)) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
@@ -248,7 +248,7 @@ escm_char_numeric_p(escm *e, escm_atom *args)
     c = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCHAR(c), c, e);
 
-    return isdigit(ESCM_CHAR_VAL(c)) ? e->TRUE : e->FALSE;
+    return isdigit(escm_char_val(c)) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
@@ -259,7 +259,7 @@ escm_char_whitespace_p(escm *e, escm_atom *args)
     c = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCHAR(c), c, e);
 
-    return isspace(ESCM_CHAR_VAL(c)) ? e->TRUE : e->FALSE;
+    return isspace(escm_char_val(c)) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
@@ -270,7 +270,7 @@ escm_char_upper_case_p(escm *e, escm_atom *args)
     c = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCHAR(c), c, e);
 
-    return isupper(ESCM_CHAR_VAL(c)) ? e->TRUE : e->FALSE;
+    return isupper(escm_char_val(c)) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
@@ -281,7 +281,7 @@ escm_char_lower_case_p(escm *e, escm_atom *args)
     c = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCHAR(c), c, e);
 
-    return islower(ESCM_CHAR_VAL(c)) ? e->TRUE : e->FALSE;
+    return islower(escm_char_val(c)) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
@@ -294,7 +294,7 @@ escm_char_to_integer(escm *e, escm_atom *args)
     escm_assert(ESCM_ISCHAR(c), c, e);
 
     n = xmalloc(sizeof *n);
-    n->fixnum = 1, n->d.ival = ESCM_CHAR_VAL(c);
+    n->fixnum = 1, n->d.ival = escm_char_val(c);
 
     return escm_atom_new(e, ESCM_TYPE_NUMBER, n);
 }
@@ -308,7 +308,7 @@ escm_integer_to_char(escm *e, escm_atom *args)
     escm_assert(ESCM_NUMBER_ISINT(n), n, e);
 
     return escm_atom_new(e, ESCM_TYPE_CHAR,
-			 (void *) (escm_intptr) ESCM_NUMBER_IVAL(n));
+			 (void *) (escm_intptr) escm_number_ival(n));
 }
 
 escm_atom *
@@ -320,7 +320,7 @@ escm_char_upcase(escm *e, escm_atom *args)
     escm_assert(ESCM_ISCHAR(c), c, e);
 
     return escm_atom_new(e, ESCM_TYPE_CHAR,
-			 (void *) (escm_intptr) toupper(ESCM_CHAR_VAL(c)));
+			 (void *) (escm_intptr) toupper(escm_char_val(c)));
 }
 
 escm_atom *
@@ -332,7 +332,7 @@ escm_char_downcase(escm *e, escm_atom *args)
     escm_assert(ESCM_ISCHAR(c), c, e);
 
     return escm_atom_new(e, ESCM_TYPE_CHAR,
-			 (void *) (escm_intptr) tolower(ESCM_CHAR_VAL(c)));
+			 (void *) (escm_intptr) tolower(escm_char_val(c)));
 }
 
 static void

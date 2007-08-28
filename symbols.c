@@ -82,7 +82,7 @@ escm_symbol_to_string(escm *e, escm_atom *args)
     sym = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSYM(sym), sym, e);
 
-    return escm_atom_new(e, ESCM_TYPE_STRING, xstrdup(ESCM_SYM_VAL(sym)));
+    return escm_atom_new(e, ESCM_TYPE_STRING, xstrdup(escm_sym_val(sym)));
 }
 
 escm_atom *
@@ -93,7 +93,7 @@ escm_string_to_symbol(escm *e, escm_atom *args)
     str = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(str), str, e);
 
-    return escm_atom_new(e, ESCM_TYPE_SYMBOL, xstrdup(ESCM_STR_VAL(str)));
+    return escm_atom_new(e, ESCM_TYPE_SYMBOL, xstrdup(escm_str_val(str)));
 }
 #endif
 

@@ -73,7 +73,7 @@ escm_procedure_new(escm *e, const char *name, unsigned int min, int max,
 escm_atom *
 escm_procedure_exec(escm *e, escm_atom *atomfun, escm_atom *args, int eval)
 {
-    if (ESCM_PROC_VAL(atomfun)->type == ESCM_PRIMITIVE)
+    if (escm_proc_val(atomfun)->type == ESCM_PRIMITIVE)
 	return runprimitive(e, atomfun, args, eval);
     else
 	return runlambda(e, atomfun, args, eval);
@@ -89,8 +89,8 @@ escm_apply(escm *e, escm_atom *args)
     escm_assert(ESCM_ISPROC(fun), fun, e);
 
     tail = NULL;
-    for (c = ESCM_CONS_VAL(args); ESCM_ISCONS(c->cdr) && c->cdr != e->NIL;
-	 c = ESCM_CONS_NEXT(c))
+    for (c = escm_cons_val(args); ESCM_ISCONS(c->cdr) && c->cdr != e->NIL;
+	 c = escm_cons_next(c))
 	tail = c;
     escm_assert(ESCM_ISCONS(c->car), c->car, e);
 
@@ -160,13 +160,13 @@ runprimitive(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
 
     if (!ESCM_ISCONS(atomargs))
 	return NULL;
-    args = ESCM_CONS_VAL(atomargs);
+    args = escm_cons_val(atomargs);
 
-    fun = ESCM_PROC_VAL(atomfun);
+    fun = escm_proc_val(atomfun);
 
     escm_ctx_enter(e);
 
-    for (param = 0; args; args = ESCM_CONS_NEXT(args), param++) {
+    for (param = 0; args; args = escm_cons_next(args), param++) {
 	/* check parameter's number */
 	if (fun->d.c.max != -1 && param >= (unsigned int) fun->d.c.max) {
 	    escm_atom_display(e, atomfun, stderr);
@@ -219,9 +219,9 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomcons, int eval)
 
     if (!ESCM_ISCONS(atomcons))
 	return NULL;
-    cons = ESCM_CONS_VAL(atomcons);
+    cons = escm_cons_val(atomcons);
 
-    fun = ESCM_PROC_VAL(atomfun);
+    fun = escm_proc_val(atomfun);
 
     if (fun->d.closure.args == e->NIL) /* no arguments, no need to create a
 					  new environment */
@@ -234,7 +234,7 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomcons, int eval)
 						    bound on all the args */
 	    escm_ctx_enter(e);
 
-	    for (; cons; cons = ESCM_CONS_NEXT(cons)) {
+	    for (; cons; cons = escm_cons_next(cons)) {
 		if (eval) {
 		    ret = escm_atom_eval(e, cons->car);
 		    if (!ret || e->err == -1) {
@@ -247,13 +247,13 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomcons, int eval)
 		escm_ctx_put(e, ret);
 	    }
 
-	    escm_env_set(env, ESCM_SYM_VAL(fun->d.closure.args),
+	    escm_env_set(env, escm_sym_val(fun->d.closure.args),
 			 escm_ctx_leave(e));
 	} else {
 	    escm_cons *args;
 
-	    for (args = ESCM_CONS_VAL(fun->d.closure.args); cons;
-		 cons = ESCM_CONS_NEXT(cons), args = ESCM_CONS_NEXT(args)) {
+	    for (args = escm_cons_val(fun->d.closure.args); cons;
+		 cons = escm_cons_next(cons), args = escm_cons_next(args)) {
 		if (!args) {
 		    escm_atom_display(e, atomfun, stderr);
 		    fprintf(stderr, ": too much arguments.\n");
@@ -270,15 +270,15 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomcons, int eval)
 		} else
 		    ret = cons->car;
 
-		escm_env_set(env, ESCM_SYM_VAL(args->car), ret);
+		escm_env_set(env, escm_sym_val(args->car), ret);
 
 		if (ESCM_ISSYM(args->cdr)) { /* rest arguments */
 		    escm_atom *val;
 
 		    escm_ctx_enter(e);
 
-		    for (cons = ESCM_CONS_NEXT(cons); cons;
-			 cons = ESCM_CONS_NEXT(cons)) {
+		    for (cons = escm_cons_next(cons); cons;
+			 cons = escm_cons_next(cons)) {
 			if (!eval)
 			    val = cons->car;
 			else
@@ -291,7 +291,7 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomcons, int eval)
 			escm_ctx_put(e, val);
 		    }
 
-		    escm_env_set(env, ESCM_SYM_VAL(args->cdr),
+		    escm_env_set(env, escm_sym_val(args->cdr),
 				 escm_ctx_leave(e));
 		    args = NULL;
 		    break;
@@ -311,8 +311,8 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomcons, int eval)
 
     /* now execute */
     ret = NULL;
-    for (cons = ESCM_CONS_VAL(fun->d.closure.code); cons;
-	 cons = ESCM_CONS_NEXT(cons)) {
+    for (cons = escm_cons_val(fun->d.closure.code); cons;
+	 cons = escm_cons_next(cons)) {
 	ret = escm_atom_eval(e, cons->car);
 	if (e->err == -1) {
 	    escm_env_leave(e, prevenv);

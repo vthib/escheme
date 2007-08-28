@@ -23,7 +23,7 @@
 
 #define ESCM_ISSYM(x) ((x)->type == ESCM_TYPE_SYMBOL)
 
-#define ESCM_SYM_VAL(x) ((const char *) (x)->ptr)
+#define escm_sym_val(x) ((const char *) (x)->ptr)
 
 void escm_symbols_init(escm *);
 size_t escm_symbol_tget(void);

@@ -22,12 +22,12 @@
 #define ESCM_TYPE_CONS 1 /* XXX: ugly, hardcoded and not relevant if we change
 			    the order of the initialisation */
 
-#define ESCM_CONS_NEXT(x) (ESCM_ISCONS((x)->cdr)) ? \
-    ESCM_CONS_VAL((x)->cdr) : NULL
+#define escm_cons_next(x) (ESCM_ISCONS((x)->cdr)) ? \
+    escm_cons_val((x)->cdr) : NULL
 
 #define ESCM_ISCONS(x) ((x)->type == ESCM_TYPE_CONS)
 
-#define ESCM_CONS_VAL(x) ((escm_cons *) (x)->ptr)
+#define escm_cons_val(x) ((escm_cons *) (x)->ptr)
 
 typedef struct escm_cons {
     escm_atom *car;

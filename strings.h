@@ -23,8 +23,8 @@
 
 #define ESCM_ISSTR(x) ((x)->type == ESCM_TYPE_STRING)
 
-#define ESCM_STR_VAL(x) (((escm_string *) (x)->ptr)->str)
-#define ESCM_STR_LEN(x) (((escm_string *) (x)->ptr)->len)
+#define escm_str_val(x) (((escm_string *) (x)->ptr)->str)
+#define escm_str_len(x) (((escm_string *) (x)->ptr)->len)
 
 typedef struct escm_string {
     char *str;

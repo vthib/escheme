@@ -32,5 +32,6 @@
 #include "primitives.h"
 #include "strings.h"
 #include "chars.h"
+#include "promises.h"
 
 #endif /* ESCHEME_ESCHEME_H */

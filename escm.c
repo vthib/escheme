@@ -69,6 +69,9 @@ escm_new(void)
 #ifdef ESCM_USE_CHARACTERS
     escm_chars_init(e);
 #endif
+#ifdef ESCM_USE_PROMISES
+    escm_promises_init(e);
+#endif
 
     escm_primitives_load(e);
 
@@ -270,7 +273,7 @@ escm_ctx_put(escm *e, escm_atom *atom)
 	    e->err = -1;
 	    return;
 	}
-	ESCM_CONS_VAL(e->ctx->last)->cdr = new;
+	escm_cons_val(e->ctx->last)->cdr = new;
     }
 
     e->ctx->last = new;
@@ -300,15 +303,15 @@ escm_ctx_put_splicing(escm *e, escm_atom *atom)
 	    e->err = 1;
 	    return;
 	}
-	ESCM_CONS_VAL(e->ctx->last)->cdr = atom;
+	escm_cons_val(e->ctx->last)->cdr = atom;
     }
 
     if (ESCM_ISCONS(atom)) {
 	escm_atom *obj;
 
 	obj = atom;
-	for (c = ESCM_CONS_VAL(atom); c->cdr != e->NIL && ESCM_ISCONS(c->cdr);
-	     c = ESCM_CONS_NEXT(c))
+	for (c = escm_cons_val(atom); c->cdr != e->NIL && ESCM_ISCONS(c->cdr);
+	     c = escm_cons_next(c))
 	    obj = c->cdr;
 	e->ctx->last = (c->cdr == e->NIL) ? obj : c->cdr;
     } else

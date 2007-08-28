@@ -22,7 +22,7 @@
 #define ESCM_TYPE_PROC 2 /* XXX: ugly, hardcoded and not relevant if we change
 			    the order of the initialisation */
 
-#define ESCM_PROC_VAL(x) ((escm_procedure *) (x)->ptr)
+#define escm_proc_val(x) ((escm_procedure *) (x)->ptr)
 
 #define ESCM_ISPROC(x) ((x)->type == ESCM_TYPE_PROC)
 

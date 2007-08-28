@@ -105,6 +105,8 @@ escm_atom_equal(escm *e, escm_atom *o1, escm_atom *o2, unsigned int lvl)
     assert(e != NULL);
     if (!o1 || !o2 || o1->type != o2->type || !e->types[o1->type]->fequal)
 	return 0;
+    if (o1->ptr == o2->ptr)
+	return 1;
 
     return e->types[o1->type]->fequal(e, o1->ptr, o2->ptr, lvl);
 }
