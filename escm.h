@@ -59,7 +59,6 @@ struct escm_context {
 
     escm_context *prev;
 
-    unsigned int quasiquote : 1;
     unsigned int dotted : 1;
 };
 

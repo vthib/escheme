@@ -1,4 +1,3 @@
  - Load "init.scm"
  - Finish all primitives
- - Build quasiquotes correctly
  - Add "macro" type

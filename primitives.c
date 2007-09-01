@@ -19,7 +19,9 @@
 
 #include "escheme.h"
 
-static escm_atom *named_let(escm *e, escm_atom *, escm_atom *);
+static escm_atom *named_let(escm *, escm_atom *, escm_atom *);
+static escm_atom *quasiquote(escm *, escm_atom *, unsigned int);
+static escm_atom *quasiquote_vector(escm *, escm_atom *, unsigned int);
 
 void
 escm_primitives_load(escm *e)
@@ -29,8 +31,6 @@ escm_primitives_load(escm *e)
     o = escm_procedure_new(e, "quote", 1, 1, escm_quote);
     escm_proc_val(o)->d.c.quoted = 0x1;
     o = escm_procedure_new(e, "quasiquote", 1, 1, escm_quasiquote);
-    escm_proc_val(o)->d.c.quoted = 0x1;
-    o = escm_procedure_new(e, "unquote", 1, 1, escm_unquote);
     escm_proc_val(o)->d.c.quoted = 0x1;
 
     e->LAMBDA = escm_procedure_new(e, "lambda", 2, -1, escm_lambda);
@@ -83,103 +83,18 @@ escm_quote(escm *e, escm_atom *arg)
 escm_atom *
 escm_quasiquote(escm *e, escm_atom *args)
 {
-    escm_atom *arg, *pair, *a;
-    escm_cons *c;
+    escm_atom *arg;
 
     arg = escm_cons_pop(e, &args);
-    if (!ESCM_ISCONS(arg)) {
+    if (!ESCM_ISCONS(arg)
+#ifdef ESCM_USE_VECTORS
+	& !ESCM_ISVECTOR(arg)) {
+#endif
 	arg->ro = 1;
 	return arg;
     }
 
-    escm_ctx_enter(e);
-    e->ctx->quasiquote = 1;
-
-    pair = escm_cons_make(e, NULL, e->NIL); /* use for recursion */
-    escm_gc_gard(e, pair);
-
-    for (c = escm_cons_val(arg); c; c = escm_cons_next(c)) {
-	if (!ESCM_ISCONS(c->cdr)) {
-	    e->dotted = 1;
-	    escm_ctx_put(e, c->cdr);
-	} else if (ESCM_ISSYM(c->car)) {
-	    if (0 == strcmp(escm_sym_val(c->car), "unquote")) {
-		a = escm_unquote(e, c->cdr);
-		if (!a)
-		    goto err;
-		e->dotted = 1;
-		escm_ctx_put(e, a);
-	    } else if (0 == strcmp(escm_sym_val(c->car), "unquote-splicing")) {
-		fprintf(stderr, "unquote-splicing found after a dotted "
-			"notation.\n");
-		goto err;
-	    } else
-		goto add;
-	} else if (ESCM_ISCONS(c->car) && c->car != e->NIL) {
-	    escm_atom *list;
-
-	    list = c->car;
-	    a = escm_cons_pop(e, &list);
-	    if (ESCM_ISSYM(a)) {
-		if (0 == strcmp(escm_sym_val(a), "unquote")) {
- 		    a = escm_unquote(e, list);
-		    if (!a)
-			goto err;
-		    escm_ctx_put(e, a);
-		} else if (0 == strcmp(escm_sym_val(a), "unquote-splicing")) {
- 		    a = escm_unquote(e, list);
-		    if (!a)
-			goto err;
-		    else if (!ESCM_ISCONS(a)) {
-			fprintf(stderr, "unquote-splicing expect a argument of "
-				"type <list>.\n");
-			goto err;
-		    }
-		    escm_ctx_put_splicing(e, a);
-		} else
-		    goto rec;
-	    } else {
-	    rec:
-		escm_cons_val(pair)->car = c->car;
-		escm_ctx_put(e, escm_quasiquote(e, pair));
-	    }
-	} else {
-	add:
-	    escm_ctx_put(e, c->car);
-	}
-    }
-
-    escm_gc_ungard(e, pair);
-    return escm_ctx_leave(e);
-
-err:
-    escm_ctx_discard(e);
-    return NULL;
-}
-
-escm_atom *
-escm_unquote(escm *e, escm_atom *args)
-{
-    escm_atom *arg, *res;
-
-    if (!e->ctx || e->ctx->quasiquote == 0) {
-	fprintf(stderr, "error: unquote not allowed outside a quasiquote.\n");
-	e->err = -1;
-	return NULL;
-    }
-
-    arg = escm_cons_pop(e, &args);
-    res = escm_atom_eval(e, arg);
-    if (!res) {
-	if (e->err != -1) {
-	    escm_atom_display(e, arg, stderr);
-	    fprintf(stderr, ": expression not allowed in this context.\n");
-	    e->err = -1;
-	}
-	return NULL;
-    }
-
-    return res;
+    return quasiquote(e, arg, 1);
 }
 
 escm_atom *
@@ -838,4 +753,202 @@ named_let(escm *e, escm_atom *name, escm_atom *args)
     escm_env_leave(e, prevenv);
 
     return val;
+}
+
+static escm_atom *
+quasiquote(escm *e, escm_atom *atom, unsigned int lvl)
+{
+    escm_atom *ret;
+    escm_cons *c;
+
+    if (lvl == 0)
+	return escm_atom_eval(e, atom);
+
+#ifdef ESCM_USE_VECTORS
+	if (ESCM_ISVECTOR(atom))
+	    return quasiquote_vector(e, atom, lvl);
+#endif
+
+    if (!ESCM_ISCONS(atom))
+	return atom;
+
+    escm_ctx_enter(e);
+
+    for (c = escm_cons_val(atom); c; c = escm_cons_next(c)) {
+	if (!ESCM_ISCONS(c->cdr)) {
+	    e->dotted = 1;
+	    escm_ctx_put(e, c->cdr);
+	} else if (ESCM_ISSYM(c->car)) {
+	    /* this form can be found when adding a unquote after a dot
+	       (ie `(1 2 . ,a) -> `(1 2 unquote a) */
+	    if (0 == strcmp(escm_sym_val(c->car), "unquote")) {
+		if (c->cdr == e->NIL) {
+		    fprintf(stderr, "unquote expect exactly one argument.\n");
+		    goto err;
+		}
+		ret = quasiquote(e, escm_cons_val(c->cdr)->car, lvl - 1);
+		if (!ret)
+		    goto err;
+		e->dotted = 1;
+		escm_ctx_put(e, ret);
+		break;
+	    } else if (0 == strcmp(escm_sym_val(c->car), "unquote-splicing")) {
+		fprintf(stderr, "unquote-splicing found after a dotted "
+			"notation.\n");
+		goto err;
+	    } else
+		escm_ctx_put(e, c->car);
+	} else if (ESCM_ISCONS(c->car)) {
+	    if (ESCM_ISSYM(escm_cons_val(c->car)->car)) {
+		escm_cons *cons;
+
+		cons = escm_cons_val(c->car);
+		if (0 == strcmp(escm_sym_val(cons->car), "unquote")) {
+		    if (cons->cdr == e->NIL) {
+			fprintf(stderr, "unquote expect exactly one "
+				"argument.\n");
+			goto err;
+		    }
+		    if (lvl != 1) {
+			escm_ctx_enter(e);
+			escm_ctx_put(e, cons->car);
+		    }
+		    ret = quasiquote(e, escm_cons_val(cons->cdr)->car, lvl - 1);
+		    if (!ret)
+			goto err;
+		    escm_ctx_put(e, ret);
+		    if (lvl != 1)
+			escm_ctx_put(e, escm_ctx_leave(e));
+		} else if (0 == strcmp(escm_sym_val(cons->car),
+				       "unquote-splicing")) {
+		    if (cons->cdr == e->NIL) {
+			fprintf(stderr, "unquote-splicing expect exactly one "
+				"argument.\n");
+			goto err;
+		    }
+		    if (lvl != 1) {
+			escm_ctx_enter(e);
+			escm_ctx_put(e, cons->car);
+		    }
+		    ret = quasiquote(e, escm_cons_val(cons->cdr)->car, lvl - 1);
+		    if (!ret)
+			goto err;
+		    else if (!ESCM_ISCONS(ret)) {
+			fprintf(stderr, "unquote-splicing expect a argument of "
+				"type <list>.\n");
+			goto err;
+		    }
+		    if (lvl != 1) {
+			escm_ctx_put(e, ret);
+			escm_ctx_put(e, escm_ctx_leave(e));
+		    } else
+			escm_ctx_put_splicing(e, ret);
+		} else if (0 == strcmp(escm_sym_val(cons->car), "quasiquote")
+		    && cons->cdr != e->NIL) {
+		    escm_ctx_enter(e);
+		    escm_ctx_put(e, cons->car);
+		    ret = quasiquote(e, escm_cons_val(cons->cdr)->car, lvl + 1);
+		    if (!ret)
+			goto err;
+		    escm_ctx_put(e, ret);
+		    escm_ctx_put(e, escm_ctx_leave(e));
+		} else {
+		    ret = quasiquote(e, c->car, lvl);
+		    if (!ret)
+			goto err;
+		    escm_ctx_put(e, ret);
+		}
+	    }
+	} else
+	    escm_ctx_put(e, c->car);
+    }
+
+    return escm_ctx_leave(e);
+
+err:
+    escm_ctx_discard(e);
+    return NULL;
+}
+
+static escm_atom *
+quasiquote_vector(escm *e, escm_atom *atom, unsigned int lvl)
+{
+    escm_atom *ret;
+    escm_vector *v;
+    size_t i;
+
+    escm_ctx_enter(e);
+
+    v = escm_vector_val(atom);
+    for (i = 0; i < v->len; i++) {
+	if (ESCM_ISCONS(v->vec[i])) {
+	    if (ESCM_ISSYM(escm_cons_val(v->vec[i])->car)) {
+		escm_cons *cons;
+
+		cons = escm_cons_val(v->vec[i]);
+		if (0 == strcmp(escm_sym_val(cons->car), "unquote")) {
+		    if (cons->cdr == e->NIL) {
+			fprintf(stderr, "unquote expect exactly one "
+				"argument.\n");
+			goto err;
+		    }
+		    if (lvl != 1) {
+			escm_ctx_enter(e);
+			escm_ctx_put(e, cons->car);
+		    }
+		    ret = quasiquote(e, escm_cons_val(cons->cdr)->car, lvl - 1);
+		    if (!ret)
+			goto err;
+		    escm_ctx_put(e, ret);
+		    if (lvl != 1)
+			escm_ctx_put(e, escm_ctx_leave(e));
+		} else if (0 == strcmp(escm_sym_val(cons->car),
+				       "unquote-splicing")) {
+		    if (cons->cdr == e->NIL) {
+			fprintf(stderr, "unquote-splicing expect exactly one "
+				"argument.\n");
+			goto err;
+		    }
+		    if (lvl != 1) {
+			escm_ctx_enter(e);
+			escm_ctx_put(e, cons->car);
+		    }
+		    ret = quasiquote(e, escm_cons_val(cons->cdr)->car, lvl - 1);
+		    if (!ret)
+			goto err;
+		    else if (!ESCM_ISCONS(ret)) {
+			fprintf(stderr, "unquote-splicing expect a argument of "
+				"type <list>.\n");
+			goto err;
+		    }
+		    if (lvl != 1) {
+			escm_ctx_put(e, ret);
+			escm_ctx_put(e, escm_ctx_leave(e));
+		    } else
+			escm_ctx_put_splicing(e, ret);
+		} else if (0 == strcmp(escm_sym_val(cons->car), "quasiquote")
+		    && cons->cdr != e->NIL) {
+		    escm_ctx_enter(e);
+		    escm_ctx_put(e, cons->car);
+		    ret = quasiquote(e, escm_cons_val(cons->cdr)->car, lvl + 1);
+		    if (!ret)
+			goto err;
+		    escm_ctx_put(e, ret);
+		    escm_ctx_put(e, escm_ctx_leave(e));
+		} else {
+		    ret = quasiquote(e, v->vec[i], lvl);
+		    if (!ret)
+			goto err;
+		    escm_ctx_put(e, ret);
+		}
+	    }
+	} else
+	    escm_ctx_put(e, v->vec[i]);
+    }
+
+    return escm_prim_vector(e, escm_ctx_leave(e));
+
+err:
+    escm_ctx_discard(e);
+    return NULL;
 }
