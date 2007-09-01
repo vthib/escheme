@@ -776,7 +776,7 @@ quasiquote(escm *e, escm_atom *atom, unsigned int lvl)
 
     for (c = escm_cons_val(atom); c; c = escm_cons_next(c)) {
 	if (!ESCM_ISCONS(c->cdr)) {
-	    e->dotted = 1;
+	    e->ctx->dotted = 1;
 	    escm_ctx_put(e, c->cdr);
 	} else if (ESCM_ISSYM(c->car)) {
 	    /* this form can be found when adding a unquote after a dot
@@ -789,7 +789,7 @@ quasiquote(escm *e, escm_atom *atom, unsigned int lvl)
 		ret = quasiquote(e, escm_cons_val(c->cdr)->car, lvl - 1);
 		if (!ret)
 		    goto err;
-		e->dotted = 1;
+		e->ctx->dotted = 1;
 		escm_ctx_put(e, ret);
 		break;
 	    } else if (0 == strcmp(escm_sym_val(c->car), "unquote-splicing")) {

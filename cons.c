@@ -583,12 +583,12 @@ cons_parse(escm *e)
 
     while (e->err != ')') {
 	if (e->err != 0) {
-	    escm_input_print(e->input, "unknown character `%c'.", e->err);
+	    if (e->err > 0)
+		escm_input_print(e->input, "unknown character `%c'.", e->err);
 	    escm_ctx_discard(e);
 	    e->quiet = qsave;
 	    return NULL;
 	}
-
 	atom = escm_parse(e);
 	if (atom)
 	    escm_ctx_put(e, atom);

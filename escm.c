@@ -169,7 +169,9 @@ escm_parse(escm *e)
     do {
 	c = escm_input_getc(e->input);
 	if (c == '.') {
-	    e->dotted = 1;
+	    if (!e->ctx)
+		break;
+	    e->ctx->dotted = 1;
 	    c = escm_input_getc(e->input);
 	} else if (c == ';') {
 	    while (c != '\n')
@@ -246,9 +248,6 @@ escm_ctx_enter(escm *e)
     ctx = xcalloc(1, sizeof *ctx);
     ctx->prev = e->ctx;
     e->ctx = ctx;
-
-    e->ctx->dotted = e->dotted;
-    e->dotted = 0;
 }
 
 void
@@ -262,9 +261,9 @@ escm_ctx_put(escm *e, escm_atom *atom)
     if (!e->ctx)
 	return;
 
-    if (e->dotted) {
+    if (e->ctx->dotted) {
 	new = atom;
-	e->dotted = 0;
+	e->ctx->dotted = 0;
     } else
 	new = escm_cons_make(e, atom, e->NIL);
 
@@ -296,7 +295,7 @@ escm_ctx_put_splicing(escm *e, escm_atom *atom)
     if (!ESCM_ISCONS(atom))
 	escm_ctx_put(e, atom);
 
-    e->dotted = 0;
+    e->ctx->dotted = 0;
 
     if (!e->ctx->first)
 	e->ctx->first = atom;
@@ -354,7 +353,6 @@ escm_ctx_discard(escm *e)
 	return;
 
     old = e->ctx;
-    e->dotted = old->dotted;
     e->ctx = old->prev;
     free(old);
 }

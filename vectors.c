@@ -322,7 +322,7 @@ vector_parse(escm *e)
 	}
 
 	atom = escm_parse(e);
-	if (e->dotted) {
+	if (e->ctx->dotted) {
 	    fprintf(stderr, "dotted notation is forbidden in a vector "
 		    "context.\n");
 	    e->err = -1;

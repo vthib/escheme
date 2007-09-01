@@ -84,9 +84,7 @@ struct escm {
 
     int err;
 
-    unsigned int dotted : 1;
     unsigned int quiet : 1;
-    unsigned int quasiquote : 1;
 };
 
 escm *escm_new(void);
