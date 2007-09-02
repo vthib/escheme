@@ -26,7 +26,7 @@
 #define ESCM_NUMBER_ISINT(x) (ESCM_ISNUMBER(x) && \
 			      ((escm_number *) (x)->ptr)->fixnum == 1)
 #define escm_number_ival(x) (((escm_number *) (x)->ptr)->d.ival)
-#define ESCM_NUMBER_RVAL(x) (((escm_number *) (x)->ptr)->d.rval)
+#define escm_number_rval(x) (((escm_number *) (x)->ptr)->d.rval)
 
 #ifdef ESCM_INTBOOL
 # define ESCM_ISTRUE(x) (!x || !ESCM_ISNUMBER(x) || \
@@ -49,6 +49,16 @@ size_t escm_number_tget(void);
 
 escm_atom *escm_int_make(escm *, long);
 escm_atom *escm_real_make(escm *, double);
+
+escm_atom *escm_number_p(escm *, escm_atom *);
+escm_atom *escm_integer_p(escm *, escm_atom *);
+escm_atom *escm_real_p(escm *, escm_atom *);
+
+escm_atom *escm_zero_p(escm *, escm_atom *);
+escm_atom *escm_positive_p(escm *, escm_atom *);
+escm_atom *escm_negative_p(escm *, escm_atom *);
+escm_atom *escm_odd_p(escm *, escm_atom *);
+escm_atom *escm_even_p(escm *, escm_atom *);
 
 escm_atom *escm_add(escm *, escm_atom *);
 escm_atom *escm_sub(escm *, escm_atom *);

@@ -74,7 +74,6 @@ struct escm {
     escm_atom *heap;
 
     escm_atom *NIL; /* a NULL pair */
-    escm_atom *LAMBDA; /* the lambda primitive (needed by 'define') */
 
     escm_atom *TRUE; /* the true boolean or a non null integer */
     escm_atom *FALSE; /* the false boolean or a null integer */

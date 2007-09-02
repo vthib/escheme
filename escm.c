@@ -49,6 +49,8 @@ escm_new(void)
     /* XXX: do not change the order, or change the macros ESCM_TYPE_CONS etc! */
     escm_environments_init(e);
     e->env = escm_env_new(e, NULL);
+    e->env->ro = 1;
+    escm_env_addprimitives(e);
 
     escm_cons_init(e);
     escm_procedures_init(e);

@@ -16,6 +16,7 @@
  */
 #include <string.h>
 #include <ctype.h>
+#include <math.h>
 
 #include "escheme.h"
 
@@ -56,6 +57,16 @@ escm_numbers_init(escm *e)
     }
 #endif
 
+    (void) escm_procedure_new(e, "number?", 1, 1, escm_number_p);
+    (void) escm_procedure_new(e, "integer?", 1, 1, escm_integer_p);
+    (void) escm_procedure_new(e, "real?", 1, 1, escm_real_p);
+
+    (void) escm_procedure_new(e, "zero?", 1, 1, escm_zero_p);
+    (void) escm_procedure_new(e, "positive?", 1, 1, escm_positive_p);
+    (void) escm_procedure_new(e, "negative?", 1, 1, escm_negative_p);
+    (void) escm_procedure_new(e, "odd?", 1, 1, escm_odd_p);
+    (void) escm_procedure_new(e, "even?", 1, 1, escm_even_p);
+
     (void) escm_procedure_new(e, "+", 0, -1, escm_add);
     (void) escm_procedure_new(e, "-", 1, -1, escm_sub);
     (void) escm_procedure_new(e, "*", 0, -1, escm_mul);
@@ -94,6 +105,95 @@ escm_real_make(escm *e, double r)
     n->fixnum = 0, n->d.rval = r;
 
     return escm_atom_new(e, numbertype, n);
+}
+
+escm_atom *
+escm_number_p(escm *e, escm_atom *args)
+{
+    return (ESCM_ISNUMBER(escm_cons_val(args)->car)) ? e->TRUE : e->FALSE;
+}
+
+escm_atom *
+escm_integer_p(escm *e, escm_atom *args)
+{
+    escm_atom *arg;
+    escm_number *n;
+
+    arg = escm_cons_pop(e, &args);
+    if (!ESCM_ISNUMBER(arg))
+       return e->FALSE;
+    n = arg->ptr;
+    if (n->fixnum == 1)
+       return e->TRUE;
+#ifdef ESCM_USE_MATH
+    return (DBL_EQ(n->d.rval, round(n->d.rval))) ? e->TRUE : e->FALSE;
+#else
+    return e->FALSE;
+#endif
+}
+
+escm_atom *
+escm_real_p(escm *e, escm_atom *args)
+{
+    return (ESCM_ISNUMBER(escm_cons_val(args)->car)) ? e->TRUE : e->FALSE;
+}
+
+escm_atom *
+escm_zero_p(escm *e, escm_atom *args)
+{
+    escm_atom *arg;
+
+    arg = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISNUMBER(arg), arg, e);
+    if (ESCM_NUMBER_ISINT(arg))
+       return (escm_number_ival(arg) == 0) ? e->TRUE : e->FALSE;
+    return (escm_number_rval(arg) == 0) ? e->TRUE : e->FALSE;
+}
+
+escm_atom *
+escm_positive_p(escm *e, escm_atom *args)
+{
+    escm_atom *arg;
+
+    arg = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISNUMBER(arg), arg, e);
+    if (ESCM_NUMBER_ISINT(arg))
+       return (escm_number_ival(arg) > 0) ? e->TRUE : e->FALSE;
+    return (DBL_GT(escm_number_rval(arg), 0.)) ? e->TRUE : e->FALSE;
+}
+
+escm_atom *
+escm_negative_p(escm *e, escm_atom *args)
+{
+    escm_atom *arg;
+
+    arg = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISNUMBER(arg), arg, e);
+    if (ESCM_NUMBER_ISINT(arg))
+       return (escm_number_ival(arg) < 0) ? e->TRUE : e->FALSE;
+    return (DBL_LT(escm_number_rval(arg), 0.)) ? e->TRUE : e->FALSE;
+}
+
+escm_atom *
+escm_odd_p(escm *e, escm_atom *args)
+{
+    escm_atom *arg;
+
+    arg = escm_cons_pop(e, &args);
+    escm_assert(ESCM_NUMBER_ISINT(arg), arg, e);
+
+    return (escm_number_ival(arg) % 2 == 1) ? e->TRUE : e->FALSE;
+}
+
+escm_atom *
+escm_even_p(escm *e, escm_atom *args)
+{
+    escm_atom *arg;
+
+    arg = escm_cons_pop(e, &args);
+    escm_assert(ESCM_NUMBER_ISINT(arg), arg, e);
+
+    return (escm_number_ival(arg) % 2 == 0) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *

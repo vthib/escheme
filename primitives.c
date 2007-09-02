@@ -21,7 +21,9 @@
 
 static escm_atom *named_let(escm *, escm_atom *, escm_atom *);
 static escm_atom *quasiquote(escm *, escm_atom *, unsigned int);
+#ifdef ESCM_USE_VECTORS
 static escm_atom *quasiquote_vector(escm *, escm_atom *, unsigned int);
+#endif
 
 void
 escm_primitives_load(escm *e)
@@ -33,8 +35,8 @@ escm_primitives_load(escm *e)
     o = escm_procedure_new(e, "quasiquote", 1, 1, escm_quasiquote);
     escm_proc_val(o)->d.c.quoted = 0x1;
 
-    e->LAMBDA = escm_procedure_new(e, "lambda", 2, -1, escm_lambda);
-    escm_proc_val(e->LAMBDA)->d.c.quoted = 0x7;
+    o = escm_procedure_new(e, "lambda", 2, -1, escm_lambda);
+    escm_proc_val(o)->d.c.quoted = 0x7;
 
     o = escm_procedure_new(e, "define", 2, 2, escm_define);
     escm_proc_val(o)->d.c.quoted = 0x3;
@@ -68,6 +70,8 @@ escm_primitives_load(escm *e)
     (void) escm_procedure_new(e, "eqv?", 2, 2, escm_eqv_p);
     (void) escm_procedure_new(e, "eq?", 2, 2, escm_eq_p);
     (void) escm_procedure_new(e, "equal?", 2, 2, escm_equal_p);
+
+    (void) escm_procedure_new(e, "gc", 0, 0, escm_gc);
 }
 
 escm_atom *
@@ -146,7 +150,7 @@ escm_define(escm *e, escm_atom *args)
 	escm_ctx_put(e, escm_cons_pop(e, &args)); /* body */
 
 	escm_env_set(e->env, escm_sym_val(a->car),
-		     escm_procedure_exec(e, e->LAMBDA, escm_ctx_first(e), 0));
+		     escm_lambda(e, escm_ctx_first(e)));
 	escm_ctx_discard(e);
     } else {
 	escm_atom *val;
@@ -691,6 +695,16 @@ escm_equal_p(escm *e, escm_atom *args)
     return (escm_atom_equal(e, a1, a2, 2)) ? e->TRUE : e->FALSE;
 }
 
+escm_atom *
+escm_gc(escm *e, escm_atom *args)
+{
+    (void) args;
+
+    escm_gc_collect(e);
+
+    return NULL;
+}
+
 static escm_atom *
 named_let(escm *e, escm_atom *name, escm_atom *args)
 {
@@ -733,7 +747,7 @@ named_let(escm *e, escm_atom *name, escm_atom *args)
 
     prevenv = escm_env_enter(e, escm_env_new(e, e->env));
 
-    fun = escm_procedure_exec(e, e->LAMBDA, escm_ctx_leave(e), 0);
+    fun = escm_lambda(e, escm_ctx_leave(e));
     if (!fun) {
 	escm_env_leave(e, prevenv);
 	return NULL;
@@ -870,6 +884,7 @@ err:
     return NULL;
 }
 
+#ifdef ESCM_USE_VECTORS
 static escm_atom *
 quasiquote_vector(escm *e, escm_atom *atom, unsigned int lvl)
 {
@@ -952,3 +967,4 @@ err:
     escm_ctx_discard(e);
     return NULL;
 }
+#endif

@@ -32,6 +32,7 @@ typedef struct escm_env {
 } escm_env;
 
 void escm_environments_init(escm *);
+void escm_env_addprimitives(escm *);
 
 escm_atom *escm_env_new(escm *, escm_atom *);
 
@@ -40,5 +41,11 @@ void escm_env_set(escm_atom *, const char *, escm_atom *);
 
 escm_atom *escm_env_enter(escm *, escm_atom *);
 void escm_env_leave(escm *, escm_atom *);
+
+escm_atom *escm_eval(escm *, escm_atom *);
+
+escm_atom *escm_scheme_report_environment(escm *, escm_atom *);
+escm_atom *escm_null_environment(escm *, escm_atom *);
+escm_atom *escm_interaction_environment(escm *, escm_atom *);
 
 #endif /* ESCHEME_ENVIRONMENTS_H */

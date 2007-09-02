@@ -49,6 +49,21 @@ escm_environments_init(escm *e)
     envtype = escm_type_add(e, t);
 }
 
+void
+escm_env_addprimitives(escm *e)
+{
+    assert(e != NULL);
+
+    (void) escm_procedure_new(e, "eval", 1, 2, escm_eval);
+
+    (void) escm_procedure_new(e, "scheme-report-environment", 0, 1,
+			      escm_scheme_report_environment);
+    (void) escm_procedure_new(e, "null-environment", 0, 1,
+			      escm_null_environment);
+    (void) escm_procedure_new(e, "interaction-environment", 0, 0,
+			      escm_interaction_environment);
+}
+
 escm_atom *
 escm_env_new(escm *e, escm_atom *prev)
 {
@@ -58,7 +73,7 @@ escm_env_new(escm *e, escm_atom *prev)
 
     env = xcalloc(1, sizeof *env);
     if (!prev)
-	env->d.toplvl = escm_hash_new(1UL << 12);
+	env->d.toplvl = escm_hash_new(1UL << 10);
     env->prev = prev;
 
     return escm_atom_new(e, envtype, env);
@@ -143,6 +158,88 @@ escm_env_leave(escm *e, escm_atom *prevenv)
 
     escm_gc_ungard(e, prevenv);
     e->env = prevenv;
+}
+
+escm_atom *
+escm_eval(escm *e, escm_atom *args)
+{
+    escm_atom *expr, *env, *prev;
+
+    expr = escm_cons_pop(e, &args);
+    env = escm_cons_pop(e, &args);
+    if (env) {
+	escm_assert(env->type == envtype, env, e);
+	prev = e->env, e->env = env;
+    }
+
+    expr = escm_atom_eval(e, expr);
+    if (env)
+	e->env = prev;
+
+    return expr;
+}
+
+/* XXX: Write this function correctly */
+escm_atom *
+escm_scheme_report_environment(escm *e, escm_atom *args)
+{
+    escm_atom *n;
+    escm_atom *env;
+
+    n = escm_cons_pop(e, &args);
+    if (n) {
+	escm_assert(ESCM_NUMBER_ISINT(n), n, e);
+
+	if (escm_number_ival(n) != 5) {
+	    fprintf(stderr,"scheme-report-environment expect 5 as argument.\n");
+	    e->err = -1;
+	    return NULL;
+	}
+    }
+
+    env = e->env;
+    while (((escm_env *) env->ptr)->prev)
+	env = ((escm_env *) env->ptr)->prev;
+
+    return env; /* return toplvl */
+}
+
+escm_atom *
+escm_null_environment(escm *e, escm_atom *args)
+{
+    escm_atom *o;
+    escm_atom *env, *prev;
+
+    o = escm_cons_pop(e, &args);
+    if (o) {
+	escm_assert(ESCM_NUMBER_ISINT(o), o, e);
+
+	if (escm_number_ival(o) != 5) {
+	    fprintf(stderr, "null-environment expect 5 as argument.\n");
+	    e->err = -1;
+	    return NULL;
+	}
+    }
+
+    env = escm_env_new(e, NULL);
+    prev = e->env, e->env = env;
+    o = escm_procedure_new(e, "quote", 1, 1, escm_quote);
+    escm_proc_val(o)->d.c.quoted = 0x1;
+    o = escm_procedure_new(e, "quasiquote", 1, 1, escm_quasiquote);
+    escm_proc_val(o)->d.c.quoted = 0x1;
+    o = escm_procedure_new(e, "lambda", 2, -1, escm_lambda);
+    escm_proc_val(o)->d.c.quoted = 0x7;
+    e->env = prev;
+
+    return env;
+}
+
+escm_atom *
+escm_interaction_environment(escm *e, escm_atom *args)
+{
+    (void) args;
+
+    return e->env;
 }
 
 static void
