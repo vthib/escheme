@@ -55,12 +55,11 @@ escm_new(void)
     escm_cons_init(e);
     escm_procedures_init(e);
 
-#ifdef ESCM_USE_NUMBERS
-    escm_numbers_init(e); /* numbers needs to be declared before symbols, so
-			     that they can parse numbers */
-#endif
-
     escm_symbols_init(e);
+
+#ifdef ESCM_USE_NUMBERS
+    escm_numbers_init(e); /* numbers needs to be declared after symbols */
+#endif
 
 #ifdef ESCM_USE_STRINGS
     escm_strings_init(e);
@@ -76,6 +75,10 @@ escm_new(void)
 #endif
 #ifdef ESCM_USE_PROMISES
     escm_promises_init(e);
+#endif
+
+#ifdef ESCM_USE_MACROS
+    escm_macros_init(e);
 #endif
 
     escm_primitives_load(e);
@@ -171,6 +174,13 @@ escm_parse(escm *e)
     do {
 	c = escm_input_getc(e->input);
 	if (c == '.') {
+	    int c2;
+
+	    c2 = escm_input_getc(e->input);
+	    if (c2 == '.') {
+		escm_input_ungetc(e->input, c2);
+		break;
+	    }
 	    if (!e->ctx)
 		break;
 	    e->ctx->dotted = 1;

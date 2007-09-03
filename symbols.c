@@ -119,8 +119,26 @@ symbol_parsetest(escm *e, int c)
 {
     (void) e;
 
+    if (isdigit(c))
+	return 0;
+    if (c == '.') {
+	int c2, ret;
+
+	c2 = escm_input_getc(e->input);
+	ret = (c2 == '.');
+	escm_input_ungetc(e->input, c2);
+	return ret;
+    }
+    if (c == '+' || c == '-') {
+	int c2, ret;
+
+	c2 = escm_input_getc(e->input);
+	ret = !(isdigit(c2) || c2 == '.');
+	escm_input_ungetc(e->input, c2);
+	return ret;
+    }
     return issymbol(c);
-}    
+}
 
 static escm_atom *
 symbol_parse(escm *e)

@@ -28,6 +28,7 @@
 #define ESCM_ISCONS(x) ((x)->type == ESCM_TYPE_CONS)
 
 #define escm_cons_val(x) ((escm_cons *) (x)->ptr)
+#define escm_cons_car(x) (escm_cons_val(x)->car)
 
 typedef struct escm_cons {
     escm_atom *car;

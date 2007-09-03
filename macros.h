@@ -14,26 +14,25 @@
  * You should have received a copy of the GNU General Public License
  * along with Escheme; If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef ESCHEME_ESCHEME_H
-# define ESCHEME_ESCHEME_H
+#ifndef ESCHEME_MACROS_H
+# define ESCHEME_MACROS_H
 
 #include "types.h"
-#include "utils.h"
-#include "input.h"
-#include "hash.h"
-#include "escm.h"
-#include "atom.h"
-#include "environments.h"
-#include "cons.h"
-#include "procedures.h"
-#include "symbols.h"
-#include "booleans.h"
-#include "numbers.h"
-#include "primitives.h"
-#include "strings.h"
-#include "chars.h"
-#include "promises.h"
-#include "vectors.h"
-#include "macros.h"
 
-#endif /* ESCHEME_ESCHEME_H */
+#define ESCM_TYPE_MACRO escm_macro_tget()
+
+#define ESCM_ISMACRO(x) ((x)->type == ESCM_TYPE_MACRO)
+
+typedef struct escm_macro {
+    escm_atom *literals;
+    escm_atom *rules;
+    escm_atom *env;
+} escm_macro;
+
+void escm_macros_init(escm *);
+size_t escm_macro_tget(void);
+
+escm_atom *escm_define_syntax(escm *, escm_atom *);
+escm_atom *escm_syntax_rules(escm *, escm_atom *);
+
+#endif /* ESCHEME_MACROS_H */
