@@ -60,6 +60,18 @@ escm_atom *escm_negative_p(escm *, escm_atom *);
 escm_atom *escm_odd_p(escm *, escm_atom *);
 escm_atom *escm_even_p(escm *, escm_atom *);
 
+escm_atom *escm_quotient(escm *, escm_atom *);
+escm_atom *escm_remainder(escm *, escm_atom *);
+escm_atom *escm_modulo(escm *, escm_atom *);
+
+escm_atom *escm_gcd(escm *, escm_atom *);
+escm_atom *escm_lcm(escm *, escm_atom *);
+
+escm_atom *escm_numerator(escm *, escm_atom *);
+escm_atom *escm_denominator(escm *, escm_atom *);
+
+escm_atom *escm_sqrt(escm *, escm_atom *);
+
 escm_atom *escm_add(escm *, escm_atom *);
 escm_atom *escm_sub(escm *, escm_atom *);
 escm_atom *escm_mul(escm *, escm_atom *);

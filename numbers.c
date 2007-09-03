@@ -67,6 +67,15 @@ escm_numbers_init(escm *e)
     (void) escm_procedure_new(e, "odd?", 1, 1, escm_odd_p);
     (void) escm_procedure_new(e, "even?", 1, 1, escm_even_p);
 
+    (void) escm_procedure_new(e, "quotient", 2, 2, escm_quotient);
+    (void) escm_procedure_new(e, "remainder", 2, 2, escm_remainder);
+    (void) escm_procedure_new(e, "modulo", 2, 2, escm_modulo);
+
+    (void) escm_procedure_new(e, "numerator", 1, 1, escm_numerator);
+    (void) escm_procedure_new(e, "denominator", 1, 1, escm_denominator);
+
+    (void) escm_procedure_new(e, "sqrt", 1, 1, escm_sqrt);
+
     (void) escm_procedure_new(e, "+", 0, -1, escm_add);
     (void) escm_procedure_new(e, "-", 1, -1, escm_sub);
     (void) escm_procedure_new(e, "*", 0, -1, escm_mul);
@@ -145,9 +154,8 @@ escm_zero_p(escm *e, escm_atom *args)
 
     arg = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISNUMBER(arg), arg, e);
-    if (ESCM_NUMBER_ISINT(arg))
-       return (escm_number_ival(arg) == 0) ? e->TRUE : e->FALSE;
-    return (escm_number_rval(arg) == 0) ? e->TRUE : e->FALSE;
+
+    return (escm_number_ival(arg) == 0) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
@@ -194,6 +202,134 @@ escm_even_p(escm *e, escm_atom *args)
     escm_assert(ESCM_NUMBER_ISINT(arg), arg, e);
 
     return (escm_number_ival(arg) % 2 == 0) ? e->TRUE : e->FALSE;
+}
+
+escm_atom *
+escm_quotient(escm *e, escm_atom *args)
+{
+    escm_atom *n, *m;
+
+    n = escm_cons_pop(e, &args);
+    escm_assert(ESCM_NUMBER_ISINT(n), n, e);
+
+    m = escm_cons_pop(e, &args);
+    escm_assert(ESCM_NUMBER_ISINT(m), m, e);
+    if (escm_number_ival(m) == 0) {
+	fprintf(stderr, "quotient undefined with 0.\n");
+	e->err = -1;
+	return NULL;
+    }
+
+    return escm_int_make(e, escm_number_ival(n) / escm_number_ival(m));
+}
+
+escm_atom *
+escm_remainder(escm *e, escm_atom *args)
+{
+    escm_atom *n, *m;
+
+    n = escm_cons_pop(e, &args);
+    escm_assert(ESCM_NUMBER_ISINT(n), n, e);
+
+    m = escm_cons_pop(e, &args);
+    escm_assert(ESCM_NUMBER_ISINT(m), m, e);
+    if (escm_number_ival(m) == 0) {
+	fprintf(stderr, "remainder undefined with 0.\n");
+	e->err = -1;
+	return NULL;
+    }
+
+    return escm_int_make(e, escm_number_ival(n) % escm_number_ival(m));
+}
+
+escm_atom *
+escm_modulo(escm *e, escm_atom *args)
+{
+    escm_atom *n, *m;
+    long res;
+
+    n = escm_cons_pop(e, &args);
+    escm_assert(ESCM_NUMBER_ISINT(n), n, e);
+
+    m = escm_cons_pop(e, &args);
+    escm_assert(ESCM_NUMBER_ISINT(m), m, e);
+    if (escm_number_ival(m) == 0) {
+	fprintf(stderr, "modulo undefined with 0.\n");
+	e->err = -1;
+	return NULL;
+    }
+
+    res = escm_number_ival(n) % escm_number_ival(m);
+    if (res * escm_number_ival(m) < 0)
+	res += escm_number_ival(m);
+    return escm_int_make(e, res);
+}
+
+#if 0
+escm_atom *escm_gcd(escm *, escm_atom *);
+escm_atom *escm_lcm(escm *, escm_atom *);
+#endif
+
+escm_atom *
+escm_numerator(escm *e, escm_atom *args)
+{
+    escm_atom *n;
+    double a;
+
+    n = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISNUMBER(n), n, e);
+
+    if (ESCM_NUMBER_ISINT(n))
+	return n;
+
+    a = escm_number_rval(n);
+    while (!DBL_EQ(a, round(a)))
+	a *= 2;
+
+    return escm_int_make(e, (long) a);
+}
+
+escm_atom *
+escm_denominator(escm *e, escm_atom *args)
+{
+    escm_atom *n;
+    double a;
+    long b;
+
+    n = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISNUMBER(n), n, e);
+
+    if (ESCM_NUMBER_ISINT(n))
+	return n;
+
+    b = 1;
+    a = escm_number_rval(n);
+    while (!DBL_EQ(a, round(a)))
+	a *= 2, b *= 2;
+
+    return escm_int_make(e, b);
+}
+
+escm_atom *
+escm_sqrt(escm *e, escm_atom *args)
+{
+    escm_atom *n;
+    double a;
+
+    n = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISNUMBER(n), n, e);
+
+    if (ESCM_NUMBER_ISINT(n))
+	a = (double) escm_number_ival(n);
+    else
+	a = escm_number_rval(n);
+
+    a = sqrt(a);
+
+    if (DBL_EQ(a, round(a))) /* exact */
+	return escm_int_make(e, (long) a);
+    else
+	return escm_real_make(e, a);
 }
 
 escm_atom *
@@ -538,7 +674,7 @@ number_print(escm *e, escm_number *number, FILE *stream)
     if (number->fixnum)
 	fprintf(stream, "%ld", number->d.ival);
     else
-	fprintf(stream, "%.1f", number->d.rval);
+	fprintf(stream, "%.15f", number->d.rval);
 }
 
 static int

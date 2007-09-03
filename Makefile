@@ -9,6 +9,7 @@ CC ?= gcc
 CFLAGS ?= -g
 FLAGS = -Wall -W -Wmissing-prototypes -std=c99 -pedantic-errors -fPIC $(CFLAGS)
 CPPFLAGS = -D_ISOC99_SOURCE -I. -I../.. -I.. -DESCM_R5RS
+LDFLAGS = -lm
 SOFLAGS = -shared
 
 #all: $(SONAME)
@@ -20,7 +21,7 @@ $(SONAME): $(OBJ)
 	$(CC) $^ $(CFLAGS) $(SOFLAGS) -o $@
 
 $(EXEC): $(OBJ)
-	$(CC) $^ $(CFLAGS) -o $@
+	$(CC) $^ $(CFLAGS) $(LDFLAGS) -o $@
 
 %.o: %.c %.d
 	$(CC) $(FLAGS) $(CPPFLAGS) -c $< -o $@

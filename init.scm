@@ -27,3 +27,11 @@
 (define (cddadr pair) (cdr (cdr (car (cdr pair)))))
 (define (cdddar pair) (cdr (cdr (cdr (car pair)))))
 (define (cddddr pair) (cdr (cdr (cdr (cdr pair)))))
+
+(define (zero? n) (= n 0))
+(define (positive? n) (> n 0))
+(define (negative? n) (< n 0))
+(define (odd? n) (and (integer? n) (not (= 0 (modulo n 2)))))
+(define (even? n) (and (integer? n) (= 0 (modulo n 2))))
+
+(define (abs n) (if (< n 0) (- n) n))
