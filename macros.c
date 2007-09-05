@@ -61,11 +61,11 @@ escm_macros_init(escm *e)
 
     macrotype = escm_type_add(e, t);
 
-    o = escm_procedure_new(e, "expand", 1, 1, escm_expand);
+    o = escm_procedure_new(e, "expand", 1, 1, escm_expand, NULL);
     escm_proc_val(o)->d.c.quoted = 0x1;
-    o = escm_procedure_new(e, "syntax-rules", 1, -1, escm_syntax_rules);
+    o = escm_procedure_new(e, "syntax-rules", 1, -1, escm_syntax_rules, NULL);
     escm_proc_val(o)->d.c.quoted = 0x3;
-    o = escm_procedure_new(e, "define-syntax", 2, 2, escm_define_syntax);
+    o = escm_procedure_new(e, "define-syntax", 2, 2, escm_define_syntax, NULL);
     escm_proc_val(o)->d.c.quoted = 0x3;
 }
 

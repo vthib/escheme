@@ -25,6 +25,7 @@ static void char_print(escm *, char, FILE *);
 static int char_equal(escm *, char, char, unsigned int);
 static int char_parsetest(escm *, int);
 static escm_atom *char_parse(escm *);
+static char input_getchar(escm *, escm_input *);
 
 void
 escm_chars_init(escm *e)
@@ -42,35 +43,40 @@ escm_chars_init(escm *e)
 
     chartype = escm_type_add(e, t);
 
-    (void) escm_procedure_new(e, "char?", 1, 1, escm_char_p);
+    (void) escm_procedure_new(e, "char?", 1, 1, escm_char_p, NULL);
 
-    (void) escm_procedure_new(e, "char=?", 2, 2, escm_char_eq_p);
-    (void) escm_procedure_new(e, "char<?", 2, 2, escm_char_lt_p);
-    (void) escm_procedure_new(e, "char>?", 2, 2, escm_char_gt_p);
-    (void) escm_procedure_new(e, "char<=?", 2, 2, escm_char_le_p);
-    (void) escm_procedure_new(e, "char>=?", 2, 2, escm_char_ge_p);
+    (void) escm_procedure_new(e, "char=?", 2, 2, escm_char_eq_p, NULL);
+    (void) escm_procedure_new(e, "char<?", 2, 2, escm_char_lt_p, NULL);
+    (void) escm_procedure_new(e, "char>?", 2, 2, escm_char_gt_p, NULL);
+    (void) escm_procedure_new(e, "char<=?", 2, 2, escm_char_le_p, NULL);
+    (void) escm_procedure_new(e, "char>=?", 2, 2, escm_char_ge_p, NULL);
 
-    (void) escm_procedure_new(e, "char-ci=?", 2, 2, escm_char_ci_eq_p);
-    (void) escm_procedure_new(e, "char-ci<?", 2, 2, escm_char_ci_lt_p);
-    (void) escm_procedure_new(e, "char-ci>?", 2, 2, escm_char_ci_gt_p);
-    (void) escm_procedure_new(e, "char-ci<=?", 2, 2, escm_char_ci_le_p);
-    (void) escm_procedure_new(e, "char-ci>=?", 2, 2, escm_char_ci_ge_p);
+    (void) escm_procedure_new(e, "char-ci=?", 2, 2, escm_char_ci_eq_p, NULL);
+    (void) escm_procedure_new(e, "char-ci<?", 2, 2, escm_char_ci_lt_p, NULL);
+    (void) escm_procedure_new(e, "char-ci>?", 2, 2, escm_char_ci_gt_p, NULL);
+    (void) escm_procedure_new(e, "char-ci<=?", 2, 2, escm_char_ci_le_p, NULL);
+    (void) escm_procedure_new(e, "char-ci>=?", 2, 2, escm_char_ci_ge_p, NULL);
 
     (void) escm_procedure_new(e, "char-alphabetic?", 1, 1,
-			      escm_char_alphabetic_p);
-    (void) escm_procedure_new(e, "char-numeric?", 1, 1, escm_char_numeric_p);
+			      escm_char_alphabetic_p, NULL);
+    (void) escm_procedure_new(e, "char-numeric?", 1, 1,
+			      escm_char_numeric_p, NULL);
     (void) escm_procedure_new(e, "char-whitespace?", 1, 1,
-			      escm_char_whitespace_p);
+			      escm_char_whitespace_p, NULL);
     (void) escm_procedure_new(e, "char-upper-case?", 1, 1,
-			      escm_char_upper_case_p);
+			      escm_char_upper_case_p, NULL);
     (void) escm_procedure_new(e, "char-lower_case?", 1, 1,
-			      escm_char_lower_case_p);
+			      escm_char_lower_case_p, NULL);
 
-    (void) escm_procedure_new(e, "char->integer", 1, 1, escm_char_to_integer);
-    (void) escm_procedure_new(e, "integer->char", 1, 1, escm_integer_to_char);
+    (void) escm_procedure_new(e, "char->integer", 1, 1,
+			      escm_char_to_integer, NULL);
+    (void) escm_procedure_new(e, "integer->char", 1, 1,
+			      escm_integer_to_char, NULL);
 
-    (void) escm_procedure_new(e, "char-upcase", 1, 1, escm_char_upcase);
-    (void) escm_procedure_new(e, "char-downcase", 1, 1, escm_char_downcase);
+    (void) escm_procedure_new(e, "char-upcase", 1, 1,
+			      escm_char_upcase, NULL);
+    (void) escm_procedure_new(e, "char-downcase", 1, 1,
+			      escm_char_downcase, NULL);
 }
 
 size_t
@@ -307,8 +313,13 @@ escm_integer_to_char(escm *e, escm_atom *args)
     n = escm_cons_pop(e, &args);
     escm_assert(ESCM_NUMBER_ISINT(n), n, e);
 
-    return escm_atom_new(e, ESCM_TYPE_CHAR,
-			 (void *) (escm_intptr) escm_number_ival(n));
+    if (escm_number_ival(n) > 255 || escm_number_ival(n) < 0) {
+	fprintf(stderr, "%ld out of range [0;255].\n", escm_number_ival(n));
+	e->err = -1;
+	return NULL;
+    }
+
+    return escm_char_make(e, (char) escm_number_ival(n));
 }
 
 escm_atom *
@@ -345,8 +356,12 @@ char_print(escm *e, char c, FILE *stream)
 	fprintf(stream, "newline");
     else if (c == ' ')
 	fprintf(stream, "space");
-    else
-	fprintf(stream, "%lc", c);
+    else {
+	if (isprint(c))
+	    fprintf(stream, "%lc", c);
+	else
+	    fprintf(stream, "x%.2hhx", (unsigned char) c);
+    }
 }
 
 static int
@@ -379,9 +394,66 @@ char_parse(escm *e)
     char c;
 
     (void) escm_input_getc(e->input), escm_input_getc(e->input); /* skip #\ */
-    c = escm_input_getchar(e->input);
-    if (c == '\0')
+    c = input_getchar(e, e->input);
+    if (c == '\0' && e->err == -1)
 	return NULL;
 
     return escm_char_make(e, c);
 }
+
+static char
+input_getchar(escm *e, escm_input *input)
+{
+    char *str;
+    char c;
+    size_t len;
+
+    str = escm_input_getstr_fun(input, isalnum);
+    len = strlen(str);
+
+    c = '\0';
+    if (len < 1) {
+	free(str);
+	return escm_input_getc(input);
+    } else if (len == 1)
+	c = *str;
+    else {
+	char *p;
+
+	for (p = str; *p != '\0'; p++)
+	    *p = tolower(*p);
+	if (*str == 'x') {
+	    if (strlen(str) > 3) { /* XXX: unicode support? */
+		fprintf(stderr, "invalid character: #\\%s.\n", str);
+		goto err;
+	    }
+
+	    for (p = str + 1; *p != '\0'; p++) {
+		if (*p < '0' || *p > 'f') {
+		    fprintf(stderr, "invalid character: #\\%s.\n", str);
+		    goto err;
+		}
+		if (*p <= '9')
+		    c <<= 4, c |= (*p - '0');
+		else
+		    c <<= 4, c |= ((*p - 'a') + 10);
+	    }
+	} else if (strcmp(str, "newline") == 0)
+	    c = '\n';
+	else if (strcmp(str, "space") == 0)
+	    c = ' ';
+	else {
+	    escm_input_print(input, "unknown character #\\%s.", str);
+	    goto err;
+	}
+    }
+
+    free(str);
+    return c;
+
+err:
+    free(str);
+    e->err = -1;
+    return '\0';
+}
+

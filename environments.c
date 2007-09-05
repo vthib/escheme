@@ -54,14 +54,14 @@ escm_env_addprimitives(escm *e)
 {
     assert(e != NULL);
 
-    (void) escm_procedure_new(e, "eval", 1, 2, escm_eval);
+    (void) escm_procedure_new(e, "eval", 1, 2, escm_eval, NULL);
 
     (void) escm_procedure_new(e, "scheme-report-environment", 0, 1,
-			      escm_scheme_report_environment);
+			      escm_scheme_report_environment, NULL);
     (void) escm_procedure_new(e, "null-environment", 0, 1,
-			      escm_null_environment);
+			      escm_null_environment, NULL);
     (void) escm_procedure_new(e, "interaction-environment", 0, 0,
-			      escm_interaction_environment);
+			      escm_interaction_environment, NULL);
 }
 
 escm_atom *
@@ -247,11 +247,11 @@ escm_null_environment(escm *e, escm_atom *args)
 
     env = escm_env_new(e, NULL);
     prev = e->env, e->env = env;
-    o = escm_procedure_new(e, "quote", 1, 1, escm_quote);
+    o = escm_procedure_new(e, "quote", 1, 1, escm_quote, NULL);
     escm_proc_val(o)->d.c.quoted = 0x1;
-    o = escm_procedure_new(e, "quasiquote", 1, 1, escm_quasiquote);
+    o = escm_procedure_new(e, "quasiquote", 1, 1, escm_quasiquote, NULL);
     escm_proc_val(o)->d.c.quoted = 0x1;
-    o = escm_procedure_new(e, "lambda", 2, -1, escm_lambda);
+    o = escm_procedure_new(e, "lambda", 2, -1, escm_lambda, NULL);
     escm_proc_val(o)->d.c.quoted = 0x7;
     e->env = prev;
 

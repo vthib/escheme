@@ -44,12 +44,12 @@ escm_procedures_init(escm *e)
 
     (void) escm_type_add(e, t);
 
-    (void) escm_procedure_new(e, "apply", 2, -1, escm_apply);
+    (void) escm_procedure_new(e, "apply", 2, -1, escm_apply, NULL);
 }
 
 escm_atom *
 escm_procedure_new(escm *e, const char *name, unsigned int min, int max,
-		   Escm_Fun_Prim fun)
+		   Escm_Fun_Prim fun, void *data)
 {
     escm_atom *atom;
     escm_procedure *procedure;
@@ -61,6 +61,7 @@ escm_procedure_new(escm *e, const char *name, unsigned int min, int max,
     procedure->type = ESCM_PRIMITIVE;
     procedure->d.c.min = min, procedure->d.c.max = max;
     procedure->d.c.fun = fun;
+    procedure->d.c.data = data;
     procedure->name = xstrdup(name);
 
     atom = escm_atom_new(e, ESCM_TYPE_PROC, procedure);

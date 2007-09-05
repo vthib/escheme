@@ -45,19 +45,23 @@ escm_vectors_init(escm *e)
 
     vectortype = escm_type_add(e, t);
 
-    (void) escm_procedure_new(e, "vector?", 1, 1, escm_char_p);
+    (void) escm_procedure_new(e, "vector?", 1, 1, escm_char_p, NULL);
 
-    (void) escm_procedure_new(e, "vector", 0, -1, escm_prim_vector);
+    (void) escm_procedure_new(e, "vector", 0, -1, escm_prim_vector, NULL);
 #ifdef ESCM_USE_NUMBERS
-    (void) escm_procedure_new(e, "make-vector", 1, 2, escm_make_vector);
-    (void) escm_procedure_new(e, "vector-length", 1, 1, escm_vector_length);
-    (void) escm_procedure_new(e, "vector-ref", 2, 2, escm_vector_ref);
-    (void) escm_procedure_new(e, "vector-set!", 3, 3, escm_vector_set_x);
+    (void) escm_procedure_new(e, "make-vector", 1, 2, escm_make_vector, NULL);
+    (void) escm_procedure_new(e, "vector-length", 1, 1, escm_vector_length,
+			      NULL);
+    (void) escm_procedure_new(e, "vector-ref", 2, 2, escm_vector_ref, NULL);
+    (void) escm_procedure_new(e, "vector-set!", 3, 3, escm_vector_set_x, NULL);
 #endif
-    (void) escm_procedure_new(e, "vector-fill!", 2, 2, escm_vector_fill_x);
+    (void) escm_procedure_new(e, "vector-fill!", 2, 2, escm_vector_fill_x,
+			      NULL);
 
-    (void) escm_procedure_new(e, "vector->list", 1, 1, escm_vector_to_list);
-    (void) escm_procedure_new(e, "list->vector", 1, 1, escm_list_to_vector);
+    (void) escm_procedure_new(e, "vector->list", 1, 1, escm_vector_to_list,
+			      NULL);
+    (void) escm_procedure_new(e, "list->vector", 1, 1, escm_list_to_vector,
+			      NULL);
 }
 
 size_t

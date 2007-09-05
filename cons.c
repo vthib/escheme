@@ -47,36 +47,36 @@ escm_cons_init(escm *e)
 
     e->NIL = escm_atom_new(e, constype, NULL);
 
-    (void) escm_procedure_new(e, "cons", 2, 2, escm_prim_cons);
-    (void) escm_procedure_new(e, "list", 0, -1, escm_list);
+    (void) escm_procedure_new(e, "cons", 2, 2, escm_prim_cons, NULL);
+    (void) escm_procedure_new(e, "list", 0, -1, escm_list, NULL);
 
-    (void) escm_procedure_new(e, "car", 1, 1, escm_car);
-    (void) escm_procedure_new(e, "set-car!", 2, 2, escm_set_car_x);
-    (void) escm_procedure_new(e, "cdr", 1, 1, escm_cdr);
-    (void) escm_procedure_new(e, "set-cdr!", 2, 2, escm_set_cdr_x);
+    (void) escm_procedure_new(e, "car", 1, 1, escm_car, NULL);
+    (void) escm_procedure_new(e, "set-car!", 2, 2, escm_set_car_x, NULL);
+    (void) escm_procedure_new(e, "cdr", 1, 1, escm_cdr, NULL);
+    (void) escm_procedure_new(e, "set-cdr!", 2, 2, escm_set_cdr_x, NULL);
 
-    (void) escm_procedure_new(e, "null?", 1, 1, escm_null_p);
-    (void) escm_procedure_new(e, "pair?", 1, 1, escm_pair_p);
-    (void) escm_procedure_new(e, "list?", 1, 1, escm_list_p);
-
-#ifdef ESCM_USE_NUMBERS
-    (void) escm_procedure_new(e, "length", 1, 1, escm_length);
-#endif
-    (void) escm_procedure_new(e, "append", 2, 2, escm_append);
-    (void) escm_procedure_new(e, "reverse", 1, 1, escm_reverse);
+    (void) escm_procedure_new(e, "null?", 1, 1, escm_null_p, NULL);
+    (void) escm_procedure_new(e, "pair?", 1, 1, escm_pair_p, NULL);
+    (void) escm_procedure_new(e, "list?", 1, 1, escm_list_p, NULL);
 
 #ifdef ESCM_USE_NUMBERS
-    (void) escm_procedure_new(e, "list-tail", 2, 2, escm_list_tail);
-    (void) escm_procedure_new(e, "list-ref", 2, 2, escm_list_ref);
+    (void) escm_procedure_new(e, "length", 1, 1, escm_length, NULL);
+#endif
+    (void) escm_procedure_new(e, "append", 2, 2, escm_append, NULL);
+    (void) escm_procedure_new(e, "reverse", 1, 1, escm_reverse, NULL);
+
+#ifdef ESCM_USE_NUMBERS
+    (void) escm_procedure_new(e, "list-tail", 2, 2, escm_list_tail, NULL);
+    (void) escm_procedure_new(e, "list-ref", 2, 2, escm_list_ref, NULL);
 #endif
 
-    (void) escm_procedure_new(e, "memq", 2, 2, escm_memq);
-    (void) escm_procedure_new(e, "memv", 2, 2, escm_memv);
-    (void) escm_procedure_new(e, "member", 2, 2, escm_member);
+    (void) escm_procedure_new(e, "memq", 2, 2, escm_memq, NULL);
+    (void) escm_procedure_new(e, "memv", 2, 2, escm_memv, NULL);
+    (void) escm_procedure_new(e, "member", 2, 2, escm_member, NULL);
 
-    (void) escm_procedure_new(e, "assq", 2, 2, escm_assq);
-    (void) escm_procedure_new(e, "assv", 2, 2, escm_assv);
-    (void) escm_procedure_new(e, "assoc", 2, 2, escm_assoc);
+    (void) escm_procedure_new(e, "assq", 2, 2, escm_assq, NULL);
+    (void) escm_procedure_new(e, "assv", 2, 2, escm_assv, NULL);
+    (void) escm_procedure_new(e, "assoc", 2, 2, escm_assoc, NULL);
 }
 
 escm_atom *

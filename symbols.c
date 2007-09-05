@@ -45,10 +45,12 @@ escm_symbols_init(escm *e)
 
     symboltype = escm_type_add(e, t);
 
-    (void) escm_procedure_new(e, "symbol?", 1, 1, escm_symbol_p);
+    (void) escm_procedure_new(e, "symbol?", 1, 1, escm_symbol_p, NULL);
 #ifdef ESCM_USE_STRINGS
-    (void) escm_procedure_new(e, "symbol->string", 1, 1, escm_symbol_to_string);
-    (void) escm_procedure_new(e, "string->symbol", 1, 1, escm_string_to_symbol);
+    (void) escm_procedure_new(e, "symbol->string", 1, 1, escm_symbol_to_string,
+			      NULL);
+    (void) escm_procedure_new(e, "string->symbol", 1, 1, escm_string_to_symbol,
+			      NULL);
 #endif
 }
 

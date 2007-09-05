@@ -35,6 +35,8 @@ typedef struct escm_procedure {
 	    int max;
 	    unsigned int quoted;
 
+	    void *data;
+
 	    Escm_Fun_Prim fun;
 	} c;
 	struct {
@@ -51,7 +53,7 @@ typedef struct escm_procedure {
 void escm_procedures_init(escm *);
 
 escm_atom *escm_procedure_new(escm *, const char *, unsigned int, int,
-			     Escm_Fun_Prim);
+			      Escm_Fun_Prim, void *);
 
 escm_atom *escm_procedure_exec(escm *, escm_atom *, escm_atom *, int);
 

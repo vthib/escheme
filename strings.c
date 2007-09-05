@@ -44,43 +44,53 @@ escm_strings_init(escm *e)
 
     stringtype = escm_type_add(e, t);
 
-    (void) escm_procedure_new(e, "string?", 1, 1, escm_string_p);
+    (void) escm_procedure_new(e, "string?", 1, 1, escm_string_p, NULL);
 #ifdef ESCM_USE_CHARACTERS
 # ifdef ESCM_USE_NUMBERS
-    (void) escm_procedure_new(e, "make-string", 1, 2, escm_make_string);
-    (void) escm_procedure_new(e, "string-ref", 2, 2, escm_string_ref);
-    (void) escm_procedure_new(e, "string-set!", 3, 3, escm_string_set_x);
+    (void) escm_procedure_new(e, "make-string", 1, 2, escm_make_string, NULL);
+    (void) escm_procedure_new(e, "string-ref", 2, 2, escm_string_ref, NULL);
+    (void) escm_procedure_new(e, "string-set!", 3, 3, escm_string_set_x, NULL);
 # endif
-    (void) escm_procedure_new(e, "string", 0, -1, escm_prim_string);
+    (void) escm_procedure_new(e, "string", 0, -1, escm_prim_string, NULL);
 #endif /* USE_CHARACTERS */
 
 #ifdef ESCM_USE_NUMBERS
-    (void) escm_procedure_new(e, "string-length", 1, 1, escm_string_length);
+    (void) escm_procedure_new(e, "string-length", 1, 1, escm_string_length,
+			      NULL);
 #endif
 
-    (void) escm_procedure_new(e, "string=?", 2, 2, escm_string_eq_p);
-    (void) escm_procedure_new(e, "string<?", 2, 2, escm_string_lt_p);
-    (void) escm_procedure_new(e, "string>?", 2, 2, escm_string_gt_p);
-    (void) escm_procedure_new(e, "string<=?", 2, 2, escm_string_le_p);
-    (void) escm_procedure_new(e, "string>=?", 2, 2, escm_string_ge_p);
+    (void) escm_procedure_new(e, "string=?", 2, 2, escm_string_eq_p, NULL);
+    (void) escm_procedure_new(e, "string<?", 2, 2, escm_string_lt_p, NULL);
+    (void) escm_procedure_new(e, "string>?", 2, 2, escm_string_gt_p, NULL);
+    (void) escm_procedure_new(e, "string<=?", 2, 2, escm_string_le_p, NULL);
+    (void) escm_procedure_new(e, "string>=?", 2, 2, escm_string_ge_p, NULL);
 
-    (void) escm_procedure_new(e, "string-ci=?", 2, 2, escm_string_ci_eq_p);
-    (void) escm_procedure_new(e, "string-ci<?", 2, 2, escm_string_ci_lt_p);
-    (void) escm_procedure_new(e, "string-ci>?", 2, 2, escm_string_ci_gt_p);
-    (void) escm_procedure_new(e, "string-ci<=?", 2, 2, escm_string_ci_le_p);
-    (void) escm_procedure_new(e, "string-ci>=?", 2, 2, escm_string_ci_ge_p);
+    (void) escm_procedure_new(e, "string-ci=?", 2, 2, escm_string_ci_eq_p,
+			      NULL);
+    (void) escm_procedure_new(e, "string-ci<?", 2, 2, escm_string_ci_lt_p,
+			      NULL);
+    (void) escm_procedure_new(e, "string-ci>?", 2, 2, escm_string_ci_gt_p,
+			      NULL);
+    (void) escm_procedure_new(e, "string-ci<=?", 2, 2, escm_string_ci_le_p,
+			      NULL);
+    (void) escm_procedure_new(e, "string-ci>=?", 2, 2, escm_string_ci_ge_p,
+			      NULL);
 
 #ifdef ESCM_USE_NUMBERS
-    (void) escm_procedure_new(e, "substring", 3, 3, escm_substring);
+    (void) escm_procedure_new(e, "substring", 3, 3, escm_substring, NULL);
 #endif
-    (void) escm_procedure_new(e, "string-append", 0, -1, escm_string_append);
-    (void) escm_procedure_new(e, "string-copy", 1, 1, escm_string_copy);
+    (void) escm_procedure_new(e, "string-append", 0, -1, escm_string_append,
+			      NULL);
+    (void) escm_procedure_new(e, "string-copy", 1, 1, escm_string_copy, NULL);
 #ifdef ESCM_USE_CHARACTERS
-    (void) escm_procedure_new(e, "string-fill!", 2, 2, escm_string_fill_x);
+    (void) escm_procedure_new(e, "string-fill!", 2, 2, escm_string_fill_x,
+			      NULL);
 #endif
 
-    (void) escm_procedure_new(e, "string->list", 1, 1, escm_string_to_list);
-    (void) escm_procedure_new(e, "list->string", 1, 1, escm_list_to_string);
+    (void) escm_procedure_new(e, "string->list", 1, 1, escm_string_to_list,
+			      NULL);
+    (void) escm_procedure_new(e, "list->string", 1, 1, escm_list_to_string,
+			      NULL);
 }
 
 size_t

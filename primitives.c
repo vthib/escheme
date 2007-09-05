@@ -30,48 +30,48 @@ escm_primitives_load(escm *e)
 {
     escm_atom *o;
 
-    o = escm_procedure_new(e, "quote", 1, 1, escm_quote);
+    o = escm_procedure_new(e, "quote", 1, 1, escm_quote, NULL);
     escm_proc_val(o)->d.c.quoted = 0x1;
-    o = escm_procedure_new(e, "quasiquote", 1, 1, escm_quasiquote);
+    o = escm_procedure_new(e, "quasiquote", 1, 1, escm_quasiquote, NULL);
     escm_proc_val(o)->d.c.quoted = 0x1;
 
-    o = escm_procedure_new(e, "lambda", 2, -1, escm_lambda);
+    o = escm_procedure_new(e, "lambda", 2, -1, escm_lambda, NULL);
     escm_proc_val(o)->d.c.quoted = 0x7;
 
-    o = escm_procedure_new(e, "define", 2, 2, escm_define);
+    o = escm_procedure_new(e, "define", 2, 2, escm_define, NULL);
     escm_proc_val(o)->d.c.quoted = 0x3;
-    o = escm_procedure_new(e, "set!", 2, 2, escm_set_x);
+    o = escm_procedure_new(e, "set!", 2, 2, escm_set_x, NULL);
     escm_proc_val(o)->d.c.quoted = 0x1;
 
-    o = escm_procedure_new(e, "let", 2, -1, escm_let);
+    o = escm_procedure_new(e, "let", 2, -1, escm_let, NULL);
     escm_proc_val(o)->d.c.quoted = 0x7;
-    o = escm_procedure_new(e, "let*", 2, -1, escm_let_star);
+    o = escm_procedure_new(e, "let*", 2, -1, escm_let_star, NULL);
     escm_proc_val(o)->d.c.quoted = 0x7;
-    o = escm_procedure_new(e, "letrec", 2, -1, escm_letrec);
+    o = escm_procedure_new(e, "letrec", 2, -1, escm_letrec, NULL);
     escm_proc_val(o)->d.c.quoted = 0x7;
 
-    o = escm_procedure_new(e, "if", 2, 3, escm_if);
+    o = escm_procedure_new(e, "if", 2, 3, escm_if, NULL);
     escm_proc_val(o)->d.c.quoted = 0x7;
-    o = escm_procedure_new(e, "cond", 1, -1, escm_cond);
+    o = escm_procedure_new(e, "cond", 1, -1, escm_cond, NULL);
     escm_proc_val(o)->d.c.quoted = 0x3;
-    o = escm_procedure_new(e, "case", 2, -1, escm_case);
+    o = escm_procedure_new(e, "case", 2, -1, escm_case, NULL);
     escm_proc_val(o)->d.c.quoted = 0x7;
 
-    o = escm_procedure_new(e, "and", 0, -1, escm_and);
+    o = escm_procedure_new(e, "and", 0, -1, escm_and, NULL);
     escm_proc_val(o)->d.c.quoted = 0x1;
-    o = escm_procedure_new(e, "or", 0, -1, escm_or);
+    o = escm_procedure_new(e, "or", 0, -1, escm_or, NULL);
     escm_proc_val(o)->d.c.quoted = 0x1;
 
-    o = escm_procedure_new(e, "begin", 1, -1, escm_begin);
+    o = escm_procedure_new(e, "begin", 1, -1, escm_begin, NULL);
     escm_proc_val(o)->d.c.quoted = 0x3;
-    o = escm_procedure_new(e, "do", 2, -1, escm_do);
+    o = escm_procedure_new(e, "do", 2, -1, escm_do, NULL);
     escm_proc_val(o)->d.c.quoted = 0x7;
 
-    (void) escm_procedure_new(e, "eqv?", 2, 2, escm_eqv_p);
-    (void) escm_procedure_new(e, "eq?", 2, 2, escm_eq_p);
-    (void) escm_procedure_new(e, "equal?", 2, 2, escm_equal_p);
+    (void) escm_procedure_new(e, "eqv?", 2, 2, escm_eqv_p, NULL);
+    (void) escm_procedure_new(e, "eq?", 2, 2, escm_eq_p, NULL);
+    (void) escm_procedure_new(e, "equal?", 2, 2, escm_equal_p, NULL);
 
-    (void) escm_procedure_new(e, "gc", 0, 0, escm_gc);
+    (void) escm_procedure_new(e, "gc", 0, 0, escm_gc, NULL);
 }
 
 escm_atom *

@@ -265,46 +265,6 @@ escm_input_getint(escm_input *file)
 }
 
 /**
- * @brief get a char from the input ("space" is ' ' and "newline" is '\n')
- */
-char
-escm_input_getchar(escm_input *input)
-{
-    char *str;
-    char c;
-    size_t len;
-
-    assert(input != NULL);
-
-    str = escm_input_getstr_fun(input, isalpha);
-    len = strlen(str);
-
-    c = '\0';
-    if (len < 1) {
-	free(str);
-	return escm_input_getc(input);
-    } else if (len == 1)
-	c = *str;
-    else {
-	char *p;
-
-	for (p = str; *p; p++)
-	    *p = tolower(*p);
-	if (strcmp(str, "newline") == 0)
-	    c = '\n';
-	else if (strcmp(str, "space") == 0)
-	    c = ' ';
-	else {
-	    escm_input_print(input, "unknown character #\\%s.", str);
-	    c = '\0';
-	}
-    }
-
-    free(str);
-    return c;
-}
-
-/**
  * @brief rewind the input structure
  */
 void

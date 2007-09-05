@@ -38,9 +38,9 @@ escm_promises_init(escm *e)
 
     promisetype = escm_type_add(e, t);
 
-    a = escm_procedure_new(e, "delay", 1, 1, escm_delay);
+    a = escm_procedure_new(e, "delay", 1, 1, escm_delay, NULL);
     escm_proc_val(a)->d.c.quoted = 0x1;
-    (void) escm_procedure_new(e, "force", 1, 1, escm_force);
+    (void) escm_procedure_new(e, "force", 1, 1, escm_force, NULL);
 }
 
 size_t

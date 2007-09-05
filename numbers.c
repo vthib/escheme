@@ -57,35 +57,35 @@ escm_numbers_init(escm *e)
     }
 #endif
 
-    (void) escm_procedure_new(e, "number?", 1, 1, escm_number_p);
-    (void) escm_procedure_new(e, "integer?", 1, 1, escm_integer_p);
-    (void) escm_procedure_new(e, "real?", 1, 1, escm_real_p);
+    (void) escm_procedure_new(e, "number?", 1, 1, escm_number_p, NULL);
+    (void) escm_procedure_new(e, "integer?", 1, 1, escm_integer_p, NULL);
+    (void) escm_procedure_new(e, "real?", 1, 1, escm_real_p, NULL);
 
-    (void) escm_procedure_new(e, "zero?", 1, 1, escm_zero_p);
-    (void) escm_procedure_new(e, "positive?", 1, 1, escm_positive_p);
-    (void) escm_procedure_new(e, "negative?", 1, 1, escm_negative_p);
-    (void) escm_procedure_new(e, "odd?", 1, 1, escm_odd_p);
-    (void) escm_procedure_new(e, "even?", 1, 1, escm_even_p);
+    (void) escm_procedure_new(e, "zero?", 1, 1, escm_zero_p, NULL);
+    (void) escm_procedure_new(e, "positive?", 1, 1, escm_positive_p, NULL);
+    (void) escm_procedure_new(e, "negative?", 1, 1, escm_negative_p, NULL);
+    (void) escm_procedure_new(e, "odd?", 1, 1, escm_odd_p, NULL);
+    (void) escm_procedure_new(e, "even?", 1, 1, escm_even_p, NULL);
 
-    (void) escm_procedure_new(e, "quotient", 2, 2, escm_quotient);
-    (void) escm_procedure_new(e, "remainder", 2, 2, escm_remainder);
-    (void) escm_procedure_new(e, "modulo", 2, 2, escm_modulo);
+    (void) escm_procedure_new(e, "quotient", 2, 2, escm_quotient, NULL);
+    (void) escm_procedure_new(e, "remainder", 2, 2, escm_remainder, NULL);
+    (void) escm_procedure_new(e, "modulo", 2, 2, escm_modulo, NULL);
 
-    (void) escm_procedure_new(e, "numerator", 1, 1, escm_numerator);
-    (void) escm_procedure_new(e, "denominator", 1, 1, escm_denominator);
+    (void) escm_procedure_new(e, "numerator", 1, 1, escm_numerator, NULL);
+    (void) escm_procedure_new(e, "denominator", 1, 1, escm_denominator, NULL);
 
-    (void) escm_procedure_new(e, "sqrt", 1, 1, escm_sqrt);
+    (void) escm_procedure_new(e, "sqrt", 1, 1, escm_sqrt, NULL);
 
-    (void) escm_procedure_new(e, "+", 0, -1, escm_add);
-    (void) escm_procedure_new(e, "-", 1, -1, escm_sub);
-    (void) escm_procedure_new(e, "*", 0, -1, escm_mul);
-    (void) escm_procedure_new(e, "/", 1, -1, escm_div);
+    (void) escm_procedure_new(e, "+", 0, -1, escm_add, NULL);
+    (void) escm_procedure_new(e, "-", 1, -1, escm_sub, NULL);
+    (void) escm_procedure_new(e, "*", 0, -1, escm_mul, NULL);
+    (void) escm_procedure_new(e, "/", 1, -1, escm_div, NULL);
 
-    (void) escm_procedure_new(e, "=", 2, -1, escm_eq);
-    (void) escm_procedure_new(e, "<", 2, -1, escm_lt);
-    (void) escm_procedure_new(e, ">", 2, -1, escm_gt);
-    (void) escm_procedure_new(e, "<=", 2, -1, escm_le);
-    (void) escm_procedure_new(e, ">=", 2, -1, escm_ge);
+    (void) escm_procedure_new(e, "=", 2, -1, escm_eq, NULL);
+    (void) escm_procedure_new(e, "<", 2, -1, escm_lt, NULL);
+    (void) escm_procedure_new(e, ">", 2, -1, escm_gt, NULL);
+    (void) escm_procedure_new(e, "<=", 2, -1, escm_le, NULL);
+    (void) escm_procedure_new(e, ">=", 2, -1, escm_ge, NULL);
 }
 
 size_t
