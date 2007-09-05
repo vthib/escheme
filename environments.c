@@ -103,6 +103,30 @@ escm_env_get(escm_atom *atom, const char *name)
     }
 }
 
+escm_atom *
+escm_env_getlocal(escm_atom *atom, const char *name)
+{
+    escm_env *env;
+
+    assert(atom != NULL);
+    assert(name != NULL);
+
+    env = (escm_env *) atom->ptr;
+
+    if (!env->prev)
+	return NULL;
+    else {
+	struct escm_node *n;
+
+	for (n = env->d.lst.first; n; n = n->next) {
+	    if (0 == strcmp(n->name, name))
+		return n->atom;
+	}
+
+	return escm_env_get(env->prev, name);
+    }
+}
+
 void
 escm_env_set(escm_atom *atomenv, const char *name, escm_atom *atom)
 {

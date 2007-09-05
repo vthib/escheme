@@ -37,6 +37,7 @@ void escm_env_addprimitives(escm *);
 escm_atom *escm_env_new(escm *, escm_atom *);
 
 escm_atom *escm_env_get(escm_atom *, const char *);
+escm_atom *escm_env_getlocal(escm_atom *, const char *);
 void escm_env_set(escm_atom *, const char *, escm_atom *);
 
 escm_atom *escm_env_enter(escm *, escm_atom *);

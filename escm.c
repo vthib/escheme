@@ -268,9 +268,8 @@ escm_ctx_put(escm *e, escm_atom *atom)
     escm_atom *new;
 
     assert(e != NULL);
-    assert(atom != NULL);
 
-    if (!e->ctx)
+    if (!e->ctx || !atom)
 	return;
 
     if (e->ctx->dotted) {
@@ -386,6 +385,9 @@ escm_gc_collect(escm *e)
 
     escm_atom_mark(e, e->env);
     escm_atom_mark(e, e->NIL);
+
+    escm_atom_mark(e, e->TRUE);
+    escm_atom_mark(e, e->FALSE);
 
     /* then we separate blacks and whites */
     white = NULL, black = NULL;

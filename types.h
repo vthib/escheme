@@ -37,14 +37,17 @@
 # define ESCM_CIRCULAR_LIST 0 /* default */
 #endif
 
+#if !defined ESCM_USE_BOOLEANS
+# if !defined ESCM_USE_NUMBERS
+#  error "At least one of the boolean and number types need to be activated."
+# else
+#  define ESCM_INTBOOL
+# endif
+#endif
+
 #if defined ESCM_INTBOOL && defined ESCM_USE_BOOLEANS
 # undef ESCM_INTBOOL /* use boolean instead of integers */
 #endif
-
-#if !defined ESCM_USE_BOOLEANS && !defined ESCM_INTBOOL
-# error "At least one of the boolean and number types need to be activated."
-#endif
-
 
 /* typedefs */
 

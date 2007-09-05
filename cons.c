@@ -117,6 +117,22 @@ escm_cons_pop(escm *e, escm_atom **cons)
     return o;
 }
 
+int
+escm_cons_isin(escm *e, escm_atom *cons, escm_atom *elem)
+{
+    escm_atom *a;
+
+    if (!ESCM_ISCONS(cons))
+	return 0;
+
+    for (a = escm_cons_pop(e, &cons); a; a = escm_cons_pop(e, &cons)) {
+	if (escm_atom_equal(e, a, elem, 2))
+	    return 1;
+    }
+
+    return 0;
+}
+
 escm_atom *
 escm_prim_cons(escm *e, escm_atom *args)
 {
@@ -615,16 +631,26 @@ cons_eval(escm *e, escm_cons *cons)
     if (!atomfun)
 	return NULL;
 
-    if (ESCM_TYPE_PROC != atomfun->type) {
-    noexec:
-	escm_atom_display(e, atomfun, stderr);
-	fprintf(stderr, ": object isn't applicable.\n");
-	return NULL;
+#ifdef ESCM_USE_MACROS
+    if (ESCM_ISMACRO(atomfun)) {
+	/* cons_make is very ugly here */
+	ret = escm_macro_expand(e, atomfun, escm_cons_make(e, cons->car,
+							   cons->cdr));
+	if (ret)
+	    return escm_atom_eval(e, ret);
     }
+#endif
+    if (!ESCM_ISPROC(atomfun))
+	goto noexec;
 
     escm_gc_gard(e, atomfun);
     ret = escm_procedure_exec(e, atomfun, cons->cdr, 1);
     escm_gc_ungard(e, atomfun);
 
     return ret;
+
+noexec:
+    escm_atom_display(e, atomfun, stderr);
+    fprintf(stderr, ": object isn't applicable.\n");
+    return NULL;
 }

@@ -503,7 +503,7 @@ escm_and(escm *e, escm_atom *args)
     ret = NULL; /* make splint happy */
     while (c) {
 	ret = escm_atom_eval(e, c);
-	if (!ret && !ESCM_ISTRUE(ret))
+	if (!ret || !ESCM_ISTRUE(ret))
 	    return ret;
 
 	c = escm_cons_pop(e, &args);

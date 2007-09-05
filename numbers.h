@@ -32,7 +32,7 @@
 # define ESCM_ISTRUE(x) (!x || !ESCM_ISNUMBER(x) || \
 			 (((escm_number *) (x)->ptr)->fixnum == 1) ? \
 			 escm_number_ival(x) != 0 : \
-			 DBL_EQ(0., ESCM_NUMBER_RVAL(x)))
+			 DBL_EQ(0., escm_number_rval(x)))
 #endif
 
 typedef struct escm_number {
