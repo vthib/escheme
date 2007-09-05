@@ -444,9 +444,8 @@ escm_memv(escm *e, escm_atom *args)
     list = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCONS(list), list, e);
 
-    for (c = list; c; c = ESCM_ISCONS(escm_cons_val(c)->cdr) ?
-	     escm_cons_val(c)->cdr : NULL) {
-	if (escm_atom_equal(e, escm_cons_val(c)->car, elem, 1))
+    for (c = escm_cons_pop(e, &list); c; c = escm_cons_pop(e, &list)) {
+	if (escm_atom_equal(e, c, elem, 1))
 	    return c;
     }
 
@@ -628,8 +627,14 @@ cons_eval(escm *e, escm_cons *cons)
     }
 
     atomfun = escm_atom_eval(e, cons->car);
-    if (!atomfun)
+    if (e->err == -1)
 	return NULL;
+    if (!atomfun) {
+	escm_atom_display(e, cons->car, stderr);
+	fprintf(stderr, ": expression do not yield an applicable value.\n");
+	e->err = -1;
+	return NULL;
+    }
 
 #ifdef ESCM_USE_MACROS
     if (ESCM_ISMACRO(atomfun)) {

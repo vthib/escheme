@@ -29,6 +29,7 @@
 
 #define escm_cons_val(x) ((escm_cons *) (x)->ptr)
 #define escm_cons_car(x) (escm_cons_val(x)->car)
+#define escm_cons_cdr(x) (escm_cons_val(x)->cdr)
 
 typedef struct escm_cons {
     escm_atom *car;

@@ -61,6 +61,8 @@ escm_macros_init(escm *e)
 
     macrotype = escm_type_add(e, t);
 
+    o = escm_procedure_new(e, "expand", 1, 1, escm_expand);
+    escm_proc_val(o)->d.c.quoted = 0x1;
     o = escm_procedure_new(e, "syntax-rules", 1, -1, escm_syntax_rules);
     escm_proc_val(o)->d.c.quoted = 0x3;
     o = escm_procedure_new(e, "define-syntax", 2, 2, escm_define_syntax);
@@ -108,6 +110,35 @@ escm_macro_expand(escm *e, escm_atom *macro, escm_atom *cont)
     fprintf(stderr, ".\n");
     e->err = -1;
     return NULL;
+}
+
+escm_atom *
+escm_expand(escm *e, escm_atom *args)
+{
+    escm_atom *arg;
+    escm_atom *atom, *macro;
+
+    arg = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISCONS(arg), arg, e);
+
+    atom = escm_cons_car(arg);
+    macro = escm_atom_eval(e, atom);
+    if (e->err == -1)
+	return NULL;
+    if (!macro) {
+	escm_atom_display(e, atom, stderr);
+	fprintf(stderr, ": expression do not yield an applicable value.\n");
+	e->err = -1;
+	return NULL;
+    }
+    if (!ESCM_ISMACRO(macro)) {
+	escm_atom_display(e, macro, stderr);
+	fprintf(stderr, ": not a macro.\n");
+	e->err = -1;
+	return NULL;
+    }
+
+    return escm_macro_expand(e, macro, arg);
 }
 
 escm_atom *
@@ -290,9 +321,11 @@ expand(escm *e, escm_macro *m, escm_atom *tpl, escm_match *bind, int abort)
 			escm_ctx_put_splicing(e, match->val.fst);
 		    else {
 			escm_ctx_put(e, escm_cons_car(match->val.fst));
-			match->val.fst = escm_cons_val(match->val.fst)->cdr;
-			if (match->val.fst == e->NIL)
-			    match->val.fst = NULL;
+			if (abort) {
+			    match->val.fst = escm_cons_val(match->val.fst)->cdr;
+			    if (match->val.fst == e->NIL)
+				match->val.fst = NULL;
+			}
 		    }
 		} else {
 		    if (!tpl || !ESCM_ISSYM(escm_cons_car(tpl)) ||
