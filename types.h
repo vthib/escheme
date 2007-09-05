@@ -27,6 +27,7 @@
 # define ESCM_USE_NUMBERS
 # define ESCM_USE_PROMISES
 # define ESCM_USE_MACROS
+# define ESCM_USE_PORTS
 # define ESCM_USE_MATH
 
 # define ESCM_CIRCULAR_LIST 1 /* 0: no handle, 1: just in list? and length

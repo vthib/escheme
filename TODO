@@ -1,2 +1,15 @@
  - Load "init.scm"
  - Finish all primitives
+ - Finish the basic number implementation
+ - Finish the Macro implementation
+ - Verify compatibility with various scheme libraries
+ - Try to implement some SRFIs
+ - Manage circular lists in printing
+ - Add configurables things in runtime, ie (set-case-sensitive! #t) or
+ (set-brackets-parens! #t)
+
+Maybe:
+
+ - Correct the bug with the "do" macro
+ - Create a new good number type with rationals, integers, reals and complex.
+ - Create a new good number type with integers and reals unboxed.

@@ -78,6 +78,8 @@ struct escm {
     escm_atom *TRUE; /* the true boolean or a non null integer */
     escm_atom *FALSE; /* the false boolean or a null integer */
 
+    escm_atom *curobj; /* the object we currently are treating */
+
     escm_type **types;
     size_t ntypes;
 

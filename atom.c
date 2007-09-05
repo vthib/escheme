@@ -79,24 +79,33 @@ escm_atom_mark(escm *e, escm_atom *atom)
 escm_atom *
 escm_atom_eval(escm *e, escm_atom *atom)
 {
+    escm_atom *ret, *old;
+
     assert(e != NULL);
     if (!atom)
 	return NULL;
 
+    old = e->curobj, e->curobj = atom;
     if (e->types[atom->type]->feval)
-	return e->types[atom->type]->feval(e, atom->ptr);
+	ret = e->types[atom->type]->feval(e, atom->ptr);
     else
-	return atom;
+	ret = atom;
+    e->curobj = old;
+    return ret;
 }
 
 void
 escm_atom_display(escm *e, escm_atom *atom, FILE *stream)
 {
+    escm_atom *old;
+
     assert(e != NULL);
     if (!atom)
 	return;
 
+    old = e->curobj, e->curobj = atom;
     e->types[atom->type]->fprint(e, atom->ptr, stream);
+    e->curobj = old;
 }
 
 int

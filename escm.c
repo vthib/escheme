@@ -76,7 +76,9 @@ escm_new(void)
 #ifdef ESCM_USE_PROMISES
     escm_promises_init(e);
 #endif
-
+#ifdef ESCM_USE_PORTS
+    escm_ports_init(e);
+#endif
 #ifdef ESCM_USE_MACROS
     escm_macros_init(e);
 #endif

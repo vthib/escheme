@@ -285,13 +285,16 @@ escm_length(escm *e, escm_atom *args)
 	     end = c) {
 	if (!ESCM_ISCONS(c->cdr)
 #if ESCM_CIRCULAR_LIST >= 1
-	    || c->cdr->marked == 1
+	    || (c->cdr->marked == 1)
 #endif
 	    ) {
 	    fprintf(stderr, "Can't compute the length of a non proper "
 		    "list.\n");
 	    e->err = -1;
 	    free(n);
+#if ESCM_CIRCULAR_LIST >= 1
+	    break;
+#endif
 	    return NULL;
 	}
 #if ESCM_CIRCULAR_LIST >= 1
@@ -304,6 +307,9 @@ escm_length(escm *e, escm_atom *args)
     arg->marked = 0;
     for (c = escm_cons_val(arg); c != end; c = escm_cons_next(c))
 	c->cdr->marked = 0;
+
+    if (end != NULL)
+	return NULL;
 #endif
 
     return escm_atom_new(e, ESCM_TYPE_NUMBER, n);
@@ -538,7 +544,40 @@ cons_mark(escm *e, escm_cons *cons)
 static void
 cons_print(escm *e, escm_cons *cons, FILE *stream)
 {
+#if ESCM_CIRCULAR_LIST == 2
+    escm_cons *c, *end;
+    size_t i;
+
     fprintf(stream, "(");
+
+    e->curobj->marked = 1; /* mark all atoms to check circular lists */
+    for (c = cons, end = c; c; c = escm_cons_next(c), end = c) {
+	escm_atom_display(e, c->car, stream);
+	if (!ESCM_ISCONS(c->cdr)) {
+	    fprintf(stream, " . ");
+	    escm_atom_display(e, c->cdr, stream);
+	    break;
+	} else if (c->cdr->marked == 1) {
+	    fprintf(stream, " #");
+	    break;
+	} else if (c->cdr != e->NIL)
+	    fprintf(stream, " ");
+	c->cdr->marked = 1;
+    }
+
+    e->curobj->marked = 0;
+    if (cons == end)
+	fprintf(stream, "0");
+    else {
+	for (i = 1, c = cons; c != end; c = escm_cons_next(c), i++) {
+	    if (end && ESCM_ISCONS(c->cdr) && escm_cons_val(c->cdr) == end)
+		fprintf(stream, "%ld", i);
+	    c->cdr->marked = 0;
+	}
+    }
+#else
+    fprintf(stream, "(");
+
     for (; cons != NULL; cons = escm_cons_next(cons)) {
 	escm_atom_display(e, cons->car, stream);
 	if (!ESCM_ISCONS(cons->cdr)) {
@@ -548,6 +587,7 @@ cons_print(escm *e, escm_cons *cons, FILE *stream)
 	} else if (cons->cdr != e->NIL)
 	    fprintf(stream, " ");
     }
+#endif
     fprintf(stream, ")");
 }
 
@@ -580,7 +620,11 @@ cons_parsetest(escm *e, int c)
 {
     (void) e;
 
+#ifdef ESCM_BRACKETS_PARENS
+    return (c == '(' || c == '[');
+#else
     return (c == '(');
+#endif
 }
 
 static escm_atom *
@@ -596,7 +640,11 @@ cons_parse(escm *e)
     qsave = e->quiet, e->quiet = 1;
     escm_ctx_enter(e);
 
+#ifdef ESCM_BRACKETS_PARENS
+    while (e->err != ')' && e->err != ']') {
+#else
     while (e->err != ')') {
+#endif
 	if (e->err != 0) {
 	    if (e->err > 0)
 		escm_input_print(e->input, "unknown character `%c'.", e->err);

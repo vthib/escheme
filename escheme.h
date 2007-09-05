@@ -35,5 +35,6 @@
 #include "promises.h"
 #include "vectors.h"
 #include "macros.h"
+#include "ports.h"
 
 #endif /* ESCHEME_ESCHEME_H */
