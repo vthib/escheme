@@ -311,7 +311,7 @@ escm_integer_to_char(escm *e, escm_atom *args)
     escm_atom *n;
 
     n = escm_cons_pop(e, &args);
-    escm_assert(ESCM_NUMBER_ISINT(n), n, e);
+    escm_assert(ESCM_ISINT(n), n, e);
 
     if (escm_number_ival(n) > 255 || escm_number_ival(n) < 0) {
 	fprintf(stderr, "%ld out of range [0;255].\n", escm_number_ival(n));

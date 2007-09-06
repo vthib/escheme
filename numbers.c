@@ -26,6 +26,7 @@ static void number_print(escm *, escm_number *, FILE *);
 static int number_equal(escm *, escm_number *, escm_number *, unsigned int);
 static int number_parsetest(escm *, int);
 static escm_atom *number_parse(escm *);
+static long pgcd(long, long);
 
 void
 escm_numbers_init(escm *e)
@@ -70,6 +71,9 @@ escm_numbers_init(escm *e)
     (void) escm_procedure_new(e, "quotient", 2, 2, escm_quotient, NULL);
     (void) escm_procedure_new(e, "remainder", 2, 2, escm_remainder, NULL);
     (void) escm_procedure_new(e, "modulo", 2, 2, escm_modulo, NULL);
+
+    (void) escm_procedure_new(e, "gcd", 0, -1, escm_gcd, NULL);
+    (void) escm_procedure_new(e, "lcm", 0, -1, escm_lcm, NULL);
 
     (void) escm_procedure_new(e, "numerator", 1, 1, escm_numerator, NULL);
     (void) escm_procedure_new(e, "denominator", 1, 1, escm_denominator, NULL);
@@ -165,7 +169,7 @@ escm_positive_p(escm *e, escm_atom *args)
 
     arg = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISNUMBER(arg), arg, e);
-    if (ESCM_NUMBER_ISINT(arg))
+    if (ESCM_ISINT(arg))
        return (escm_number_ival(arg) > 0) ? e->TRUE : e->FALSE;
     return (DBL_GT(escm_number_rval(arg), 0.)) ? e->TRUE : e->FALSE;
 }
@@ -177,7 +181,7 @@ escm_negative_p(escm *e, escm_atom *args)
 
     arg = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISNUMBER(arg), arg, e);
-    if (ESCM_NUMBER_ISINT(arg))
+    if (ESCM_ISINT(arg))
        return (escm_number_ival(arg) < 0) ? e->TRUE : e->FALSE;
     return (DBL_LT(escm_number_rval(arg), 0.)) ? e->TRUE : e->FALSE;
 }
@@ -188,7 +192,7 @@ escm_odd_p(escm *e, escm_atom *args)
     escm_atom *arg;
 
     arg = escm_cons_pop(e, &args);
-    escm_assert(ESCM_NUMBER_ISINT(arg), arg, e);
+    escm_assert(ESCM_ISINT(arg), arg, e);
 
     return (escm_number_ival(arg) % 2 == 1) ? e->TRUE : e->FALSE;
 }
@@ -199,7 +203,7 @@ escm_even_p(escm *e, escm_atom *args)
     escm_atom *arg;
 
     arg = escm_cons_pop(e, &args);
-    escm_assert(ESCM_NUMBER_ISINT(arg), arg, e);
+    escm_assert(ESCM_ISINT(arg), arg, e);
 
     return (escm_number_ival(arg) % 2 == 0) ? e->TRUE : e->FALSE;
 }
@@ -210,10 +214,10 @@ escm_quotient(escm *e, escm_atom *args)
     escm_atom *n, *m;
 
     n = escm_cons_pop(e, &args);
-    escm_assert(ESCM_NUMBER_ISINT(n), n, e);
+    escm_assert(ESCM_ISINT(n), n, e);
 
     m = escm_cons_pop(e, &args);
-    escm_assert(ESCM_NUMBER_ISINT(m), m, e);
+    escm_assert(ESCM_ISINT(m), m, e);
     if (escm_number_ival(m) == 0) {
 	fprintf(stderr, "quotient undefined with 0.\n");
 	e->err = -1;
@@ -229,10 +233,10 @@ escm_remainder(escm *e, escm_atom *args)
     escm_atom *n, *m;
 
     n = escm_cons_pop(e, &args);
-    escm_assert(ESCM_NUMBER_ISINT(n), n, e);
+    escm_assert(ESCM_ISINT(n), n, e);
 
     m = escm_cons_pop(e, &args);
-    escm_assert(ESCM_NUMBER_ISINT(m), m, e);
+    escm_assert(ESCM_ISINT(m), m, e);
     if (escm_number_ival(m) == 0) {
 	fprintf(stderr, "remainder undefined with 0.\n");
 	e->err = -1;
@@ -249,10 +253,10 @@ escm_modulo(escm *e, escm_atom *args)
     long res;
 
     n = escm_cons_pop(e, &args);
-    escm_assert(ESCM_NUMBER_ISINT(n), n, e);
+    escm_assert(ESCM_ISINT(n), n, e);
 
     m = escm_cons_pop(e, &args);
-    escm_assert(ESCM_NUMBER_ISINT(m), m, e);
+    escm_assert(ESCM_ISINT(m), m, e);
     if (escm_number_ival(m) == 0) {
 	fprintf(stderr, "modulo undefined with 0.\n");
 	e->err = -1;
@@ -265,10 +269,72 @@ escm_modulo(escm *e, escm_atom *args)
     return escm_int_make(e, res);
 }
 
-#if 0
-escm_atom *escm_gcd(escm *, escm_atom *);
-escm_atom *escm_lcm(escm *, escm_atom *);
-#endif
+escm_atom *
+escm_gcd(escm *e, escm_atom *args)
+{
+    escm_atom *n1, *n2;
+    long a, b;
+
+    n1 = escm_cons_pop(e, &args);
+    if (!n1)
+	return escm_int_make(e, 0);
+    escm_assert(ESCM_ISINT(n1), n1, e);
+    a = escm_number_ival(n1);
+
+    n2 = escm_cons_pop(e, &args);
+    if (!n2)
+	return escm_int_make(e, escm_number_ival(n1));
+    escm_assert(ESCM_ISINT(n2), n2, e);
+    b = escm_number_ival(n2);
+    for (;;) {
+	if (b == 0)
+	    return escm_int_make(e, a);
+	if (a == 0)
+	    return escm_int_make(e, b);
+
+	a = pgcd(a, b);
+
+	n2 = escm_cons_pop(e, &args);
+	if (!n2)
+	    return escm_int_make(e, a);
+	escm_assert(ESCM_ISINT(n2), n2, e);
+	b = escm_number_ival(n2);
+    };
+
+    return NULL;
+}
+
+escm_atom *
+escm_lcm(escm *e, escm_atom *args)
+{
+    escm_atom *n1, *n2;
+    long a, b, c;
+
+    n1 = escm_cons_pop(e, &args);
+    if (!n1)
+	return escm_int_make(e, 1);
+    escm_assert(ESCM_ISINT(n1), n1, e);
+    a = escm_number_ival(n1);
+
+    n2 = escm_cons_pop(e, &args);
+    if (!n2)
+	return escm_int_make(e, escm_number_ival(n1));
+    escm_assert(ESCM_ISINT(n2), n2, e);
+    b = escm_number_ival(n2);
+    for (;;) {
+	c = pgcd(a, b);
+
+	a = ABS(a * b) / c;
+
+	n2 = escm_cons_pop(e, &args);
+	if (!n2)
+	    return escm_int_make(e, a);
+	escm_assert(ESCM_ISINT(n2), n2, e);
+	b = escm_number_ival(n2);
+    };
+
+    return NULL;
+}
 
 escm_atom *
 escm_numerator(escm *e, escm_atom *args)
@@ -279,7 +345,7 @@ escm_numerator(escm *e, escm_atom *args)
     n = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISNUMBER(n), n, e);
 
-    if (ESCM_NUMBER_ISINT(n))
+    if (ESCM_ISINT(n))
 	return n;
 
     a = escm_number_rval(n);
@@ -299,7 +365,7 @@ escm_denominator(escm *e, escm_atom *args)
     n = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISNUMBER(n), n, e);
 
-    if (ESCM_NUMBER_ISINT(n))
+    if (ESCM_ISINT(n))
 	return n;
 
     b = 1;
@@ -319,7 +385,7 @@ escm_sqrt(escm *e, escm_atom *args)
     n = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISNUMBER(n), n, e);
 
-    if (ESCM_NUMBER_ISINT(n))
+    if (ESCM_ISINT(n))
 	a = (double) escm_number_ival(n);
     else
 	a = escm_number_rval(n);
@@ -792,3 +858,26 @@ number_parse(escm *e)
     free(sym);
     return atom;
 }
+
+static long
+pgcd(long a, long b)
+{
+    long c;
+
+    if (b == 0)
+	return a;
+    if (b < 0)
+	b = -b;
+    if (a == 0)
+	return b;
+    if (a < 0)
+	a = -a;
+
+    do {
+	c = a % b;
+	a = b, b = c;
+    } while (c != 0);
+
+    return a;
+}
+

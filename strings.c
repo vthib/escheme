@@ -128,7 +128,7 @@ escm_make_string(escm *e, escm_atom *args)
     size_t k;
 
     length = escm_cons_pop(e, &args);
-    escm_assert(ESCM_NUMBER_ISINT(length) && escm_number_ival(length) >= 0,
+    escm_assert(ESCM_ISINT(length) && escm_number_ival(length) >= 0,
 		length, e);
     k = (size_t) escm_number_ival(length);
 
@@ -198,7 +198,7 @@ escm_string_ref(escm *e, escm_atom *args)
     escm_assert(ESCM_ISSTR(str), str, e);
 
     k = escm_cons_pop(e, &args);
-    escm_assert(ESCM_NUMBER_ISINT(k), k, e);
+    escm_assert(ESCM_ISINT(k), k, e);
     i = escm_number_ival(k);
     escm_assert(i >= 0, k, e);
 
@@ -221,7 +221,7 @@ escm_string_set_x(escm *e, escm_atom *args)
     escm_assert(ESCM_ISSTR(str), str, e);
 
     k = escm_cons_pop(e, &args);
-    escm_assert(ESCM_NUMBER_ISINT(k), k, e);
+    escm_assert(ESCM_ISINT(k), k, e);
     i = escm_number_ival(k);
     escm_assert(i >= 0, k, e);
 
@@ -438,7 +438,7 @@ escm_substring(escm *e, escm_atom *args)
     escm_assert(ESCM_ISSTR(str), str, e);
 
     a = escm_cons_pop(e, &args);
-    escm_assert(ESCM_NUMBER_ISINT(a), a, e);
+    escm_assert(ESCM_ISINT(a), a, e);
     start = escm_number_ival(a);
     if (start < 0 || (size_t) start > escm_str_len(str)) {
 	fprintf(stderr, "index %ld out of range.\n", start);
@@ -447,7 +447,7 @@ escm_substring(escm *e, escm_atom *args)
     }
 
     a = escm_cons_pop(e, &args);
-    escm_assert(ESCM_NUMBER_ISINT(a), a, e);
+    escm_assert(ESCM_ISINT(a), a, e);
     end = escm_number_ival(a);
     if (end < 0 || (size_t) end > escm_str_len(str) || end < start) {
 	fprintf(stderr, "index %ld out of range.\n", end);

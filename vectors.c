@@ -114,7 +114,7 @@ escm_make_vector(escm *e, escm_atom *args)
     escm_atom **vec;
 
     k = escm_cons_pop(e, &args);
-    escm_assert(ESCM_NUMBER_ISINT(k) && escm_number_ival(k) >= 0, k, e);
+    escm_assert(ESCM_ISINT(k) && escm_number_ival(k) >= 0, k, e);
     fill = escm_cons_pop(e, &args);
 
     vec = xcalloc((size_t) escm_number_ival(k), sizeof *vec);
@@ -147,7 +147,7 @@ escm_vector_ref(escm *e, escm_atom *args)
     v = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISVECTOR(v), v, e);
     k = escm_cons_pop(e, &args);
-    escm_assert(ESCM_NUMBER_ISINT(k) && escm_number_ival(k) >= 0, k, e);
+    escm_assert(ESCM_ISINT(k) && escm_number_ival(k) >= 0, k, e);
 
     if ((size_t) escm_number_ival(k) >= escm_vector_len(v)) {
 	fprintf(stderr, "index %ld out of range.\n", escm_number_ival(k));
@@ -166,7 +166,7 @@ escm_vector_set_x(escm *e, escm_atom *args)
     v = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISVECTOR(v), v, e);
     k = escm_cons_pop(e, &args);
-    escm_assert(ESCM_NUMBER_ISINT(k) && escm_number_ival(k) >= 0, k, e);
+    escm_assert(ESCM_ISINT(k) && escm_number_ival(k) >= 0, k, e);
 
     if ((size_t) escm_number_ival(k) >= escm_vector_len(v)) {
 	fprintf(stderr, "index %ld out of range.\n", escm_number_ival(k));

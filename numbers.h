@@ -22,9 +22,9 @@
 #define ESCM_TYPE_NUMBER escm_number_tget()
 
 #define ESCM_ISNUMBER(x) ((x)->type == ESCM_TYPE_NUMBER)
-
-#define ESCM_NUMBER_ISINT(x) (ESCM_ISNUMBER(x) && \
+#define ESCM_ISINT(x) (ESCM_ISNUMBER(x) && \
 			      ((escm_number *) (x)->ptr)->fixnum == 1)
+
 #define escm_number_ival(x) (((escm_number *) (x)->ptr)->d.ival)
 #define escm_number_rval(x) (((escm_number *) (x)->ptr)->d.rval)
 

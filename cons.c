@@ -376,7 +376,7 @@ escm_list_tail(escm *e, escm_atom *args)
     escm_assert(ESCM_ISCONS(list), list, e);
 
     atom = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISNUMBER(atom) && ESCM_NUMBER_ISINT(atom), atom, e);
+    escm_assert(ESCM_ISNUMBER(atom) && ESCM_ISINT(atom), atom, e);
 
     k = escm_number_ival(atom);
     escm_assert(k >= 0, atom, e);

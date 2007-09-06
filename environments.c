@@ -212,7 +212,7 @@ escm_scheme_report_environment(escm *e, escm_atom *args)
 
     n = escm_cons_pop(e, &args);
     if (n) {
-	escm_assert(ESCM_NUMBER_ISINT(n), n, e);
+	escm_assert(ESCM_ISINT(n), n, e);
 
 	if (escm_number_ival(n) != 5) {
 	    fprintf(stderr,"scheme-report-environment expect 5 as argument.\n");
@@ -236,7 +236,7 @@ escm_null_environment(escm *e, escm_atom *args)
 
     o = escm_cons_pop(e, &args);
     if (o) {
-	escm_assert(ESCM_NUMBER_ISINT(o), o, e);
+	escm_assert(ESCM_ISINT(o), o, e);
 
 	if (escm_number_ival(o) != 5) {
 	    fprintf(stderr, "null-environment expect 5 as argument.\n");
