@@ -9,6 +9,7 @@
 
 Maybe:
 
+ - Unicode chars
  - Correct the bug with the "do" macro
  - Create a new good number type with rationals, integers, reals and complex.
  - Create a new good number type with integers and reals unboxed.

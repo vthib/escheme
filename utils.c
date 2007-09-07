@@ -103,4 +103,27 @@ xstrcasecmp(const char *s1, const char *s2)
     return (*c2 != '\0') ? -1 : 0;
 }
 
+double
+xround(double a)
+{
+#ifdef ESCM_USE_C99
+    return rint(a);
+#else
+    double c;
+
+    c = ceil(a);
+
+    if (DBL_EQ(a - c, 0.5)) { /* round to even */
+	if (((long) c) % 2 == 0)
+	    return c;
+	else
+	    return c - 1;
+    } else if (DBL_LT(c, 0.5)) /* a is closer to his upper integer */
+	return c;
+    else
+	return c - 1;
+#endif
+}
+
+
 /**@}*/

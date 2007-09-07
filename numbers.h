@@ -70,7 +70,23 @@ escm_atom *escm_lcm(escm *, escm_atom *);
 escm_atom *escm_numerator(escm *, escm_atom *);
 escm_atom *escm_denominator(escm *, escm_atom *);
 
+#ifdef ESCM_USE_MATH
+escm_atom *escm_floor(escm *, escm_atom *);
+escm_atom *escm_ceiling(escm *, escm_atom *);
+escm_atom *escm_truncate(escm *, escm_atom *);
+escm_atom *escm_round(escm *, escm_atom *);
+
+escm_atom *escm_exp(escm *, escm_atom *);
+escm_atom *escm_log(escm *, escm_atom *);
+escm_atom *escm_sin(escm *, escm_atom *);
+escm_atom *escm_cos(escm *, escm_atom *);
+escm_atom *escm_tan(escm *, escm_atom *);
+escm_atom *escm_asin(escm *, escm_atom *);
+escm_atom *escm_acos(escm *, escm_atom *);
+escm_atom *escm_atan(escm *, escm_atom *);
+
 escm_atom *escm_sqrt(escm *, escm_atom *);
+#endif
 
 escm_atom *escm_add(escm *, escm_atom *);
 escm_atom *escm_sub(escm *, escm_atom *);

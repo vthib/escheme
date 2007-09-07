@@ -36,6 +36,7 @@
 #endif
 
 #define ABS(x) (((x) < 0) ? (-(x)) : (x))
+#define DABS(x) ((DBL_LT(x, 0.)) ? (-(x)) : (x))
 
 #define DBL_EQ(a, b) (fabs((double) (a) - (b)) < DBL_EPSILON)
 #define DBL_GT(a, b) (((double) (a) - (b)) >= DBL_EPSILON)
@@ -49,6 +50,7 @@
 /*@only@*/ char *xstrdup(const char *);
 
 int xstrcasecmp(const char *, const char *);
+double xround(double);
 
 #define xfree(p) free(p), (p) = NULL;
 
