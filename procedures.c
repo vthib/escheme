@@ -33,14 +33,11 @@ escm_procedures_init(escm *e)
 {
     escm_type *t;
 
-    t = xmalloc(sizeof *t);
+    t = xcalloc(1, sizeof *t);
     t->fmark = (Escm_Fun_Mark) procedure_mark;
     t->ffree = (Escm_Fun_Free) procedure_free;
     t->fprint = (Escm_Fun_Print) procedure_print;
     t->fequal = (Escm_Fun_Equal) procedure_equal;
-    t->fparsetest = NULL;
-    t->fparse = NULL;
-    t->feval = NULL;
 
     (void) escm_type_add(e, t);
 
@@ -198,7 +195,14 @@ runprimitive(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
 	goto err;
     }
 
-    atom = fun->d.c.fun(e, escm_ctx_first(e));
+    if (fun->d.c.data) {
+	escm_atom *(*f)(escm *, escm_atom *, void *);
+
+	f = (escm_atom *(*)(escm *, escm_atom *, void *)) fun->d.c.fun;
+	atom = f(e, escm_ctx_first(e), fun->d.c.data);
+    } else
+	atom = fun->d.c.fun(e, escm_ctx_first(e));
+
     escm_ctx_discard(e);
 
     return atom;

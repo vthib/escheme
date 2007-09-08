@@ -32,14 +32,11 @@ escm_chars_init(escm *e)
 {
     escm_type *t;
 
-    t = xmalloc(sizeof *t);
-    t->fmark = NULL;
-    t->ffree = NULL;
+    t = xcalloc(1, sizeof *t);
     t->fprint = (Escm_Fun_Print) char_print;
     t->fequal = (Escm_Fun_Equal) char_equal;
     t->fparsetest = char_parsetest;
     t->fparse = char_parse;
-    t->feval = NULL;
 
     chartype = escm_type_add(e, t);
 

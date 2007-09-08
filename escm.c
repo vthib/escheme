@@ -92,6 +92,7 @@ void
 escm_free(escm *e)
 {
     escm_atom *atom;
+    struct escm_slist *node, *prev;
     size_t i;
 
     assert(e != NULL);
@@ -99,9 +100,15 @@ escm_free(escm *e)
     for (atom = e->heap; atom; atom = atom->link)
 	escm_atom_free(e, atom);
 
-    for (i = 0; i < e->ntypes; i++)
+    for (i = 0; i < e->ntypes; i++) {
+	if (e->types[i]->fexit)
+	    e->types[i]->fexit(e, e->types[i]->dexit);
 	free(e->types[i]);
+    }
     free(e->types);
+
+    for (node = e->gard; node; node = prev)
+	prev = node, free(node);
 
     for (i = 0; i < ESCM_NSEG; i++)
 	free(e->segments[i]);
@@ -215,7 +222,7 @@ escm_parse(escm *e)
 	    if (e->types[i]->fparsetest) {
 		if (e->types[i]->fparsetest(e, c)) {
 		    escm_input_ungetc(e->input, c);
-		    if (!e->types[i]->fparse(e))
+		    if (!e->types[i]->fparse)
 			continue;
 		    atom = e->types[i]->fparse(e);
 		    break;
@@ -436,12 +443,16 @@ escm_gc_ungard(escm *e, escm_atom *a)
     assert(e != NULL);
     assert(a != NULL);
 
-    for (li = e->gard; li->atom != a; li = prev) {
-	prev = li->prev;
+    prev = NULL;
+    for (li = e->gard; li && li->atom != a; li = li->prev)
+	prev = li;
+    if (!prev && li)
+	e->gard = li->prev;
+    if (li) {
+	if (prev)
+	    prev->prev = li->prev;
 	free(li);
     }
-    e->gard = li->prev;
-    free(li);
 }
 
 /* privates functions */

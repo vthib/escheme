@@ -73,6 +73,7 @@ typedef int (*Escm_Fun_Equal)(escm *, void *, void *, unsigned int);
 typedef int (*Escm_Fun_Parsetest)(escm *, int);
 typedef escm_atom *(*Escm_Fun_Parse)(escm *);
 typedef escm_atom *(*Escm_Fun_Eval)(escm *, void *);
+typedef void (*Escm_Fun_Exit)(escm *, void *);
 
 typedef void (*Escm_Fun_Foreach)(void *, void *);
 typedef int (*Escm_Fun_Match)(void *, void *);

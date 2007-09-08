@@ -51,6 +51,9 @@ struct escm_type {
     Escm_Fun_Parse fparse;
 
     Escm_Fun_Eval feval;
+
+    Escm_Fun_Exit fexit;
+    void *dexit;
 };
 
 struct escm_context {

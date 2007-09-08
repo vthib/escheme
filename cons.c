@@ -34,7 +34,7 @@ escm_cons_init(escm *e)
 {
     escm_type *t;
 
-    t = xmalloc(sizeof *t);
+    t = xcalloc(1, sizeof *t);
     t->fmark = (Escm_Fun_Mark) cons_mark;
     t->ffree = (Escm_Fun_Free) free;
     t->fprint = (Escm_Fun_Print) cons_print;

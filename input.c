@@ -50,6 +50,7 @@ escm_input_fopen(const char *name, const char *mode)
 	f->d.file.name = xstrdup(name);
 	f->d.file.line = 1;
     }
+    f->managed = 0;
 
     return f;
 }
@@ -71,6 +72,7 @@ escm_input_fmng(FILE *fp, const char *name)
     f->d.file.name = xstrdup(name);
     f->d.file.line = f->d.file.car = -1; /* signal that we can't know where we
 					    are in the stream */
+    f->managed = 1;
 
     return f;
 }
@@ -103,8 +105,10 @@ escm_input_close(escm_input *f)
     assert(f != NULL);
 
     if (f->type == INPUT_FILE) {
-	if (EOF == fclose(f->d.file.fp))
-	    perror("fclose");
+	if (!f->managed) {
+	    if (EOF == fclose(f->d.file.fp))
+		perror("fclose");
+	}
 	free(f->d.file.name);
 	free(f->d.file.ub);
     }

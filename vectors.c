@@ -34,14 +34,13 @@ escm_vectors_init(escm *e)
 {
     escm_type *t;
 
-    t = xmalloc(sizeof *t);
+    t = xcalloc(1, sizeof *t);
     t->fmark = (Escm_Fun_Mark) vector_mark;
     t->ffree = (Escm_Fun_Free) vector_free;
     t->fprint = (Escm_Fun_Print) vector_print;
     t->fequal = (Escm_Fun_Equal) vector_equal;
     t->fparsetest = vector_parsetest;
     t->fparse = vector_parse;
-    t->feval = NULL;
 
     vectortype = escm_type_add(e, t);
 

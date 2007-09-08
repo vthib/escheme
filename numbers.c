@@ -37,14 +37,12 @@ escm_numbers_init(escm *e)
 {
     escm_type *t;
 
-    t = xmalloc(sizeof *t);
-    t->fmark = NULL;
+    t = xcalloc(1, sizeof *t);
     t->ffree = (Escm_Fun_Free) free;
     t->fprint = (Escm_Fun_Print) number_print;
     t->fequal = (Escm_Fun_Equal) number_equal;
     t->fparsetest = number_parsetest;
     t->fparse = number_parse;
-    t->feval = NULL;
 
     numbertype = escm_type_add(e, t);
 

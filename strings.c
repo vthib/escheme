@@ -33,14 +33,12 @@ escm_strings_init(escm *e)
 {
     escm_type *t;
 
-    t = xmalloc(sizeof *t);
-    t->fmark = NULL;
+    t = xcalloc(1, sizeof *t);
     t->ffree = (Escm_Fun_Free) string_free;
     t->fprint = (Escm_Fun_Print) string_print;
     t->fequal = (Escm_Fun_Equal) string_equal;
     t->fparsetest = string_parsetest;
     t->fparse = string_parse;
-    t->feval = NULL;
 
     stringtype = escm_type_add(e, t);
 

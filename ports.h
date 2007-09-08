@@ -26,17 +26,23 @@
 #define escm_port_val(x) ((escm_port *) (x)->ptr)
 
 typedef struct escm_port {
-    FILE *fp;
+    union {
+	escm_input *input;
+	struct {
+	    FILE *fp;
+	    char *name;
+	} output;
+    } d;
 
-    char *name;
-
+    unsigned int closed : 1;
     unsigned int input : 1;
 } escm_port;
 
+typedef struct escm_curports escm_curports;
+
 void escm_ports_init(escm *);
 size_t escm_port_tget(void);
-
-escm_atom *escm_port_make(escm *, FILE *, unsigned int);
+escm_atom *escm_port_make(escm *, FILE *, const char *, int);
 
 escm_atom *escm_port_p(escm *, escm_atom *);
 escm_atom *escm_input_port_p(escm *, escm_atom *);
@@ -45,8 +51,8 @@ escm_atom *escm_output_port_p(escm *, escm_atom *);
 escm_atom *escm_call_with_input_file(escm *, escm_atom *);
 escm_atom *escm_call_with_output_file(escm *, escm_atom *);
 
-escm_atom *escm_current_input_port(escm *, escm_atom *);
-escm_atom *escm_current_output_port(escm *, escm_atom *);
+escm_atom *escm_current_input_port(escm *, escm_atom *, escm_curports *);
+escm_atom *escm_current_output_port(escm *, escm_atom *, escm_curports *);
 
 escm_atom *escm_with_input_from_file(escm *, escm_atom *);
 escm_atom *escm_with_output_to_file(escm *, escm_atom *);
@@ -54,22 +60,23 @@ escm_atom *escm_with_output_to_file(escm *, escm_atom *);
 escm_atom *escm_open_input_file(escm *, escm_atom *);
 escm_atom *escm_open_output_file(escm *, escm_atom *);
 
-escm_atom *escm_close_input_port(escm *, escm_atom *);
-escm_atom *escm_close_output_port(escm *, escm_atom *);
+escm_atom *escm_close_port(escm *, escm_atom *);
 
 escm_atom *escm_eof_object_p(escm *, escm_atom *);
 
 /* XXX: move to primitives.c? (even with ESCM_USE_PORTS undefined we can use
    those functions */
 
-escm_atom *escm_read(escm *, escm_atom *);
+#ifdef ESCM_USE_PORTS
+escm_atom *escm_read(escm *, escm_atom *, escm_curports *);
 escm_atom *escm_read_char(escm *, escm_atom *);
 escm_atom *escm_peek_char(escm *, escm_atom *);
 escm_atom *escm_char_ready_p(escm *, escm_atom *);
 
-escm_atom *escm_write(escm *, escm_atom *);
+escm_atom *escm_write(escm *, escm_atom *, escm_curports *);
 escm_atom *escm_display(escm *, escm_atom *);
 escm_atom *escm_write_char(escm *, escm_atom *);
-escm_atom *escm_newline(escm *, escm_atom *);
+escm_atom *escm_newline(escm *, escm_atom *, escm_curports *);
+#endif
 
 #endif /* ESCHEME_PORTS_H */

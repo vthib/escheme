@@ -34,8 +34,7 @@ escm_symbols_init(escm *e)
 {
     escm_type *t;
 
-    t = xmalloc(sizeof *t);
-    t->fmark = NULL;
+    t = xcalloc(1, sizeof *t);
     t->ffree = (Escm_Fun_Free) free;
     t->fprint = (Escm_Fun_Print) symbol_print;
     t->fequal = (Escm_Fun_Equal) symbol_equal;

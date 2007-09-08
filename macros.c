@@ -50,14 +50,10 @@ escm_macros_init(escm *e)
     escm_type *t;
     escm_atom *o;
 
-    t = xmalloc(sizeof *t);
+    t = xcalloc(1, sizeof *t);
     t->fmark = (Escm_Fun_Mark) macro_mark;
     t->ffree = (Escm_Fun_Free) free;
     t->fprint = (Escm_Fun_Print) macro_print;
-    t->fequal = NULL;
-    t->fparsetest = NULL;
-    t->fparse = NULL;
-    t->feval = NULL;
 
     macrotype = escm_type_add(e, t);
 

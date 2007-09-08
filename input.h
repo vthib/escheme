@@ -42,6 +42,7 @@ struct escm_input {
 	} str;
     } d;
 
+    unsigned int managed : 1;
     unsigned int end : 1;
     unsigned int type : 1;
 };
