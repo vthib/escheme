@@ -35,6 +35,9 @@
 			 DBL_EQ(0., escm_number_rval(x)))
 #endif
 
+#define ESCM_NUMBER_EXACTP(x) \
+    (ESCM_ISINT(x) || DBL_EQ(escm_number_rval(x), floor(escm_number_rval(x))))
+
 typedef struct escm_number {
     union {
 	long ival;

@@ -215,7 +215,8 @@ escm_parse(escm *e)
 	    if (e->types[i]->fparsetest) {
 		if (e->types[i]->fparsetest(e, c)) {
 		    escm_input_ungetc(e->input, c);
-		    /* XXX: check fparse for non NULL */
+		    if (!e->types[i]->fparse(e))
+			continue;
 		    atom = e->types[i]->fparse(e);
 		    break;
 		}

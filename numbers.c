@@ -167,7 +167,7 @@ escm_integer_p(escm *e, escm_atom *args)
     if (n->fixnum == 1)
        return e->TRUE;
 #ifdef ESCM_USE_MATH
-    return (DBL_EQ(n->d.rval, (double) (long) n->d.rval)) ? e->TRUE : e->FALSE;
+    return (DBL_EQ(n->d.rval, floor(n->d.rval))) ? e->TRUE : e->FALSE;
 #else
     return e->FALSE;
 #endif
@@ -328,8 +328,6 @@ escm_gcd(escm *e, escm_atom *args)
 	escm_assert(ESCM_ISINT(n2), n2, e);
 	b = escm_number_ival(n2);
     };
-
-    return NULL;
 }
 
 escm_atom *
@@ -360,8 +358,6 @@ escm_lcm(escm *e, escm_atom *args)
 	escm_assert(ESCM_ISINT(n2), n2, e);
 	b = escm_number_ival(n2);
     };
-
-    return NULL;
 }
 
 escm_atom *
@@ -377,7 +373,7 @@ escm_numerator(escm *e, escm_atom *args)
 	return n;
 
     a = escm_number_rval(n);
-    while (!DBL_EQ(a, (double) (long) a))
+    while (!DBL_EQ(a, floor(a)))
 	a *= 2;
 
     return escm_int_make(e, (long) a);
@@ -398,7 +394,7 @@ escm_denominator(escm *e, escm_atom *args)
 
     b = 1;
     a = escm_number_rval(n);
-    while (!DBL_EQ(a, (double) (long) a))
+    while (!DBL_EQ(a, floor(a)))
 	a *= 2, b *= 2;
 
     return escm_int_make(e, b);
@@ -595,7 +591,7 @@ escm_sqrt(escm *e, escm_atom *args)
 
     a = sqrt(a);
 
-    if (DBL_EQ(a, (double) (long) a)) /* exact */
+    if (DBL_EQ(a, floor(a))) /* exact */
 	return escm_int_make(e, (long) a);
     else
 	return escm_real_make(e, a);
@@ -617,7 +613,7 @@ escm_expt(escm *e, escm_atom *args)
 
     a = pow(a, b);
 
-    if (DBL_EQ(a, (double) (long) a)) /* exact */
+    if (DBL_EQ(a, floor(a))) /* exact */
 	return escm_int_make(e, (long) a);
     else
 	return escm_real_make(e, a);
@@ -661,7 +657,7 @@ escm_number_to_string(escm *e, escm_atom *args)
 	} else {
 	    char s[22];
 
-	    switch (radix) {
+	    switch (radix) { /*@+ignoresigns@*/
 	    case 8:
 		len = snprintf(s, 22, "%lo", escm_number_ival(a));
 		break;
@@ -671,7 +667,8 @@ escm_number_to_string(escm *e, escm_atom *args)
 	    default:
 		len = snprintf(s, 22, "%ld", escm_number_ival(a));
 		break;
-	    }
+	    } /*@=ignoresigns@*/
+
 
 	    if (len >= 22) { /* output truncated */
 		fprintf(stderr, "the output was been truncated. The read/write "

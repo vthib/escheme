@@ -294,8 +294,9 @@ escm_length(escm *e, escm_atom *args)
 	    free(n);
 #if ESCM_CIRCULAR_LIST >= 1
 	    break;
-#endif
+#else
 	    return NULL;
+#endif
 	}
 #if ESCM_CIRCULAR_LIST >= 1
 	c->cdr->marked = 1;

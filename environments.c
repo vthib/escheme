@@ -184,6 +184,7 @@ escm_env_leave(escm *e, escm_atom *prevenv)
     e->env = prevenv;
 }
 
+/*@-usedef@*/
 escm_atom *
 escm_eval(escm *e, escm_atom *args)
 {
@@ -202,6 +203,7 @@ escm_eval(escm *e, escm_atom *args)
 
     return expr;
 }
+/*@=usedef@*/
 
 /* XXX: Write this function correctly */
 escm_atom *
