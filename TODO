@@ -1,6 +1,5 @@
  - Load "init.scm"
  - Finish all primitives
- - Finish the basic number implementation
  - Finish the Macro implementation
  - Verify compatibility with various scheme libraries
  - Try to implement some SRFIs

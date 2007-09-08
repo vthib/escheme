@@ -16,6 +16,7 @@
  */
 #include <string.h>
 #include <ctype.h>
+#include <limits.h>
 #include <math.h>
 
 #include "escheme.h"
@@ -26,7 +27,10 @@ static void number_print(escm *, escm_number *, FILE *);
 static int number_equal(escm *, escm_number *, escm_number *, unsigned int);
 static int number_parsetest(escm *, int);
 static escm_atom *number_parse(escm *);
+
+static escm_number *inputtonumber(escm_input *, int);
 static long pgcd(long, long);
+static char *bintostr(long);
 
 void
 escm_numbers_init(escm *e)
@@ -94,6 +98,14 @@ escm_numbers_init(escm *e)
     (void) escm_procedure_new(e, "atan", 1, 2, escm_atan, NULL);
 
     (void) escm_procedure_new(e, "sqrt", 1, 1, escm_sqrt, NULL);
+    (void) escm_procedure_new(e, "expt", 2, 2, escm_expt, NULL);
+#endif
+
+#ifdef ESCM_USE_STRINGS
+    (void) escm_procedure_new(e, "number->string", 1, 2, escm_number_to_string,
+			      NULL);
+    (void) escm_procedure_new(e, "string->number", 1, 2, escm_string_to_number,
+			      NULL);
 #endif
 
     (void) escm_procedure_new(e, "+", 0, -1, escm_add, NULL);
@@ -155,7 +167,7 @@ escm_integer_p(escm *e, escm_atom *args)
     if (n->fixnum == 1)
        return e->TRUE;
 #ifdef ESCM_USE_MATH
-    return (DBL_EQ(n->d.rval, xround(n->d.rval))) ? e->TRUE : e->FALSE;
+    return (DBL_EQ(n->d.rval, (double) (long) n->d.rval)) ? e->TRUE : e->FALSE;
 #else
     return e->FALSE;
 #endif
@@ -365,7 +377,7 @@ escm_numerator(escm *e, escm_atom *args)
 	return n;
 
     a = escm_number_rval(n);
-    while (!DBL_EQ(a, xround(a)))
+    while (!DBL_EQ(a, (double) (long) a))
 	a *= 2;
 
     return escm_int_make(e, (long) a);
@@ -386,7 +398,7 @@ escm_denominator(escm *e, escm_atom *args)
 
     b = 1;
     a = escm_number_rval(n);
-    while (!DBL_EQ(a, xround(a)))
+    while (!DBL_EQ(a, (double) (long) a))
 	a *= 2, b *= 2;
 
     return escm_int_make(e, b);
@@ -579,18 +591,166 @@ escm_sqrt(escm *e, escm_atom *args)
 
     n = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISNUMBER(n), n, e);
-
-    if (ESCM_ISINT(n))
-	a = (double) escm_number_ival(n);
-    else
-	a = escm_number_rval(n);
+    a = (ESCM_ISINT(n)) ? (double) escm_number_ival(n) : escm_number_rval(n);
 
     a = sqrt(a);
 
-    if (DBL_EQ(a, xround(a))) /* exact */
+    if (DBL_EQ(a, (double) (long) a)) /* exact */
 	return escm_int_make(e, (long) a);
     else
 	return escm_real_make(e, a);
+}
+
+escm_atom *
+escm_expt(escm *e, escm_atom *args)
+{
+    escm_atom *n;
+    double a, b;
+
+    n = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISNUMBER(n), n, e);
+    a = (ESCM_ISINT(n)) ? (double) escm_number_ival(n) : escm_number_rval(n);
+
+    n = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISNUMBER(n), n, e);
+    b = (ESCM_ISINT(n)) ? (double) escm_number_ival(n) : escm_number_rval(n);
+
+    a = pow(a, b);
+
+    if (DBL_EQ(a, (double) (long) a)) /* exact */
+	return escm_int_make(e, (long) a);
+    else
+	return escm_real_make(e, a);
+}
+#endif
+
+#ifdef ESCM_USE_STRINGS
+escm_atom *
+escm_number_to_string(escm *e, escm_atom *args)
+{
+    escm_atom *a, *b;
+    char *str;
+    int radix;
+    int len;
+
+    a = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISNUMBER(a), a, e);
+
+    radix = 10;
+
+    b = escm_cons_pop(e, &args);
+    if (b) { /* radix */
+	escm_assert(ESCM_ISINT(b), b, e);
+	radix = (int) escm_number_ival(b);
+	if (radix != 2 && radix != 8 && radix != 10 && radix != 16) {
+	    fprintf(stderr, "number->string: radix must be either 2, 8, 10 or "
+		    "16.\n");
+	    e->err = -1;
+	    return NULL;
+	}
+    }
+
+    if (ESCM_ISINT(a)) {
+	if (radix == 2) {
+	    escm_atom *atom;
+
+	    str = bintostr(escm_number_ival(a));
+	    atom = escm_string_make(e, str, strlen(str));
+	    free(str);
+	    return atom;
+	} else {
+	    char s[22];
+
+	    switch (radix) {
+	    case 8:
+		len = snprintf(s, 22, "%lo", escm_number_ival(a));
+		break;
+	    case 16:
+		len = snprintf(s, 22, "%lx", escm_number_ival(a));
+		break;
+	    default:
+		len = snprintf(s, 22, "%ld", escm_number_ival(a));
+		break;
+	    }
+
+	    if (len >= 22) { /* output truncated */
+		fprintf(stderr, "the output was been truncated. The read/write "
+			"invariance may not be respected.\n");
+		len = 21;
+	    } else {
+		if (strtol(s, &str, radix) != escm_number_ival(a) ||
+		    *str != '\0')
+		    /* verify read/write invariance */
+		    fprintf(stderr, "warning: read write invariance not "
+			    "respected.\n");
+	    }
+
+	    return escm_string_make(e, s, len);
+	}
+    } else {
+	double d;
+	char s[30];
+
+	d = escm_number_rval(a);
+
+	len = snprintf(s, 30, "%.15g", d);
+	if (len >= 30) { /* output truncated */
+	    fprintf(stderr, "the output was been truncated. The read/write "
+		    "invariance may not be respected.\n");
+	    len = 29;
+	} else {
+	    if (!DBL_EQ(strtod(s, &str), d) || *str != '\0')
+		/* verify read/write invariance */
+		fprintf(stderr, "warning: read write invariance not "
+			"respected.\n");
+	}
+
+	return escm_string_make(e, s, len);
+    }
+}
+
+escm_atom *
+escm_string_to_number(escm *e, escm_atom *args)
+{
+    escm_atom *a, *b;
+    escm_input *input;
+    escm_number *number;
+    int radix;
+
+    a = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(a), a, e);
+
+    radix = 10;
+
+    b = escm_cons_pop(e, &args);
+    if (b) { /* radix */
+	escm_assert(ESCM_ISINT(b), b, e);
+	radix = (int) escm_number_ival(b);
+	if (radix != 2 && radix != 8 && radix != 10 && radix != 16) {
+	    fprintf(stderr, "string->number: radix must be either 2, 8, 10 or "
+		    "16.\n");
+	    e->err = -1;
+	    return NULL;
+	}
+    }
+
+    input = escm_input_str(escm_str_val(a));
+
+    number = inputtonumber(input, radix);
+    if (!number)
+	goto err;
+    if (input->end == 0) {
+	free(number);
+	goto err;
+    }
+
+    escm_input_close(input);
+    return escm_atom_new(e, numbertype, number);
+
+err:
+    escm_input_close(input);
+    e->err = -1;
+    return e->FALSE;
 }
 #endif
 
@@ -990,40 +1150,46 @@ static escm_atom *
 number_parse(escm *e)
 {
     escm_number *n;
-    escm_atom *atom;
-    char *sym;
-    char *ec;
-    int c, radix;
 
-    n = xmalloc(sizeof *n);
+    n = inputtonumber(e->input, 10);
+    if (!n)
+	return NULL;
+    return escm_atom_new(e, numbertype, n);
+}
 
-    radix = 10;
+static escm_number *
+inputtonumber(escm_input *input, int radix)
+{
+    escm_number *n;
+    char *str, *ec;
+    int c;
 
-    c = escm_input_getc(e->input);
+    c = escm_input_getc(input);
     if (c == '#') {
-	c = escm_input_getc(e->input);
+	c = escm_input_getc(input);
 	switch (c) {
 	case 'b': radix = 2; break;
 	case 'o': radix = 8; break;
 	case 'd': radix = 10; break;
 	case 'x': radix = 16; break;
-	default: /* should never happen */
-	    escm_input_print(e->input, "unknown character #%c.", c);
-	    break;
+	default:
+	    escm_input_print(input, "unknown character #%c.", c);
+	    return NULL;
 	}
     } else
-	escm_input_ungetc(e->input, c);
+	escm_input_ungetc(input, c);
 
-    atom = NULL;
-    sym = escm_input_getsymbol(e->input);
-    if (strchr(sym, '.') != NULL) { /* real */
+    n = xmalloc(sizeof *n);
+
+    str = escm_input_getsymbol(input);
+    if (strchr(str, '.') != NULL) { /* real */
 	n->fixnum = 0;
 
-	n->d.rval = strtod(sym, &ec);
+	n->d.rval = strtod(str, &ec);
     } else {
 	n->fixnum = 1;
 
-	n->d.ival = strtol(sym, &ec, radix);
+	n->d.ival = strtol(str, &ec, radix);
 	if (*ec == '/') {
 	    char *s;
 	    long l;
@@ -1042,20 +1208,19 @@ number_parse(escm *e)
 	    }
 	}
     }
-    if (*ec == '\0')
-	atom = escm_atom_new(e, numbertype, n);
-    else {
-	if (e->input->type == INPUT_FILE)
-	    e->input->d.file.car -= strlen(sym) - (ec - sym) - 1;
+    if (*ec != '\0') {
+	if (input->type == INPUT_FILE)
+	    input->d.file.car -= strlen(str) - (ec - str) - 1;
 	else
-	    e->input->d.str.cur = (char *) e->input->d.str.str + (ec - sym + 1);
-	escm_input_print(e->input, "Character `%c' unexpected.", *ec);
-	e->err = -1;
+	    input->d.str.cur = (char *) input->d.str.str + (ec - str + 1);
+	escm_input_print(input, "Character `%c' unexpected.", *ec);
+	free(str);
 	free(n);
+	return NULL;
     }
 
-    free(sym);
-    return atom;
+    free(str);
+    return n;
 }
 
 static long
@@ -1080,3 +1245,23 @@ pgcd(long a, long b)
     return a;
 }
 
+static char *
+bintostr(long a)
+{
+    char *buf, *p;
+    long off;
+
+    buf = xmalloc((sizeof(a) * CHAR_BIT + 1) * sizeof *buf);
+
+    p = buf;
+    for (off = (long) sizeof(a) * CHAR_BIT - 1; off >= 0; off--) {
+	if (p == buf) {
+	    if (((a >> off) & 0x1) != 0)
+		*p++ = ((a >> off) & 0x1) ? '1' : '0';
+	} else
+	    *p++ = (((a >> off) & 0x1)) ? '1' : '0';
+    }
+    *p = '\0';
+
+    return buf;
+}

@@ -139,9 +139,9 @@ escm_input_getc(escm_input *f)
 		f->d.file.car++;
 	}
     } else {
+	c = (int) (f->end) ? EOF : *f->d.str.cur++;
 	if (*f->d.str.cur == '\0')
 	    f->end = 1;
-	c = (int) (f->end) ? EOF : *f->d.str.cur++;
     }
 
     return c;
@@ -205,7 +205,9 @@ escm_input_getsymbol(escm_input *f)
     } while (c != EOF &&
 	     (strchr("!$%&*+-./:<=>?@^_~", c) != NULL || isalnum(c)));
 
-    escm_input_ungetc(f, c);
+    if (c != EOF)
+	escm_input_ungetc(f, c);
+
     if (c == '\n' && save)
 	f->d.file.car = save + len - 1;
 

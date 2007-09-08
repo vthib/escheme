@@ -86,6 +86,12 @@ escm_atom *escm_acos(escm *, escm_atom *);
 escm_atom *escm_atan(escm *, escm_atom *);
 
 escm_atom *escm_sqrt(escm *, escm_atom *);
+escm_atom *escm_expt(escm *, escm_atom *);
+#endif
+
+#ifdef ESCM_USE_STRINGS
+escm_atom *escm_number_to_string(escm *, escm_atom *);
+escm_atom *escm_string_to_number(escm *, escm_atom *);
 #endif
 
 escm_atom *escm_add(escm *, escm_atom *);
