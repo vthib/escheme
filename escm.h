@@ -95,8 +95,8 @@ struct escm {
 escm *escm_new(void);
 void escm_free(escm *);
 
-escm_atom *escm_fparse(escm *, const char *);
-escm_atom *escm_sparse(escm *, const char *);
+void escm_fparse(escm *, const char *);
+void escm_sparse(escm *, const char *);
 escm_atom *escm_parse(escm *);
 
 void escm_shell(escm *);

@@ -52,4 +52,19 @@ escm_atom *escm_gc(escm *, escm_atom *);
 
 escm_atom *escm_eof_object_p(escm *, escm_atom *);
 
+escm_atom *escm_load(escm *, escm_atom *);
+
+# ifndef ESCM_USE_PORTS
+escm_atom *escm_read(escm *, escm_atom *);
+#  ifdef ESCM_USE_CHARACTERS
+escm_atom *escm_read_char(escm *, escm_atom *);
+escm_atom *escm_peek_char(escm *, escm_atom *);
+escm_atom *escm_write_char(escm *, escm_atom *);
+#  endif /* ESCM_USE_CHARACTERS */
+
+escm_atom *escm_write(escm *, escm_atom *);
+escm_atom *escm_display(escm *, escm_atom *);
+escm_atom *escm_newline(escm *, escm_atom *);
+# endif /* ESCM_USE_PORTS */
+
 #endif /* ESCHEME_PRIMITIVES_H */

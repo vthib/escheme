@@ -28,20 +28,19 @@
 static char strbuf[MAX_BUFFSIZE];
 
 /**
- * @brief open `name' with the given rights
+ * @brief open `name' with the read rights
  */
 escm_input *
-escm_input_fopen(const char *name, const char *mode)
+escm_input_fopen(const char *name)
 {
     escm_input *f;
 
     assert(name != NULL);
-    assert(mode != NULL);
 
     f = xcalloc(1, sizeof *f);
     f->type = INPUT_FILE;
 
-    f->d.file.fp = fopen(name, mode);
+    f->d.file.fp = fopen(name, "r");
     if (!f->d.file.fp) {
 	perror(name);
 	free(f);
@@ -49,8 +48,8 @@ escm_input_fopen(const char *name, const char *mode)
     } else {
 	f->d.file.name = xstrdup(name);
 	f->d.file.line = 1;
+	f->managed = 0;
     }
-    f->managed = 0;
 
     return f;
 }

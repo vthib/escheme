@@ -47,7 +47,7 @@ struct escm_input {
     unsigned int type : 1;
 };
 
-escm_input *escm_input_fopen(const char *, const char *);
+escm_input *escm_input_fopen(const char *);
 escm_input *escm_input_fmng(FILE *, const char *);
 escm_input *escm_input_str(const char *);
 

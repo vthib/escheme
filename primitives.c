@@ -74,6 +74,23 @@ escm_primitives_load(escm *e)
     (void) escm_procedure_new(e, "gc", 0, 0, escm_gc, NULL);
 
     (void) escm_procedure_new(e, "eof-object?", 1, 1, escm_eof_object_p, NULL);
+
+    (void) escm_procedure_new(e, "load", 1, 1, escm_load, NULL);
+
+#ifndef ESCM_USE_PORTS
+    (void) escm_procedure_new(e, "read", 0, 1, escm_read, NULL);
+# ifdef ESCM_USE_CHARACTERS
+    (void) escm_procedure_new(e, "read-char", 0, 1, escm_read_char, NULL);
+    (void) escm_procedure_new(e, "peek-char", 0, 1, escm_peek_char, NULL);
+# endif
+
+    (void) escm_procedure_new(e, "write", 1, 2, escm_write, NULL);
+    (void) escm_procedure_new(e, "display", 1, 2, escm_display, NULL);
+    (void) escm_procedure_new(e, "newline", 0, 1, escm_newline, NULL);
+# ifdef ESCM_USE_CHARACTERS
+    (void) escm_procedure_new(e, "write-char", 1, 2, escm_write_char, NULL);
+# endif
+#endif
 }
 
 escm_atom *
@@ -716,6 +733,127 @@ escm_eof_object_p(escm *e, escm_atom *args)
     a = escm_cons_pop(e, &args);
     return (a == e->EOF_OBJ) ? e->TRUE : e->FALSE;
 }
+
+escm_atom *
+escm_load(escm *e, escm_atom *args)
+{
+    escm_atom *str;
+    escm_context *ctx;
+    unsigned int save;
+
+    str = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(str), str, e);
+
+    save = e->quiet, e->quiet = 1;
+    ctx = e->ctx, e->ctx = NULL;
+    escm_fparse(e, escm_str_val(str));
+    e->quiet = save, e->ctx = ctx;
+
+    return NULL;
+}
+
+/* if we don't use ports, we implement those functions to work only with
+   stdin and stdout */
+#ifndef ESCM_USE_PORTS
+escm_atom *
+escm_read(escm *e, escm_atom *args)
+{
+    escm_atom *a;
+    escm_input *save;
+
+    (void) args;
+
+    save = e->input;
+    e->input = escm_input_fmng(stdin, "standard input");
+    a = escm_parse(e);
+    escm_input_close(e->input), e->input = save;
+
+    return a;
+}
+
+# ifdef ESCM_USE_CHARACTERS
+escm_atom *
+escm_read_char(escm *e, escm_atom *args)
+{
+    int c;
+
+    (void) args;
+
+    c = getchar();
+    if (c == EOF)
+	return e->EOF_OBJ;
+
+    return escm_char_make(e, c);
+}
+
+escm_atom *
+escm_peek_char(escm *e, escm_atom *args)
+{
+    int c;
+
+    (void) args;
+
+    c = getchar();
+    if (c == EOF)
+	return e->EOF_OBJ;
+
+    if (EOF == ungetc(c, stdin))
+	fprintf(stderr, "ungetc failed.\n");
+
+    return escm_char_make(e, c);
+}
+# endif /* ESCM_USE_CHARACTERS */
+
+escm_atom *
+escm_write(escm *e, escm_atom *args)
+{
+    escm_atom *atom;
+
+    atom = escm_cons_pop(e, &args);
+
+    escm_atom_print(e, atom, stdout);
+
+    return NULL;
+}
+
+escm_atom *
+escm_display(escm *e, escm_atom *args)
+{
+    escm_atom *atom;
+
+    atom = escm_cons_pop(e, &args);
+
+    escm_atom_print0(e, atom, stdout, 1);
+
+    return NULL;
+}
+
+escm_atom *
+escm_newline(escm *e, escm_atom *args)
+{
+    (void) e;
+    (void) args;
+
+    printf("\n");
+
+    return NULL;
+}
+
+# ifdef ESCM_USE_CHARACTERS
+escm_atom *
+escm_write_char(escm *e, escm_atom *args)
+{
+    escm_atom *c;
+
+    c = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISCHAR(c), c, e);
+
+    putc(escm_char_val(c), stdout);
+
+    return NULL;
+}
+# endif /* ESCM_USE_CHARACTERS */
+#endif /* ESCM_USE_PORTS */
 
 static escm_atom *
 named_let(escm *e, escm_atom *name, escm_atom *args)

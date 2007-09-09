@@ -352,7 +352,10 @@ char_print(escm *e, int c, FILE *stream, int lvl)
     (void) e;
 
     if (lvl == 1) {
-	putc(c, stream);
+	if (c == EOF)
+	    fprintf(stream, "#<eof-object>");
+	else if (EOF == putc(c, stream))
+	    fprintf(stderr, "putc('%c') failed.\n", c);
 	return;
     }
 

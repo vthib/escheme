@@ -89,6 +89,10 @@ escm_new(void)
 
     escm_primitives_load(e);
 
+    e->quiet = 1;
+    escm_fparse(e, "init.scm");
+    e->quiet = 0;
+
     return e;
 }
 
@@ -121,32 +125,52 @@ escm_free(escm *e)
     free(e);
 }
 
-escm_atom *
+void
 escm_fparse(escm *e, const char *filename)
 {
     escm_atom *atom;
+    escm_input *save;
 
     assert(e != NULL);
 
-    e->input = escm_input_fopen(filename, "r");
-    atom = escm_parse(e);
-    escm_input_close(e->input), e->input = NULL;
+    save = e->input, e->input = escm_input_fopen(filename);
+    if (!e->input) {
+	e->input = save;
+	return;
+    }
+    do {
+	atom = escm_parse(e);
+	if (!e->quiet && atom) {
+	    escm_atom_print(e, atom, stdout);
+	    printf("\n");
+	}
+    } while (e->input->end == 0);
 
-    return atom;
+    escm_input_close(e->input), e->input = save;
 }
 
-escm_atom *
+void
 escm_sparse(escm *e, const char *str)
 {
     escm_atom *atom;
+    escm_input *save;
 
     assert(e != NULL);
 
-    e->input = escm_input_str(str);
-    atom = escm_parse(e);
-    escm_input_close(e->input), e->input = NULL;
+    save = e->input, e->input = escm_input_str(str);
+    if (!e->input) {
+	e->input = save;
+	return;
+    }
+    do {
+	atom = escm_parse(e);
+	if (!e->quiet && atom) {
+	    escm_atom_print(e, atom, stdout);
+	    printf("\n");
+	}
+    } while (e->input->end == 0);
 
-    return atom;
+    escm_input_close(e->input), e->input = save;
 }
 
 void
