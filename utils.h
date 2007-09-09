@@ -52,6 +52,8 @@
 int xstrcasecmp(const char *, const char *);
 double xround(double);
 
+void print_slashify(FILE *, const char *);
+
 #define xfree(p) free(p), (p) = NULL;
 
 #endif /* ESCHEME_UTILS_H */

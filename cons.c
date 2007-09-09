@@ -23,8 +23,8 @@
 static size_t constype = 0;
 
 static void cons_mark(escm *, escm_cons *);
-static void cons_print(escm *, escm_cons *, FILE *);
-static int cons_equal(escm *, escm_cons *, escm_cons *, unsigned int);
+static void cons_print(escm *, escm_cons *, FILE *, int);
+static int cons_equal(escm *, escm_cons *, escm_cons *, int);
 static int cons_parsetest(escm *, int);
 static escm_atom *cons_parse(escm *);
 static escm_atom *cons_eval(escm *, escm_cons *);
@@ -330,7 +330,7 @@ escm_append(escm *e, escm_atom *args)
 
     for (a = escm_cons_val(flist); a; a = escm_cons_next(a)) {
 	if (!ESCM_ISCONS(a->cdr)) {
-	    escm_atom_display(e, flist, stderr);
+	    escm_atom_print(e, flist, stderr);
 	    fprintf(stderr, ": improper list.\n");
 	    escm_ctx_discard(e);
 	    e->err = -1;
@@ -355,7 +355,7 @@ escm_reverse(escm *e, escm_atom *args)
     new = NULL;
     for (c = escm_cons_val(arg); c; c = escm_cons_next(c)) {
 	if (!ESCM_ISCONS(c->cdr)) {
-	    escm_atom_display(e, arg, stderr);
+	    escm_atom_print(e, arg, stderr);
 	    fprintf(stderr, ": Improper list.\n");
 	    e->err = -1;
 	    return NULL;
@@ -386,13 +386,13 @@ escm_list_tail(escm *e, escm_atom *args)
     for (; k > 0; k--) {
 	if (atom == e->NIL || !atom) {
 	    fprintf(stderr, "index too large for list ");
-	    escm_atom_display(e, list, stderr);
+	    escm_atom_print(e, list, stderr);
 	    fprintf(stderr, "\n");
 	    e->err = -1;
 	    return NULL;
 	}
 	if (!ESCM_ISCONS(atom)) {
-	    escm_atom_display(e, list, stderr);
+	    escm_atom_print(e, list, stderr);
 	    fprintf(stderr, ": improper list.\n");
 	    e->err = -1;
 	    return NULL;
@@ -543,20 +543,22 @@ cons_mark(escm *e, escm_cons *cons)
 }
 
 static void
-cons_print(escm *e, escm_cons *cons, FILE *stream)
+cons_print(escm *e, escm_cons *cons, FILE *stream, int lvl)
 {
 #if ESCM_CIRCULAR_LIST == 2
     escm_cons *c, *end;
     size_t i;
 
+    (void) lvl;
+
     fprintf(stream, "(");
 
     e->curobj->marked = 1; /* mark all atoms to check circular lists */
     for (c = cons, end = c; c; c = escm_cons_next(c), end = c) {
-	escm_atom_display(e, c->car, stream);
+	escm_atom_print(e, c->car, stream);
 	if (!ESCM_ISCONS(c->cdr)) {
 	    fprintf(stream, " . ");
-	    escm_atom_display(e, c->cdr, stream);
+	    escm_atom_print(e, c->cdr, stream);
 	    break;
 	} else if (c->cdr->marked == 1) {
 	    fprintf(stream, " #");
@@ -577,13 +579,15 @@ cons_print(escm *e, escm_cons *cons, FILE *stream)
 	}
     }
 #else
+    (void) lvl;
+
     fprintf(stream, "(");
 
     for (; cons != NULL; cons = escm_cons_next(cons)) {
-	escm_atom_display(e, cons->car, stream);
+	escm_atom_print(e, cons->car, stream);
 	if (!ESCM_ISCONS(cons->cdr)) {
 	    fprintf(stream, " . ");
-	    escm_atom_display(e, cons->cdr, stream);
+	    escm_atom_print(e, cons->cdr, stream);
 	    break;
 	} else if (cons->cdr != e->NIL)
 	    fprintf(stream, " ");
@@ -593,7 +597,7 @@ cons_print(escm *e, escm_cons *cons, FILE *stream)
 }
 
 static int
-cons_equal(escm *e, escm_cons *c1, escm_cons *c2, unsigned int lvl)
+cons_equal(escm *e, escm_cons *c1, escm_cons *c2, int lvl)
 {
     switch (lvl) {
     case 0:
@@ -679,7 +683,7 @@ cons_eval(escm *e, escm_cons *cons)
     if (e->err == -1)
 	return NULL;
     if (!atomfun) {
-	escm_atom_display(e, cons->car, stderr);
+	escm_atom_print(e, cons->car, stderr);
 	fprintf(stderr, ": expression do not yield an applicable value.\n");
 	e->err = -1;
 	return NULL;
@@ -704,7 +708,7 @@ cons_eval(escm *e, escm_cons *cons)
     return ret;
 
 noexec:
-    escm_atom_display(e, atomfun, stderr);
+    escm_atom_print(e, atomfun, stderr);
     fprintf(stderr, ": object isn't applicable.\n");
     return NULL;
 }

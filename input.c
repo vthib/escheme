@@ -163,8 +163,8 @@ escm_input_gettext(escm_input *f, const char *end)
     assert(f != NULL);
     assert(end != NULL);
 
-    do {
-	c = escm_input_getc(f);
+    c = escm_input_getc(f);
+    while (c != EOF && !strchr(end, c)) {
 	if (c == '\\') {
 	    c = escm_input_getc(f);
 	    switch (c) {
@@ -175,18 +175,19 @@ escm_input_gettext(escm_input *f, const char *end)
 	    case 'r': c = '\r'; break;
 	    case 't': c = '\t'; break;
 	    case 'v': c = '\v'; break;
-	    case '"':
-		strbuf[len++] = c;
-		c = escm_input_getc(f);
-		break;
-	    default: break; /* keep the new character */
+	    case '\\': case '"': break;
+	    default:
+		strbuf[len++] = '\\';
+		break; /* keep the new character */
 	    }
-	}
-	strbuf[len++] = c;
-    } while (c != EOF && !strchr(end, c));
+	    strbuf[len++] = c;
+	} else
+	    strbuf[len++] = c;
+	c = escm_input_getc(f);
+    } 
 
     escm_input_ungetc(f, c);
-    strbuf[len - 1] = '\0';
+    strbuf[len] = '\0';
 
     return xstrdup(strbuf);
 }

@@ -30,7 +30,7 @@ static size_t envtype;
 
 static void env_free(escm_env *);
 static void env_mark(escm *, escm_env *);
-static void env_print(escm *, escm_env *, FILE *);
+static void env_print(escm *, escm_env *, FILE *, int);
 
 void
 escm_environments_init(escm *e)
@@ -283,10 +283,11 @@ env_mark(escm *e, escm_env *env)
 }
 
 static void
-env_print(escm *e, escm_env *env, FILE *stream)
+env_print(escm *e, escm_env *env, FILE *stream, int lvl)
 {
     (void) e;
     (void) env;
+    (void) lvl;
 
     fprintf(stream, "#<Environment>");
 }

@@ -50,4 +50,6 @@ escm_atom *escm_equal_p(escm *, escm_atom *);
 
 escm_atom *escm_gc(escm *, escm_atom *);
 
+escm_atom *escm_eof_object_p(escm *, escm_atom *);
+
 #endif /* ESCHEME_PRIMITIVES_H */

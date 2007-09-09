@@ -21,9 +21,7 @@
 
 static void procedure_free(escm_procedure *);
 static void procedure_mark(escm *, escm_procedure *);
-static void procedure_print(escm *, escm_procedure *, FILE *);
-static int procedure_equal(escm *, escm_procedure *, escm_procedure *,
-			   unsigned int);
+static void procedure_print(escm *, escm_procedure *, FILE *, int);
 
 static escm_atom *runprimitive(escm *, escm_atom *, escm_atom *, int);
 static escm_atom *runlambda(escm *, escm_atom *, escm_atom *, int);
@@ -37,7 +35,6 @@ escm_procedures_init(escm *e)
     t->fmark = (Escm_Fun_Mark) procedure_mark;
     t->ffree = (Escm_Fun_Free) procedure_free;
     t->fprint = (Escm_Fun_Print) procedure_print;
-    t->fequal = (Escm_Fun_Equal) procedure_equal;
 
     (void) escm_type_add(e, t);
 
@@ -122,9 +119,10 @@ procedure_mark(escm *e, escm_procedure *proc)
 }
 
 static void
-procedure_print(escm *e, escm_procedure *procedure, FILE *stream)
+procedure_print(escm *e, escm_procedure *procedure, FILE *stream, int lvl)
 {
     (void) e;
+    (void) lvl;
 
     assert(procedure != NULL);
 
@@ -132,20 +130,6 @@ procedure_print(escm *e, escm_procedure *procedure, FILE *stream)
 	fprintf(stream, "#<closure>");
     else
 	fprintf(stream, "#<primitive %s >", procedure->name);
-}
-
-static int
-procedure_equal(escm *e, escm_procedure *c1, escm_procedure *c2,
-		unsigned int lvl)
-{
-    (void) e;
-    (void) lvl;
-
-    /* the behavior of eq* or not fully specified on procedure. To save memory
-       and time, I decide to always return #f if the two procedure are not in
-       the same location.
-       XXX: maybe recursively check the body of the two procedures */
-    return c1 == c2;
 }
 
 static escm_atom *
@@ -167,7 +151,7 @@ runprimitive(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
     for (param = 0; args; args = escm_cons_next(args), param++) {
 	/* check parameter's number */
 	if (fun->d.c.max != -1 && param >= (unsigned int) fun->d.c.max) {
-	    escm_atom_display(e, atomfun, stderr);
+	    escm_atom_print(e, atomfun, stderr);
 	    fprintf(stderr, ": too much arguments.\n");
 	    goto err;
 	}
@@ -190,7 +174,7 @@ runprimitive(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
     }
 
     if (param < fun->d.c.min) {
-	escm_atom_display(e, atomfun, stderr);
+	escm_atom_print(e, atomfun, stderr);
 	fprintf(stderr, ": too few arguments.\n");
 	goto err;
     }
@@ -260,7 +244,7 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomcons, int eval)
 	    for (args = escm_cons_val(fun->d.closure.args); cons;
 		 cons = escm_cons_next(cons), args = escm_cons_next(args)) {
 		if (!args) {
-		    escm_atom_display(e, atomfun, stderr);
+		    escm_atom_print(e, atomfun, stderr);
 		    fprintf(stderr, ": too much arguments.\n");
 		    escm_gc_ungard(e, env);
 		    goto err;
@@ -304,8 +288,9 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomcons, int eval)
 	    }
 
 	    if (args) {
-		escm_atom_display(e, atomfun, stderr);
+		escm_atom_print(e, atomfun, stderr);
 		fprintf(stderr, ": too few arguments.\n");
+		escm_gc_ungard(e, env);
 		goto err;
 	    }
 	}

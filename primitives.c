@@ -72,6 +72,8 @@ escm_primitives_load(escm *e)
     (void) escm_procedure_new(e, "equal?", 2, 2, escm_equal_p, NULL);
 
     (void) escm_procedure_new(e, "gc", 0, 0, escm_gc, NULL);
+
+    (void) escm_procedure_new(e, "eof-object?", 1, 1, escm_eof_object_p, NULL);
 }
 
 escm_atom *
@@ -177,7 +179,7 @@ escm_set_x(escm *e, escm_atom *args)
     escm_assert(ESCM_ISSYM(c), c, e);
 
     if (!escm_env_get(e->env, escm_sym_val(c))) {
-	escm_atom_display(e, c, stderr);
+	escm_atom_print(e, c, stderr);
 	fprintf(stderr, ": unknown identifier.\n");
 	e->err = -1;
 	return NULL;
@@ -219,7 +221,7 @@ escm_let(escm *e, escm_atom *args)
 	varval = escm_atom_eval(e, varcons->car);
 	if (!varval) {
 	    if (e->err != -1) {
-		escm_atom_display(e, varcons->car, stderr);
+		escm_atom_print(e, varcons->car, stderr);
 		fprintf(stderr, ": expression not allowed in this context.\n");
 		e->err = -1;
 	    }
@@ -277,7 +279,7 @@ escm_let_star(escm *e, escm_atom *args)
 	varval = escm_atom_eval(e, varcons->car);
 	if (!varval) {
 	    if (e->err != -1) {
-		escm_atom_display(e, varcons->car, stderr);
+		escm_atom_print(e, varcons->car, stderr);
 		fprintf(stderr, ": expression not allowed in this context.\n");
 		e->err = -1;
 	    }
@@ -341,7 +343,7 @@ escm_letrec(escm *e, escm_atom *args)
 	ret = escm_atom_eval(e, varcons->car);
 	if (!ret) {
 	    if (e->err != -1) {
-		escm_atom_display(e, varcons->car, stderr);
+		escm_atom_print(e, varcons->car, stderr);
 		fprintf(stderr, ": expression not allowed in this context.\n");
 		e->err = -1;
 	    }
@@ -385,7 +387,7 @@ escm_if(escm *e, escm_atom *args)
     test = escm_atom_eval(e, a);
     if (!test) {
 	if (e->err != -1) {
-	    escm_atom_display(e, a, stderr);
+	    escm_atom_print(e, a, stderr);
 	    fprintf(stderr, ": expression not allowed in this context.\n");
 	    e->err = -1;
 	}
@@ -422,7 +424,7 @@ escm_cond(escm *e, escm_atom *args)
 	ret = escm_atom_eval(e, test);
 	if (!ret) {
 	    if (e->err != -1) {
-		escm_atom_display(e, test, stderr);
+		escm_atom_print(e, test, stderr);
 		fprintf(stderr, ": expression not allowed in this context.\n");
 		e->err = -1;
 	    }
@@ -440,7 +442,7 @@ escm_cond(escm *e, escm_atom *args)
 		if (!proc)
 		    return NULL;
 		if (!ESCM_ISPROC(proc)) {
-		    escm_atom_display(e, proc, stderr);
+		    escm_atom_print(e, proc, stderr);
 		    fprintf(stderr, ": procedure expected.\n");
 		    e->err = -1;
 		    return NULL;
@@ -465,7 +467,7 @@ escm_case(escm *e, escm_atom *args)
     expr = escm_atom_eval(e, d);
     if (!expr) {
 	if (e->err != -1) {
-	    escm_atom_display(e, d, stderr);
+	    escm_atom_print(e, d, stderr);
 	    fprintf(stderr, ": expression not allowed in this context.\n");
 	}
 	e->err = -1;
@@ -592,7 +594,7 @@ escm_do(escm *e, escm_atom *args)
 	varval = escm_atom_eval(e, varval);
 	if (!varval) {
 	    if (e->err != -1) {
-		escm_atom_display(e, atom, stderr);
+		escm_atom_print(e, atom, stderr);
 		fprintf(stderr, ": expression not allowed in this context.\n");
 		e->err = -1;
 	    }
@@ -632,7 +634,7 @@ escm_do(escm *e, escm_atom *args)
 		    varval = escm_atom_eval(e, escm_cons_pop(e, &atom));
 		    if (!varval) {
 			if (e->err != -1) {
-			    escm_atom_display(e, atom, stderr);
+			    escm_atom_print(e, atom, stderr);
 			    fprintf(stderr, ": expression not allowed in this "
 				    "context.\n");
 			    e->err = -1;
@@ -703,6 +705,16 @@ escm_gc(escm *e, escm_atom *args)
     escm_gc_collect(e);
 
     return NULL;
+}
+
+
+escm_atom *
+escm_eof_object_p(escm *e, escm_atom *args)
+{
+    escm_atom *a;
+
+    a = escm_cons_pop(e, &args);
+    return (a == e->EOF_OBJ) ? e->TRUE : e->FALSE;
 }
 
 static escm_atom *

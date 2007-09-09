@@ -83,6 +83,10 @@ escm_new(void)
     escm_macros_init(e);
 #endif
 
+#ifndef ESCM_USE_CHARACTERS
+    e->EOF_OBJ = e->FALSE;
+#endif
+
     escm_primitives_load(e);
 
     return e;
@@ -108,7 +112,7 @@ escm_free(escm *e)
     free(e->types);
 
     for (node = e->gard; node; node = prev)
-	prev = node, free(node);
+	prev = node->prev, free(node);
 
     for (i = 0; i < ESCM_NSEG; i++)
 	free(e->segments[i]);
@@ -153,15 +157,16 @@ escm_shell(escm *e)
     assert(e != NULL);
 
     e->input = escm_input_fmng(stdin, "standard input");
+    atom = NULL;
     do {
+	if (atom) {
+	    escm_atom_print(e, atom, stdout);
+	    printf("\n");
+	}
 	printf("escheme> ");
 	if (EOF == fflush(stdout))
 	    perror("fflush");
 	atom = escm_parse(e);
-	if (atom) {
-	    escm_atom_display(e, atom, stdout);
-	    printf("\n");
-	}
     } while (e->input->end == 0);
 
     escm_input_close(e->input), e->input = NULL;
@@ -200,7 +205,7 @@ escm_parse(escm *e)
 	}
     } while (isspace(c) && e->input->end == 0);
     if (e->input->end)
-	return NULL;
+	return e->EOF_OBJ;
 
     if (c == '\'')
 	atom = enterin(e, "quote");

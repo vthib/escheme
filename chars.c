@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Escheme; If not, see <http://www.gnu.org/licenses/>.
  */
+#include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 
@@ -21,8 +22,8 @@
 
 static size_t chartype = 0;
 
-static void char_print(escm *, char, FILE *);
-static int char_equal(escm *, char, char, unsigned int);
+static void char_print(escm *, int, FILE *, int);
+static int char_equal(escm *, char, char, int);
 static int char_parsetest(escm *, int);
 static escm_atom *char_parse(escm *);
 static char input_getchar(escm *, escm_input *);
@@ -39,6 +40,8 @@ escm_chars_init(escm *e)
     t->fparse = char_parse;
 
     chartype = escm_type_add(e, t);
+
+    e->EOF_OBJ = escm_char_make(e, (char) EOF);
 
     (void) escm_procedure_new(e, "char?", 1, 1, escm_char_p, NULL);
 
@@ -344,9 +347,19 @@ escm_char_downcase(escm *e, escm_atom *args)
 }
 
 static void
-char_print(escm *e, char c, FILE *stream)
+char_print(escm *e, int c, FILE *stream, int lvl)
 {
     (void) e;
+
+    if (lvl == 1) {
+	putc(c, stream);
+	return;
+    }
+
+    if (c == EOF) {
+	fprintf(stream, "#<eof-object>");
+	return;
+    }
 
     fprintf(stream, "#\\");
     if (c == '\n')
@@ -362,7 +375,7 @@ char_print(escm *e, char c, FILE *stream)
 }
 
 static int
-char_equal(escm *e, char c1, char c2, unsigned int lvl)
+char_equal(escm *e, char c1, char c2, int lvl)
 {
     (void) e;
     (void) lvl;

@@ -23,8 +23,8 @@
 static size_t stringtype = 0;
 
 static void string_free(escm_string *);
-static void string_print(escm *, escm_string *, FILE *);
-static int string_equal(escm *, escm_string *, escm_string *, unsigned int);
+static void string_print(escm *, escm_string *, FILE *, int);
+static int string_equal(escm *, escm_string *, escm_string *, int);
 static int string_parsetest(escm *, int);
 static escm_atom *string_parse(escm *);
 
@@ -560,12 +560,21 @@ string_free(escm_string *string)
 }
 
 static void
-string_print(escm *e, escm_string *string, FILE *stream)
+string_print(escm *e, escm_string *string, FILE *stream, int lvl)
 {
-    size_t n;
-
     (void) e;
 
+    if (lvl == 0) {
+	if (EOF == putc('"', stream))
+	    fprintf(stderr, "putc('\"') failed.\n");
+	print_slashify(stream, string->str);
+	if (EOF == putc('"', stream))
+	    fprintf(stderr, "putc('\"') failed.\n");
+	return;
+    }
+
+    fprintf(stream, "%s", string->str);
+#if 0
     n = mbstowcs(NULL, string->str, 0) + 1;
     if (n == 0)
 	fprintf(stream, "\"%s\"", string->str);
@@ -579,13 +588,12 @@ string_print(escm *e, escm_string *string, FILE *stream)
 	free(wc);
     }
 
-#if 0
     fprintf(stream, "-> %ld", (n != 0) ? n - 1 : string->len);
 #endif
 }
 
 static int
-string_equal(escm *e, escm_string *s1, escm_string *s2, unsigned int lvl)
+string_equal(escm *e, escm_string *s1, escm_string *s2, int lvl)
 {
     (void) e;
 

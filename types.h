@@ -67,8 +67,8 @@ typedef struct escm_type escm_type;
 
 typedef void (*Escm_Fun_Mark)(escm *, void *);
 typedef void (*Escm_Fun_Free)(void *);
-typedef void (*Escm_Fun_Print)(escm *, void *, FILE *);
-typedef int (*Escm_Fun_Equal)(escm *, void *, void *, unsigned int);
+typedef void (*Escm_Fun_Print)(escm *, void *, FILE *, int);
+typedef int (*Escm_Fun_Equal)(escm *, void *, void *, int);
 
 typedef int (*Escm_Fun_Parsetest)(escm *, int);
 typedef escm_atom *(*Escm_Fun_Parse)(escm *);

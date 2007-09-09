@@ -23,7 +23,7 @@
 
 #define escm_assert(test, atom, e)		\
     if (!(test)) {				\
-	escm_atom_display(e, atom, stderr);     \
+	escm_atom_print(e, atom, stderr);	\
 	fprintf(stderr, ": wrong argument.\n");	\
 	(e)->err = -1;				\
 	return NULL;				\
@@ -32,7 +32,7 @@
 /* Okay, this is ugly, but there is no other solution */
 #define escm_assert1(test, atom, e, st)		\
     if (!(test)) {				\
-	escm_atom_display(e, atom, stderr);     \
+	escm_atom_print(e, atom, stderr);	\
 	fprintf(stderr, ": wrong argument.\n"); \
 	st;					\
 	(e)->err = -1;				\
@@ -77,6 +77,7 @@ struct escm {
     escm_atom *heap;
 
     escm_atom *NIL; /* a NULL pair */
+    escm_atom *EOF_OBJ; /* the EOF object */
 
     escm_atom *TRUE; /* the true boolean or a non null integer */
     escm_atom *FALSE; /* the false boolean or a null integer */

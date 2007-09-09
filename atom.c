@@ -95,7 +95,7 @@ escm_atom_eval(escm *e, escm_atom *atom)
 }
 
 void
-escm_atom_display(escm *e, escm_atom *atom, FILE *stream)
+escm_atom_print0(escm *e, escm_atom *atom, FILE *stream, int lvl)
 {
     escm_atom *old;
 
@@ -104,12 +104,12 @@ escm_atom_display(escm *e, escm_atom *atom, FILE *stream)
 	return;
 
     old = e->curobj, e->curobj = atom;
-    e->types[atom->type]->fprint(e, atom->ptr, stream);
+    e->types[atom->type]->fprint(e, atom->ptr, stream, lvl);
     e->curobj = old;
 }
 
 int
-escm_atom_equal(escm *e, escm_atom *o1, escm_atom *o2, unsigned int lvl)
+escm_atom_equal(escm *e, escm_atom *o1, escm_atom *o2, int lvl)
 {
     assert(e != NULL);
     if (!o1 || !o2 || o1->type != o2->type || !e->types[o1->type]->fequal)
