@@ -38,7 +38,7 @@ escm_primitives_load(escm *e)
     o = escm_procedure_new(e, "lambda", 2, -1, escm_lambda, NULL);
     escm_proc_val(o)->d.c.quoted = 0x7;
 
-    o = escm_procedure_new(e, "define", 2, 2, escm_define, NULL);
+    o = escm_procedure_new(e, "define", 2, -1, escm_define, NULL);
     escm_proc_val(o)->d.c.quoted = 0x3;
     o = escm_procedure_new(e, "set!", 2, 2, escm_set_x, NULL);
     escm_proc_val(o)->d.c.quoted = 0x1;
@@ -71,8 +71,6 @@ escm_primitives_load(escm *e)
     (void) escm_procedure_new(e, "eq?", 2, 2, escm_eq_p, NULL);
     (void) escm_procedure_new(e, "equal?", 2, 2, escm_equal_p, NULL);
 
-    (void) escm_procedure_new(e, "gc", 0, 0, escm_gc, NULL);
-
     (void) escm_procedure_new(e, "eof-object?", 1, 1, escm_eof_object_p, NULL);
 
     (void) escm_procedure_new(e, "load", 1, 1, escm_load, NULL);
@@ -91,6 +89,10 @@ escm_primitives_load(escm *e)
     (void) escm_procedure_new(e, "write-char", 1, 2, escm_write_char, NULL);
 # endif
 #endif
+
+    (void) escm_procedure_new(e, "gc", 0, 0, escm_gc, NULL);
+    (void) escm_procedure_new(e, "set-case-sensitive!", 1, 1,
+			      escm_set_case_sensitive_x, NULL);
 }
 
 escm_atom *
@@ -166,13 +168,20 @@ escm_define(escm *e, escm_atom *args)
 
 	escm_ctx_enter(e);
 	escm_ctx_put(e, a->cdr); /* formals */
-	escm_ctx_put(e, escm_cons_pop(e, &args)); /* body */
+	while (args)
+	    escm_ctx_put(e, escm_cons_pop(e, &args)); /* body */
 
 	escm_env_set(e->env, escm_sym_val(a->car),
 		     escm_lambda(e, escm_ctx_first(e)));
 	escm_ctx_discard(e);
     } else {
 	escm_atom *val;
+
+	if (escm_cons_cdr(args) != e->NIL) {
+	    fprintf(stderr, "define: error: multiples expressions.\n");
+	    e->err = -1;
+	    return NULL;
+	}
 
 	escm_gc_gard(e, c);
 	val = escm_atom_eval(e, escm_cons_pop(e, &args));
@@ -202,7 +211,7 @@ escm_set_x(escm *e, escm_atom *args)
 	return NULL;
     }
 
-    escm_env_set(e->env, escm_sym_val(c), escm_cons_pop(e, &args));
+    escm_env_edit(e->env, escm_sym_val(c), escm_cons_pop(e, &args));
 
     return NULL;
 }
@@ -715,17 +724,6 @@ escm_equal_p(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_gc(escm *e, escm_atom *args)
-{
-    (void) args;
-
-    escm_gc_collect(e);
-
-    return NULL;
-}
-
-
-escm_atom *
 escm_eof_object_p(escm *e, escm_atom *args)
 {
     escm_atom *a;
@@ -854,6 +852,24 @@ escm_write_char(escm *e, escm_atom *args)
 }
 # endif /* ESCM_USE_CHARACTERS */
 #endif /* ESCM_USE_PORTS */
+
+escm_atom *
+escm_gc(escm *e, escm_atom *args)
+{
+    (void) args;
+
+    escm_gc_collect(e);
+
+    return NULL;
+}
+
+escm_atom *
+escm_set_case_sensitive_x(escm *e, escm_atom *args)
+{
+    e->casesensitive = ESCM_ISTRUE(escm_cons_car(args));
+
+    return NULL;
+}
 
 static escm_atom *
 named_let(escm *e, escm_atom *name, escm_atom *args)

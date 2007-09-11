@@ -89,6 +89,7 @@ struct escm {
 
     int err;
 
+    unsigned int casesensitive : 1;
     unsigned int quiet : 1;
 };
 

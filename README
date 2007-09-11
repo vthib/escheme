@@ -1,3 +1,7 @@
  - Functions of r5rs not implemented:
    - char-ready?
    - transcript-on/off
+
+ - API functions:
+   (version)
+   (scheme-implementation)

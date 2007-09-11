@@ -39,6 +39,8 @@ escm_procedures_init(escm *e)
     (void) escm_type_add(e, t);
 
     (void) escm_procedure_new(e, "apply", 2, -1, escm_apply, NULL);
+    (void) escm_procedure_new(e, "map", 2, -1, escm_map, NULL);
+    (void) escm_procedure_new(e, "for-each", 2, -1, escm_for_each, NULL);
 }
 
 escm_atom *
@@ -95,6 +97,102 @@ escm_apply(escm *e, escm_atom *args)
 	args = c->car;
 
     return escm_procedure_exec(e, fun, args, 0);
+}
+
+escm_atom *
+escm_map(escm *e, escm_atom *args)
+{
+    escm_atom *proc, *atom;
+    escm_cons *c;
+
+    proc = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISPROC(proc), proc, e);
+
+    for (c = escm_cons_val(args); c; c = escm_cons_next(c))
+	escm_assert(ESCM_ISCONS(c->car), c->car, e);
+
+    escm_ctx_enter(e);
+
+    for (;;) {
+	escm_ctx_enter(e);
+
+	for (c = escm_cons_val(args); c; c = escm_cons_next(c)) {
+	    if (!c->car) {
+		escm_cons *c2;
+
+		if (c != escm_cons_val(args)) /* not the first list, so they
+						 dont have same length */
+		    goto err_length;
+		for (c2 = escm_cons_next(c); c2; c2 = escm_cons_next(c2)) {
+		    if (c2->car != NULL)
+			goto err_length;
+		}
+		escm_ctx_discard(e);
+		return escm_ctx_leave(e);
+	    }
+	    escm_ctx_put(e, escm_cons_pop(e, &c->car));
+	}
+	atom = escm_procedure_exec(e, proc, escm_ctx_leave(e), 0);
+	if (!atom) {
+	    if (e->err == -1) {
+		escm_ctx_discard(e);
+		return NULL;
+	    }
+	    fprintf(stderr, "map: the procedure must yeild a value.\n");
+	}
+	escm_ctx_put(e, atom);
+    }
+
+err_length:
+    fprintf(stderr, "map: all lists must have the same length.\n");
+    escm_ctx_discard(e), escm_ctx_discard(e);
+    e->err = -1;
+    return NULL;
+}
+
+escm_atom *
+escm_for_each(escm *e, escm_atom *args)
+{
+    escm_atom *proc;
+    escm_cons *c;
+    int loop;
+
+    proc = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISPROC(proc), proc, e);
+
+    for (c = escm_cons_val(args); c; c = escm_cons_next(c))
+	escm_assert(ESCM_ISCONS(c->car), c->car, e);
+
+    escm_ctx_enter(e);
+
+    loop = 1;
+    while (loop) {
+	escm_ctx_enter(e);
+
+	for (c = escm_cons_val(args); c; c = escm_cons_next(c)) {
+	    if (!c->car) {
+		escm_cons *c2;
+
+		if (c != escm_cons_val(args)) /* not the first list, so they
+						 dont have same length */
+		    goto err_length;
+		for (c2 = escm_cons_next(c); c2; c2 = escm_cons_next(c2)) {
+		    if (c2->car != NULL)
+			goto err_length;
+		}
+		escm_ctx_discard(e);
+		return escm_ctx_leave(e);
+	    }
+	    escm_ctx_put(e, escm_cons_pop(e, &c->car));
+	}
+	(void) escm_procedure_exec(e, proc, escm_ctx_leave(e), 0);
+    }
+
+err_length:
+    fprintf(stderr, "for-each: all lists must have the same length.\n");
+    escm_ctx_discard(e), escm_ctx_discard(e);
+    e->err = -1;
+    return NULL;
 }
 
 static void

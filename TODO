@@ -1,4 +1,3 @@
- - Load "init.scm"
  - Finish all primitives
  - Finish the Macro implementation
  - Verify compatibility with various scheme libraries
@@ -8,10 +7,12 @@
  - Strings-length and string-ref behavior with non ascii characters need to be
    corrected.
  - Slashification
+ - Bignums
 
 Maybe:
 
  - Unicode chars
+ - Code a escm_abort
  - Correct the bug with the "do" macro
  - Create a new good number type with rationals, integers, reals and complex.
  - Create a new good number type with integers and reals unboxed.

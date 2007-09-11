@@ -191,41 +191,12 @@ escm_input_gettext(escm_input *f, const char *end)
     return xstrdup(strbuf);
 }
 
-/* obsolete? */
-char *
-escm_input_getsymbol(escm_input *f)
-{
-    size_t len = 0;
-    int c;
-    long save;
-
-    assert(f != NULL);
-
-    save = (f->type == INPUT_FILE) ? f->d.file.car : 0;
-
-    do {
-	c = escm_input_getc(f);
-	strbuf[len++] = c;
-    } while (c != EOF &&
-	     (strchr("!$%&*+-./:<=>?@^_~", c) != NULL || isalnum(c)));
-
-    if (c != EOF)
-	escm_input_ungetc(f, c);
-
-    if (c == '\n' && save)
-	f->d.file.car = save + len - 1;
-
-    strbuf[len - 1] = '\0';
-
-    return xstrdup(strbuf);
-}
-
 /**
  * @brief get a string. Each character is passed to "fun" which must return 1
  * if the character is valid, 0 else (cf ctype.h)
  */
 char *
-escm_input_getstr_fun(escm_input *f, int (*fun)(int))
+escm_input_getstr_fun(escm_input *f, int (*fun)(int), int casesens)
 {
     size_t len = 0;
     int c;
@@ -234,6 +205,8 @@ escm_input_getstr_fun(escm_input *f, int (*fun)(int))
 
     do {
 	c = escm_input_getc(f);
+	if (casesens)
+	    c = tolower(c);
 	strbuf[len++] = c;
     } while (c != EOF && fun(c));
 

@@ -156,6 +156,33 @@ escm_env_set(escm_atom *atomenv, const char *name, escm_atom *atom)
     }
 }
 
+void
+escm_env_edit(escm_atom *atomenv, const char *name, escm_atom *atom)
+{
+    escm_env *env;
+
+    assert(atomenv != NULL);
+    assert(name != NULL);
+
+    env = (escm_env *) atomenv->ptr;
+
+    if (!env->prev) {
+	if (escm_hash_get(env->d.toplvl, name))
+	    escm_hash_set(env->d.toplvl, name, atom);
+    } else {
+	struct escm_node *n;
+
+	for (n = env->d.lst.first; n; n = n->next) {
+	    if (0 == strcmp(n->name, name)) {
+		n->atom = atom;
+		return;
+	    }
+	}
+
+	escm_env_edit(env->prev, name, atom);
+    }
+}
+
 escm_atom *
 escm_env_enter(escm *e, escm_atom *new)
 {

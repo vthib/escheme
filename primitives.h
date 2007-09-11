@@ -48,8 +48,6 @@ escm_atom *escm_eq_p(escm *, escm_atom *);
 escm_atom *escm_eqv_p(escm *, escm_atom *);
 escm_atom *escm_equal_p(escm *, escm_atom *);
 
-escm_atom *escm_gc(escm *, escm_atom *);
-
 escm_atom *escm_eof_object_p(escm *, escm_atom *);
 
 escm_atom *escm_load(escm *, escm_atom *);
@@ -66,5 +64,9 @@ escm_atom *escm_write(escm *, escm_atom *);
 escm_atom *escm_display(escm *, escm_atom *);
 escm_atom *escm_newline(escm *, escm_atom *);
 # endif /* ESCM_USE_PORTS */
+
+escm_atom *escm_gc(escm *, escm_atom *);
+
+escm_atom *escm_set_case_sensitive_x(escm *, escm_atom *);
 
 #endif /* ESCHEME_PRIMITIVES_H */

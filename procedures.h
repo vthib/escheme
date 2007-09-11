@@ -58,5 +58,7 @@ escm_atom *escm_procedure_new(escm *, const char *, unsigned int, int,
 escm_atom *escm_procedure_exec(escm *, escm_atom *, escm_atom *, int);
 
 escm_atom *escm_apply(escm *, escm_atom *);
+escm_atom *escm_map(escm *, escm_atom *);
+escm_atom *escm_for_each(escm *, escm_atom *);
 
 #endif /* ESCHEME_PROCEDURES_H */

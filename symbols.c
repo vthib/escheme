@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Escheme; If not, see <http://www.gnu.org/licenses/>.
  */
+#include <assert.h>
 #include <string.h>
 #include <ctype.h>
 
@@ -151,7 +152,7 @@ symbol_parse(escm *e)
 {
     char *str;
 
-    str = escm_input_getstr_fun(e->input, issymbol);
+    str = escm_input_getstr_fun(e->input, issymbol, e->casesensitive);
 
     return escm_atom_new(e, symboltype, str);
 }
@@ -176,4 +177,3 @@ issymbol(int c)
 {
     return (strchr("!$%&*+-./:<=>?@^_~", c) != NULL || isalnum(c));
 }
-

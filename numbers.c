@@ -31,6 +31,7 @@ static escm_atom *number_parse(escm *);
 static escm_number *inputtonumber(escm_input *, int);
 static long pgcd(long, long);
 static char *bintostr(long);
+static inline int isnumber(int);
 
 void
 escm_numbers_init(escm *e)
@@ -1177,7 +1178,7 @@ inputtonumber(escm_input *input, int radix)
 
     n = xmalloc(sizeof *n);
 
-    str = escm_input_getsymbol(input);
+    str = escm_input_getstr_fun(input, isnumber, 1);
     if (strchr(str, '.') != NULL) { /* real */
 	n->fixnum = 0;
 
@@ -1260,4 +1261,10 @@ bintostr(long a)
     *p = '\0';
 
     return buf;
+}
+
+static inline int
+isnumber(int c)
+{
+    return (strchr("+-i/#.e", c) != NULL || isxdigit(c));
 }
