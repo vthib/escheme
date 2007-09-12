@@ -625,11 +625,7 @@ cons_parsetest(escm *e, int c)
 {
     (void) e;
 
-#ifdef ESCM_BRACKETS_PARENS
-    return (c == '(' || c == '[');
-#else
-    return (c == '(');
-#endif
+    return (c == '(' || (e->brackets == 1 && c == '['));
 }
 
 static escm_atom *
@@ -645,11 +641,7 @@ cons_parse(escm *e)
     qsave = e->quiet, e->quiet = 1;
     escm_ctx_enter(e);
 
-#ifdef ESCM_BRACKETS_PARENS
-    while (e->err != ')' && e->err != ']') {
-#else
-    while (e->err != ')') {
-#endif
+    while (e->err != ')' && (e->brackets == 0 || e->err != ']')) {
 	if (e->err != 0) {
 	    if (e->err > 0)
 		escm_input_print(e->input, "unknown character `%c'.", e->err);

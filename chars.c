@@ -371,9 +371,9 @@ char_print(escm *e, int c, FILE *stream, int lvl)
 	fprintf(stream, "space");
     else {
 	if (isprint(c))
-	    fprintf(stream, "%lc", c);
+	    fprintf(stream, "%c", c);
 	else
-	    fprintf(stream, "x%.2hhx", (unsigned char) c);
+	    fprintf(stream, "x%x", (unsigned char) c);
     }
 }
 

@@ -93,6 +93,8 @@ escm_primitives_load(escm *e)
     (void) escm_procedure_new(e, "gc", 0, 0, escm_gc, NULL);
     (void) escm_procedure_new(e, "set-case-sensitive!", 1, 1,
 			      escm_set_case_sensitive_x, NULL);
+    (void) escm_procedure_new(e, "set-brackets-parens!", 1, 1,
+			      escm_set_brackets_parens_x, NULL);
 }
 
 escm_atom *
@@ -867,6 +869,14 @@ escm_atom *
 escm_set_case_sensitive_x(escm *e, escm_atom *args)
 {
     e->casesensitive = ESCM_ISTRUE(escm_cons_car(args));
+
+    return NULL;
+}
+
+escm_atom *
+escm_set_brackets_parens_x(escm *e, escm_atom *args)
+{
+    e->brackets = ESCM_ISTRUE(escm_cons_car(args));
 
     return NULL;
 }

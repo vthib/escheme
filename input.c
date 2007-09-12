@@ -205,7 +205,7 @@ escm_input_getstr_fun(escm_input *f, int (*fun)(int), int casesens)
 
     do {
 	c = escm_input_getc(f);
-	if (casesens)
+	if (!casesens)
 	    c = tolower(c);
 	strbuf[len++] = c;
     } while (c != EOF && fun(c));

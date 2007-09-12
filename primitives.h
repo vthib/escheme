@@ -68,5 +68,6 @@ escm_atom *escm_newline(escm *, escm_atom *);
 escm_atom *escm_gc(escm *, escm_atom *);
 
 escm_atom *escm_set_case_sensitive_x(escm *, escm_atom *);
+escm_atom *escm_set_brackets_parens_x(escm *, escm_atom *);
 
 #endif /* ESCHEME_PRIMITIVES_H */

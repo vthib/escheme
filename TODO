@@ -2,8 +2,6 @@
  - Finish the Macro implementation
  - Verify compatibility with various scheme libraries
  - Try to implement some SRFIs
- - Add configurables things in runtime, ie (set-case-sensitive! #t) or
- (set-brackets-parens! #t)
  - Strings-length and string-ref behavior with non ascii characters need to be
    corrected.
  - Slashification

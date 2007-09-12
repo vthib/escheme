@@ -296,7 +296,7 @@ vector_parsetest(escm *e, int c)
 	return 0;
 
     c2 = escm_input_getc(e->input);
-    ret = (c2 == '(');
+    ret = (c2 == '(' || (e->brackets == 1 && c2 == '['));
     escm_input_ungetc(e->input, c2);
 
     return ret;
@@ -318,9 +318,10 @@ vector_parse(escm *e)
     escm_ctx_enter(e);
 
     len = 0;
-    while (e->err != ')') {
+    while (e->err != ')' && (e->brackets == 0 || e->err != ']')) {
 	if (e->err != 0) {
-	    escm_input_print(e->input, "unknown character `%c'.", e->err);
+	    if (e->err > 0)
+		escm_input_print(e->input, "unknown character `%c'.", e->err);
 	    escm_ctx_discard(e);
 	    e->quiet = qsave;
 	    return NULL;
