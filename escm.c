@@ -82,6 +82,9 @@ escm_new(void)
 #ifdef ESCM_USE_MACROS
     escm_macros_init(e);
 #endif
+#ifdef ESCM_USE_CONTINUATIONS
+    escm_continuations_init(e);
+#endif
 
 #ifndef ESCM_USE_CHARACTERS
     e->EOF_OBJ = e->FALSE;

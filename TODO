@@ -6,6 +6,7 @@
    corrected.
  - Slashification
  - Bignums
+ - Write "printf", "error"
 
 Maybe:
 

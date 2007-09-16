@@ -683,12 +683,14 @@ cons_eval(escm *e, escm_cons *cons)
 
 #ifdef ESCM_USE_MACROS
     if (ESCM_ISMACRO(atomfun)) {
-	/* cons_make is very ugly here */
-	ret = escm_macro_expand(e, atomfun, escm_cons_make(e, cons->car,
-							   cons->cdr));
+	ret = escm_macro_expand(e, atomfun, e->curobj);
 	if (ret)
 	    return escm_atom_eval(e, ret);
     }
+#endif
+#ifdef ESCM_USE_CONTINUATIONS
+    if (ESCM_ISCONTINUATION(atomfun))
+	return escm_continuation_exec(e, atomfun, cons->cdr);
 #endif
     if (!ESCM_ISPROC(atomfun))
 	goto noexec;

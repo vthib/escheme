@@ -36,5 +36,6 @@
 #include "vectors.h"
 #include "macros.h"
 #include "ports.h"
+#include "continuations.h"
 
 #endif /* ESCHEME_ESCHEME_H */

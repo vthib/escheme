@@ -30,8 +30,18 @@
 # define ESCM_USE_PORTS
 # define ESCM_USE_MATH
 
+/* Disabled it until it really works (not for tomorrow though)
+# define ESCM_USE_CONTINUATIONS
+*/
+
 # define ESCM_CIRCULAR_LIST 1 /* 0: no handle, 1: just in list? and length
 				 2: check also when printing */
+#endif
+
+#ifdef ESCM_USE_CONTINUATIONS
+# ifndef ESCM_USE_C99
+#  define ESCM_USE_C99 /* continuation needs c99 */
+# endif
 #endif
 
 #ifndef ESCM_CIRCULAR_LIST

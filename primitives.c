@@ -39,7 +39,7 @@ escm_primitives_load(escm *e)
     escm_proc_val(o)->d.c.quoted = 0x7;
 
     o = escm_procedure_new(e, "define", 2, -1, escm_define, NULL);
-    escm_proc_val(o)->d.c.quoted = 0x3;
+    escm_proc_val(o)->d.c.quoted = 0x7;
     o = escm_procedure_new(e, "set!", 2, 2, escm_set_x, NULL);
     escm_proc_val(o)->d.c.quoted = 0x1;
 
