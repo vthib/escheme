@@ -541,7 +541,9 @@ port_print(escm *e, escm_port *port, FILE *stream, int lvl)
     (void) lvl;
 
     if (port->input)
-	fprintf(stream, "#<input-port %s>", port->d.input->d.file.name);
+	fprintf(stream, "#<input-port %s>",
+		(port->d.input->type == INPUT_FILE) ?
+		port->d.input->d.file.name : "(string)");
     else
 	fprintf(stream, "#<output-port %s>", port->d.output.name);
 }

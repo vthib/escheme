@@ -94,6 +94,8 @@ escm_new(void)
 
     e->casesensitive = 1;
 
+    escm_srfi_init(e);
+
     e->quiet = 1;
     escm_fparse(e, "init.scm");
     e->quiet = 0;

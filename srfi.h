@@ -14,29 +14,15 @@
  * You should have received a copy of the GNU General Public License
  * along with Escheme; If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef ESCHEME_ESCHEME_H
-# define ESCHEME_ESCHEME_H
+#ifndef ESCHEME_SRFI_H
+# define ESCHEME_SRFI_H
 
-#include "types.h"
-#include "utils.h"
-#include "input.h"
-#include "hash.h"
-#include "escm.h"
-#include "atom.h"
-#include "environments.h"
-#include "cons.h"
-#include "procedures.h"
-#include "symbols.h"
-#include "booleans.h"
-#include "numbers.h"
-#include "primitives.h"
-#include "strings.h"
-#include "chars.h"
-#include "promises.h"
-#include "vectors.h"
-#include "macros.h"
-#include "ports.h"
-#include "continuations.h"
-#include "srfi.h"
+void escm_srfi_init(escm *);
 
-#endif /* ESCHEME_ESCHEME_H */
+/* srfi 6 */
+escm_atom *escm_srfi_open_input_string(escm *, escm_atom *);
+
+/* srfi 23 */
+escm_atom *escm_srfi_error(escm *, escm_atom *);
+
+#endif /* ESCHEME_SRFI_H */

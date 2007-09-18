@@ -125,6 +125,9 @@ escm_input_getc(escm_input *f)
 
     assert(f != NULL);
 
+    if (f->end)
+	return EOF;
+
     if (f->type == INPUT_FILE) {
 	if (f->d.file.un > 0)
 	    c = f->d.file.ub[--f->d.file.un];
@@ -142,9 +145,13 @@ escm_input_getc(escm_input *f)
 		f->d.file.car++;
 	}
     } else {
-	c = (int) (f->end) ? EOF : *f->d.str.cur++;
 	if (*f->d.str.cur == '\0')
-	    f->end = 1;
+	    f->end = 1, c = EOF;
+	else {
+	    c = *f->d.str.cur++;
+	    if (*f->d.str.cur == '\0')
+		f->end = 1;
+	}
     }
 
     return c;
@@ -185,7 +192,8 @@ escm_input_gettext(escm_input *f, const char *end)
 	c = escm_input_getc(f);
     } 
 
-    escm_input_ungetc(f, c);
+    if (!f->end)
+	escm_input_ungetc(f, c);
     strbuf[len] = '\0';
 
     return xstrdup(strbuf);
@@ -210,37 +218,11 @@ escm_input_getstr_fun(escm_input *f, int (*fun)(int), int casesens)
 	strbuf[len++] = c;
     } while (c != EOF && fun(c));
 
-    escm_input_ungetc(f, c);
+    if (!f->end)
+	escm_input_ungetc(f, c);
     strbuf[len - 1] = '\0';
 
     return xstrdup(strbuf);
-}
-
-/**
- * @brief get an int from the input
- */
-int
-escm_input_getint(escm_input *file)
-{
-    int c;
-    int i = 0;
-    int positive = 1;
-
-    assert(file != NULL);
-
-    c = escm_input_getc(file);
-    if (c == '-') {
-	positive = 0;
-	c = escm_input_getc(file);
-    } else if (c == '+')
-	c = escm_input_getc(file);
-
-    for (; c && isdigit(c); c = escm_input_getc(file))
-	i *= 10, i += (c - '0');
-
-    escm_input_ungetc(file, c);
-
-    return i;
 }
 
 /**

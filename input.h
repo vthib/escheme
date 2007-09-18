@@ -57,8 +57,6 @@ int escm_input_getc(escm_input *);
 char *escm_input_gettext(escm_input *, const char *);
 char *escm_input_getstr_fun(escm_input *, int (*)(int), int);
 
-int escm_input_getint(escm_input *);
-
 void escm_input_rewind(escm_input *);
 void escm_input_pushback(escm_input *, size_t);
 void escm_input_ungetc(escm_input *, int);
