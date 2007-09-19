@@ -24,7 +24,7 @@
 
 static size_t booleantype = 0;
 
-static void boolean_print(escm *, void *, FILE *, int);
+static void boolean_print(escm *, void *, escm_output *, int);
 static int boolean_equal(escm *, void *, void *, int);
 static int boolean_parsetest(escm *, int);
 static escm_atom *boolean_parse(escm *);
@@ -79,12 +79,12 @@ escm_boolean_tget(void)
 }
 
 static void
-boolean_print(escm *e, void *bool, FILE *stream, int lvl)
+boolean_print(escm *e, void *bool, escm_output *stream, int lvl)
 {
     (void) e;
     (void) lvl;
 
-    fprintf(stream, "#%c", (bool == ESCM_BOOL_T) ? 't' : 'f');
+    escm_printf(stream, "#%c", (bool == ESCM_BOOL_T) ? 't' : 'f');
 }
 
 static int

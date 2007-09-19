@@ -23,7 +23,7 @@
 
 static size_t numbertype = 0;
 
-static void number_print(escm *, escm_number *, FILE *, int);
+static void number_print(escm *, escm_number *, escm_output *, int);
 static int number_equal(escm *, escm_number *, escm_number *, int);
 static int number_parsetest(escm *, int);
 static escm_atom *number_parse(escm *);
@@ -1085,17 +1085,17 @@ escm_ge(escm *e, escm_atom *args)
 }
 
 static void
-number_print(escm *e, escm_number *number, FILE *stream, int lvl)
+number_print(escm *e, escm_number *number, escm_output *stream, int lvl)
 {
     (void) e;
     (void) lvl;
 
     if (number->fixnum)
-	fprintf(stream, "%ld", number->d.ival);
+	escm_printf(stream, "%ld", number->d.ival);
     else {
-	fprintf(stream, "%.15g", number->d.rval);
+	escm_printf(stream, "%.15g", number->d.rval);
 	if (DBL_EQ(number->d.rval, floor(number->d.rval)))
-	    fprintf(stream, ".");
+	    escm_putc(stream, '.');
     }
 }
 

@@ -22,7 +22,7 @@
 
 static size_t chartype = 0;
 
-static void char_print(escm *, int, FILE *, int);
+static void char_print(escm *, int, escm_output *, int);
 static int char_equal(escm *, char, char, int);
 static int char_parsetest(escm *, int);
 static escm_atom *char_parse(escm *);
@@ -347,33 +347,32 @@ escm_char_downcase(escm *e, escm_atom *args)
 }
 
 static void
-char_print(escm *e, int c, FILE *stream, int lvl)
+char_print(escm *e, int c, escm_output *stream, int lvl)
 {
     (void) e;
 
     if (lvl == 1) {
 	if (c == EOF)
-	    fprintf(stream, "#<eof-object>");
-	else if (EOF == putc(c, stream))
-	    fprintf(stderr, "putc('%c') failed.\n", c);
+	    escm_printf(stream, "#<eof-object>");
+	escm_putc(stream, c);
 	return;
     }
 
     if (c == EOF) {
-	fprintf(stream, "#<eof-object>");
+	escm_printf(stream, "#<eof-object>");
 	return;
     }
 
-    fprintf(stream, "#\\");
+    escm_printf(stream, "#\\");
     if (c == '\n')
-	fprintf(stream, "newline");
+	escm_printf(stream, "newline");
     else if (c == ' ')
-	fprintf(stream, "space");
+	escm_printf(stream, "space");
     else {
 	if (isprint(c))
-	    fprintf(stream, "%c", c);
+	    escm_printf(stream, "%c", c);
 	else
-	    fprintf(stream, "x%x", (unsigned char) c);
+	    escm_printf(stream, "x%x", (unsigned char) c);
     }
 }
 

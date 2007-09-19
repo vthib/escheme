@@ -52,7 +52,7 @@ typedef struct escm_continuation {
 void escm_continuations_init(escm *);
 size_t escm_continuation_tget(void);
 
-escm_atom *escm_continuation_exec(escm *, escm_atom *, escm_atom *);
+void escm_continuation_exec(escm *, escm_atom *, escm_atom *);
 
 escm_atom *escm_continuation_p(escm *, escm_atom *);
 escm_atom *escm_call_with_cc(escm *, escm_atom *);

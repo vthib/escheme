@@ -95,7 +95,7 @@ escm_atom_eval(escm *e, escm_atom *atom)
 }
 
 void
-escm_atom_print0(escm *e, escm_atom *atom, FILE *stream, int lvl)
+escm_atom_print4(escm *e, escm_atom *atom, escm_output *stream, int lvl)
 {
     escm_atom *old;
 

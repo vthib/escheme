@@ -28,12 +28,10 @@
 typedef struct escm_port {
     union {
 	escm_input *input;
-	struct {
-	    FILE *fp;
-	    char *name;
-	} output;
+	escm_output *output;
     } d;
 
+    unsigned int nofree : 1;
     unsigned int closed : 1;
     unsigned int input : 1;
 } escm_port;
@@ -42,7 +40,7 @@ typedef struct escm_curports escm_curports;
 
 void escm_ports_init(escm *);
 size_t escm_port_tget(void);
-escm_atom *escm_port_make(escm *, FILE *, const char *, int);
+escm_atom *escm_port_make(escm *, void *, int);
 
 escm_atom *escm_port_p(escm *, escm_atom *);
 escm_atom *escm_input_port_p(escm *, escm_atom *);

@@ -46,6 +46,10 @@ escm_new(void)
     for (i = 0; i < ESCM_NSEG; i++)
 	e->segments[i] = alloc_seg(e);
 
+    e->input = escm_input_fmng(stdin, "standard input");
+    e->output = escm_output_fmng(stdout, "standard output");
+    e->errp = escm_output_fmng(stderr, "standard error output");
+
     /* XXX: do not change the order, or change the macros ESCM_TYPE_CONS etc! */
     escm_environments_init(e);
     e->env = escm_env_new(e, NULL);
@@ -129,6 +133,10 @@ escm_free(escm *e)
 	free(e->segments[i]);
     free(e->segments);
 
+    escm_input_close(e->input);
+    escm_output_close(e->output);
+    escm_output_close(e->errp);
+
     free(e);
 }
 
@@ -148,7 +156,7 @@ escm_fparse(escm *e, const char *filename)
     do {
 	atom = escm_parse(e);
 	if (!e->quiet && atom) {
-	    escm_atom_print(e, atom, stdout);
+	    escm_atom_print(e, atom);
 	    printf("\n");
 	}
     } while (e->input->end == 0);
@@ -172,7 +180,7 @@ escm_sparse(escm *e, const char *str)
     do {
 	atom = escm_parse(e);
 	if (!e->quiet && atom) {
-	    escm_atom_print(e, atom, stdout);
+	    escm_atom_print(e, atom);
 	    printf("\n");
 	}
     } while (e->input->end == 0);
@@ -184,14 +192,19 @@ void
 escm_shell(escm *e)
 {
     escm_atom *atom;
+    escm_input *old;
+    int stdinp;
 
     assert(e != NULL);
 
-    e->input = escm_input_fmng(stdin, "standard input");
+    stdinp = (e->input->type == INPUT_FILE && e->input->d.file.fp == stdin);
+    if (!stdinp)
+	old = e->input, e->input = escm_input_fmng(stdin, "standard input");
+
     atom = NULL;
     do {
 	if (atom) {
-	    escm_atom_print(e, atom, stdout);
+	    escm_atom_print(e, atom);
 	    printf("\n");
 	}
 	printf("escheme> ");
@@ -200,7 +213,8 @@ escm_shell(escm *e)
 	atom = escm_parse(e);
     } while (e->input->end == 0);
 
-    escm_input_close(e->input), e->input = NULL;
+    if (!stdinp)
+	escm_input_close(e->input), e->input = old;
 }
     
 escm_atom *

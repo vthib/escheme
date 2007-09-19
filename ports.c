@@ -22,7 +22,7 @@ static size_t porttype = 0;
 
 static void port_free(escm_port *);
 static void port_exit(escm *, escm_curports *);
-static void port_print(escm *, escm_port *, FILE *, int);
+static void port_print(escm *, escm_port *, escm_output *, int);
 
 struct escm_curports {
     escm_atom *input;
@@ -45,9 +45,12 @@ escm_ports_init(escm *e)
 
     porttype = escm_type_add(e, t);
 
-    cp->input = escm_port_make(e, stdin, "standard input", 1);
+    cp->input = escm_port_make(e, e->input, 1);
+    escm_port_val(cp->input)->nofree = 1;
     escm_gc_gard(e, cp->input);
-    cp->output = escm_port_make(e, stdout, "standard output", 0);
+
+    cp->output = escm_port_make(e, e->output, 0);
+    escm_port_val(cp->output)->nofree = 1;
     escm_gc_gard(e, cp->output);
 
     (void) escm_procedure_new(e, "port?", 1, 1, escm_port_p, NULL);
@@ -103,17 +106,15 @@ escm_port_tget(void)
 }
 
 escm_atom *
-escm_port_make(escm *e, FILE *fp, const char *name, int input)
+escm_port_make(escm *e, void *ptr, int input)
 {
     escm_port *p;
 
-    p = xmalloc(sizeof *p);
+    p = xcalloc(1, sizeof *p);
     if (input)
-	p->d.input = escm_input_fmng(fp, name);
-    else {
-	p->d.output.fp = fp;
-	p->d.output.name = xstrdup(name);
-    }
+	p->d.input = ptr;
+    else
+	p->d.output = ptr;
 
     p->input = !!input;
     p->closed = 0;
@@ -171,7 +172,7 @@ escm_atom *
 escm_with_input_from_file(escm *e, escm_atom *args, escm_curports *cp)
 {
     escm_atom *str, *thunk, *save;
-    escm_port *port;
+    escm_input *input;
 
     str = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(str), str, e);
@@ -179,18 +180,14 @@ escm_with_input_from_file(escm *e, escm_atom *args, escm_curports *cp)
     thunk = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISPROC(thunk), thunk, e);
 
-    port = xcalloc(1, sizeof *port);
-
-    port->d.input = escm_input_fopen(escm_str_val(str));
-    if (!port->d.input) {
-	free(port);
+    input = escm_input_fopen(escm_str_val(str));
+    if (!input) {
 	e->err = -1;
 	return NULL;
     }
-    port->input = 1;
 
     save = cp->input;
-    cp->input = escm_atom_new(e, porttype, port);
+    cp->input = escm_port_make(e, input, 1);
     escm_gc_gard(e, cp->input);
 
     str = escm_procedure_exec(e, thunk, e->NIL, 0);
@@ -205,7 +202,7 @@ escm_atom *
 escm_with_output_to_file(escm *e, escm_atom *args, escm_curports *cp)
 {
     escm_atom *str, *thunk, *save;
-    escm_port *port;
+    escm_output *o;
 
     str = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(str), str, e);
@@ -213,20 +210,14 @@ escm_with_output_to_file(escm *e, escm_atom *args, escm_curports *cp)
     thunk = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISPROC(thunk), thunk, e);
 
-    port = xcalloc(1, sizeof *port);
-
-    port->d.output.fp = fopen(escm_str_val(str), "w");
-    if (!port->d.output.fp) {
-	perror("fopen");
-	free(port);
+    o = escm_output_fopen(escm_str_val(str));
+    if (!o) {
 	e->err = -1;
 	return NULL;
     }
-    port->d.output.name = xstrdup(escm_str_val(str));
-    port->input = 0;
 
     save = cp->output;
-    cp->output = escm_atom_new(e, porttype, port);
+    cp->output = escm_port_make(e, o, 0);
     escm_gc_gard(e, cp->output);
 
     str = escm_procedure_exec(e, thunk, e->NIL, 0);
@@ -240,45 +231,37 @@ escm_with_output_to_file(escm *e, escm_atom *args, escm_curports *cp)
 escm_atom *
 escm_open_input_file(escm *e, escm_atom *args)
 {
-    escm_port *port;
+    escm_input *inp;
     escm_atom *name;
 
     name = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(name), name, e);
 
-    port = xcalloc(1, sizeof *port);
-    port->input = 1;
-    port->d.input = escm_input_fopen(escm_str_val(name));
-    if (!port->d.input) {
-	free(port);
+    inp = escm_input_fopen(escm_str_val(name));
+    if (!inp) {
 	e->err = -1;
 	return NULL;
     }
 
-    return escm_atom_new(e, porttype, port);
+    return escm_port_make(e, inp, 1);
 }
 
 escm_atom *
 escm_open_output_file(escm *e, escm_atom *args)
 {
-    escm_port *port;
+    escm_output *outp;
     escm_atom *name;
 
     name = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(name), name, e);
 
-    port = xcalloc(1, sizeof *port);
-    port->input = 0;
-    port->d.output.fp = fopen(escm_str_val(name), "w");
-    if (!port->d.output.fp) {
-	perror("fopen");
-	free(port);
+    outp = escm_output_fopen(escm_str_val(name));
+    if (!outp) {
 	e->err = -1;
 	return NULL;
     }
-    port->d.output.name = xstrdup(escm_str_val(name));
 
-    return escm_atom_new(e, porttype, port);
+    return escm_port_make(e, outp, 0);
 }
 
 escm_atom *
@@ -413,7 +396,7 @@ escm_write(escm *e, escm_atom *args, escm_curports *cp)
 	return NULL;
     }
 
-    escm_atom_print(e, atom, port->d.output.fp);
+    escm_atom_print4(e, atom, port->d.output, 0);
 
     return NULL;
 }
@@ -442,7 +425,7 @@ escm_display(escm *e, escm_atom *args, escm_curports *cp)
 	return NULL;
     }
 
-    escm_atom_print0(e, atom, port->d.output.fp, 1);
+    escm_atom_print4(e, atom, port->d.output, 1);
 
     return NULL;
 }
@@ -469,7 +452,7 @@ escm_newline(escm *e, escm_atom *args, escm_curports *cp)
 	return NULL;
     }
 
-    fprintf(port->d.output.fp, "\n");
+    escm_putc(port->d.output, '\n');
 
     return NULL;
 }
@@ -500,8 +483,7 @@ escm_write_char(escm *e, escm_atom *args, escm_curports *cp)
 	return NULL;
     }
 
-    if (EOF == putc(escm_char_val(c), port->d.output.fp))
-	fprintf(stderr, "putc('%c') failed.\n", escm_char_val(c));
+    escm_putc(port->d.output, escm_char_val(c));
 
     return NULL;
 }
@@ -514,12 +496,11 @@ port_free(escm_port *port)
     if (!port)
 	return;
 
-    if (port->input)
-	escm_input_close(port->d.input);
-    else {
-	free(port->d.output.name);
-	if (EOF == fclose(port->d.output.fp))
-	    perror("fclose");
+    if (!port->nofree) {
+	if (port->input)
+	    escm_input_close(port->d.input);
+	else
+	    escm_output_close(port->d.output);
     }
 
     free(port);
@@ -531,19 +512,21 @@ port_exit(escm *e, escm_curports *cp)
     escm_gc_ungard(e, cp->output);
     escm_gc_ungard(e, cp->input);
 
-    free(cp);
+    free(cp), cp = NULL;
 }
 
 static void
-port_print(escm *e, escm_port *port, FILE *stream, int lvl)
+port_print(escm *e, escm_port *port, escm_output *stream, int lvl)
 {
     (void) e;
     (void) lvl;
 
     if (port->input)
-	fprintf(stream, "#<input-port %s>",
-		(port->d.input->type == INPUT_FILE) ?
-		port->d.input->d.file.name : "(string)");
+	escm_printf(stream, "#<input-port %s>",
+		    (port->d.input->type == INPUT_FILE) ?
+		    port->d.input->d.file.name : "(string)");
     else
-	fprintf(stream, "#<output-port %s>", port->d.output.name);
+	escm_printf(stream, "#<output-port %s>",
+		    (port->d.output->type == OUTPUT_FILE) ?
+		    port->d.output->d.file.name : "(string)");
 }

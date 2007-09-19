@@ -23,7 +23,7 @@
 static size_t constype = 0;
 
 static void cons_mark(escm *, escm_cons *);
-static void cons_print(escm *, escm_cons *, FILE *, int);
+static void cons_print(escm *, escm_cons *, escm_output *, int);
 static int cons_equal(escm *, escm_cons *, escm_cons *, int);
 static int cons_parsetest(escm *, int);
 static escm_atom *cons_parse(escm *);
@@ -330,7 +330,7 @@ escm_append(escm *e, escm_atom *args)
 
     for (a = escm_cons_val(flist); a; a = escm_cons_next(a)) {
 	if (!ESCM_ISCONS(a->cdr)) {
-	    escm_atom_print(e, flist, stderr);
+	    escm_atom_printerr(e, flist);
 	    fprintf(stderr, ": improper list.\n");
 	    escm_ctx_discard(e);
 	    e->err = -1;
@@ -355,7 +355,7 @@ escm_reverse(escm *e, escm_atom *args)
     new = NULL;
     for (c = escm_cons_val(arg); c; c = escm_cons_next(c)) {
 	if (!ESCM_ISCONS(c->cdr)) {
-	    escm_atom_print(e, arg, stderr);
+	    escm_atom_printerr(e, arg);
 	    fprintf(stderr, ": Improper list.\n");
 	    e->err = -1;
 	    return NULL;
@@ -386,13 +386,13 @@ escm_list_tail(escm *e, escm_atom *args)
     for (; k > 0; k--) {
 	if (atom == e->NIL || !atom) {
 	    fprintf(stderr, "index too large for list ");
-	    escm_atom_print(e, list, stderr);
+	    escm_atom_printerr(e, list);
 	    fprintf(stderr, "\n");
 	    e->err = -1;
 	    return NULL;
 	}
 	if (!ESCM_ISCONS(atom)) {
-	    escm_atom_print(e, list, stderr);
+	    escm_atom_printerr(e, list);
 	    fprintf(stderr, ": improper list.\n");
 	    e->err = -1;
 	    return NULL;
@@ -543,7 +543,7 @@ cons_mark(escm *e, escm_cons *cons)
 }
 
 static void
-cons_print(escm *e, escm_cons *cons, FILE *stream, int lvl)
+cons_print(escm *e, escm_cons *cons, escm_output *stream, int lvl)
 {
 #if ESCM_CIRCULAR_LIST == 2
     escm_cons *c, *end;
@@ -551,49 +551,49 @@ cons_print(escm *e, escm_cons *cons, FILE *stream, int lvl)
 
     (void) lvl;
 
-    fprintf(stream, "(");
+    escm_putc(stream, '(');
 
     e->curobj->marked = 1; /* mark all atoms to check circular lists */
     for (c = cons, end = c; c; c = escm_cons_next(c), end = c) {
-	escm_atom_print(e, c->car, stream);
+	escm_atom_print3(e, c->car, stream);
 	if (!ESCM_ISCONS(c->cdr)) {
 	    fprintf(stream, " . ");
-	    escm_atom_print(e, c->cdr, stream);
+	    escm_atom_print3(e, c->cdr, stream);
 	    break;
 	} else if (c->cdr->marked == 1) {
-	    fprintf(stream, " #");
+	    escm_printf(stream, " #");
 	    break;
 	} else if (c->cdr != e->NIL)
-	    fprintf(stream, " ");
+	    escm_printf(stream, " ");
 	c->cdr->marked = 1;
     }
 
     e->curobj->marked = 0;
     if (cons == end)
-	fprintf(stream, "0");
+	escm_putc(stream, '0');
     else {
 	for (i = 1, c = cons; c != end; c = escm_cons_next(c), i++) {
 	    if (end && ESCM_ISCONS(c->cdr) && escm_cons_val(c->cdr) == end)
-		fprintf(stream, "%ld", i);
+		escm_printf(stream, "%ld", i);
 	    c->cdr->marked = 0;
 	}
     }
 #else
     (void) lvl;
 
-    fprintf(stream, "(");
+    escm_putc(stream, '(');
 
     for (; cons != NULL; cons = escm_cons_next(cons)) {
-	escm_atom_print(e, cons->car, stream);
+	escm_atom_print3(e, cons->car, stream);
 	if (!ESCM_ISCONS(cons->cdr)) {
-	    fprintf(stream, " . ");
-	    escm_atom_print(e, cons->cdr, stream);
+	    escm_printf(stream, " . ");
+	    escm_atom_print3(e, cons->cdr, stream);
 	    break;
 	} else if (cons->cdr != e->NIL)
-	    fprintf(stream, " ");
+	    escm_putc(stream, ' ');
     }
 #endif
-    fprintf(stream, ")");
+    escm_putc(stream, ')');
 }
 
 static int
@@ -675,7 +675,7 @@ cons_eval(escm *e, escm_cons *cons)
     if (e->err == -1)
 	return NULL;
     if (!atomfun) {
-	escm_atom_print(e, cons->car, stderr);
+	escm_atom_printerr(e, cons->car);
 	fprintf(stderr, ": expression do not yield an applicable value.\n");
 	e->err = -1;
 	return NULL;
@@ -689,8 +689,10 @@ cons_eval(escm *e, escm_cons *cons)
     }
 #endif
 #ifdef ESCM_USE_CONTINUATIONS
-    if (ESCM_ISCONTINUATION(atomfun))
-	return escm_continuation_exec(e, atomfun, cons->cdr);
+    if (ESCM_ISCONTINUATION(atomfun)) {
+	escm_continuation_exec(e, atomfun, cons->cdr);
+	return NULL; /* the longjmp has failed */
+    }
 #endif
     if (!ESCM_ISPROC(atomfun))
 	goto noexec;
@@ -702,7 +704,7 @@ cons_eval(escm *e, escm_cons *cons)
     return ret;
 
 noexec:
-    escm_atom_print(e, atomfun, stderr);
+    escm_atom_printerr(e, atomfun);
     fprintf(stderr, ": object isn't applicable.\n");
     return NULL;
 }

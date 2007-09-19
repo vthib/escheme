@@ -21,22 +21,23 @@
 #include "types.h"
 #include "cons.h"
 
-#define escm_assert(test, atom, e)		\
-    if (!(test)) {				\
-	escm_atom_print(e, atom, stderr);	\
-	fprintf(stderr, ": wrong argument.\n");	\
-	(e)->err = -1;				\
-	return NULL;				\
+/* XXX: stderr not stdout */
+#define escm_assert(test, atom, e)			\
+    if (!(test)) {					\
+	escm_atom_printerr(e, atom);			\
+	escm_printf(e->errp, ": wrong argument.\n");	\
+	(e)->err = -1;					\
+	return NULL;					\
     }
 
 /* Okay, this is ugly, but there is no other solution */
-#define escm_assert1(test, atom, e, st)		\
-    if (!(test)) {				\
-	escm_atom_print(e, atom, stderr);	\
-	fprintf(stderr, ": wrong argument.\n"); \
-	st;					\
-	(e)->err = -1;				\
-	return NULL;				\
+#define escm_assert1(test, atom, e, st)			\
+    if (!(test)) {					\
+	escm_atom_printerr(e, atom);			\
+	escm_printf(e->errp, ": wrong argument.\n");	\
+	st;						\
+	(e)->err = -1;					\
+	return NULL;					\
     }
 
 struct escm_type {
@@ -70,6 +71,9 @@ struct escm {
     struct escm_slist *gard;
 
     escm_input *input;
+    escm_output *output;
+    escm_output *errp;
+
     escm_atom *env;
 
     unsigned char **segments;

@@ -60,3 +60,31 @@
 (define (call-with-output-file string proc)
   (let ((port (open-output-file string)))
     (begin (proc port) (close-output-port port))))
+
+
+(define (printf format . args)
+  (do ((i 0 (+ i 1))
+       (len (string-length format)))
+      ((>= i len))
+    (if (char=? (string-ref format i) #\~)
+	(if (= (+ i 1) len)
+	    (error 'printf format " cannot end with a ~")
+	    (begin (set! i (+ i 1))
+		   (case (string-ref format i)
+		     ((#\~) (write-char #\~))
+		     ((#\a)
+		      (if (null? args)
+			  (error 'printf "Missing value for escape sequence.")
+			  (begin
+			    (display (car args))
+			    (set! args (cdr args)))))
+		     ((#\s)
+		      (if (null? args)
+			  (error 'printf "Missing value for escape sequence.")
+			  (begin
+			    (write (car args))
+			    (set! args (cdr args)))))
+		     ((#\% #\n) (write-char #\newline))
+		     (else (error 'printf "unknown escape code ~"
+				  (string-ref format i))))))
+	(write-char (string-ref format i)))))

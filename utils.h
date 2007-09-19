@@ -17,6 +17,7 @@
 #ifndef ESCHEME_UTILS_H
 # define ESCHEME_UTILS_H
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <float.h>
 #include <math.h>
@@ -51,8 +52,6 @@
 
 int xstrcasecmp(const char *, const char *);
 double xround(double);
-
-void print_slashify(FILE *, const char *);
 
 #define xfree(p) free(p), (p) = NULL;
 

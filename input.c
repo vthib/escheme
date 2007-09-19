@@ -101,7 +101,8 @@ escm_input_str(const char *str)
 void
 escm_input_close(escm_input *f)
 {
-    assert(f != NULL);
+    if (!f)
+	return;
 
     if (f->type == INPUT_FILE) {
 	if (!f->managed) {

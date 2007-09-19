@@ -125,19 +125,4 @@ xround(double a)
 #endif
 }
 
-void
-print_slashify(FILE *stream, const char *str)
-{
-    char *p;
-
-    for (p = (char *) str; *p != '\0'; p++) {
-	if (*p == '"' || *p == '\\') {
-	    if (EOF == putc('\\', stream))
-		fprintf(stderr, "putc('\\') failed.\n");
-	}
-	if (EOF == putc(*p, stream))
-	    fprintf(stderr, "putc('%c') failed.\n", *p);
-    }
-}
-
 /**@}*/

@@ -24,7 +24,7 @@ static size_t vectortype = 0;
 
 static void vector_free(escm_vector *);
 static void vector_mark(escm *, escm_vector *);
-static void vector_print(escm *, escm_vector *, FILE *, int);
+static void vector_print(escm *, escm_vector *, escm_output *, int);
 static int vector_equal(escm *, escm_vector *, escm_vector *, int);
 static int vector_parsetest(escm *, int);
 static escm_atom *vector_parse(escm *);
@@ -249,19 +249,19 @@ vector_mark(escm *e, escm_vector *vector)
 }
 
 static void
-vector_print(escm *e, escm_vector *vector, FILE *stream, int lvl)
+vector_print(escm *e, escm_vector *vector, escm_output *stream, int lvl)
 {
     size_t i;
 
     (void) lvl;
 
-    fprintf(stream, "#(");
+    escm_printf(stream, "#(");
     for (i = 0; i < vector->len; i++) {
-	escm_atom_print(e, vector->vec[i], stream);
+	escm_atom_print3(e, vector->vec[i], stream);
 	if (i < vector->len - 1)
-	    fprintf(stream, " ");
+	    escm_putc(stream, ' ');
     }
-    fprintf(stream, ")");
+    escm_putc(stream, ')');
 }
 
 static int

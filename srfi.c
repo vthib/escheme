@@ -19,48 +19,78 @@
 void
 escm_srfi_init(escm *e)
 {
+#if defined ESCM_USE_STRINGS && defined ESCM_USE_PORTS
     /* srfi 6 */
-    escm_procedure_new(e, "open-input-string", 1, 1,
-		       escm_srfi_open_input_string, NULL);
+    (void) escm_procedure_new(e, "open-input-string", 1, 1,
+			      escm_open_input_string, NULL);
+    (void) escm_procedure_new(e, "open-output-string", 0, 0,
+			      escm_open_output_string, NULL);
+    (void) escm_procedure_new(e, "get-output-string", 1, 1,
+			      escm_get_output_string, NULL);
+#endif
 
     /* srfi 23 */
-    escm_procedure_new(e, "error", 1, -1, escm_srfi_error, NULL);
+    (void) escm_procedure_new(e, "error", 1, -1, escm_error, NULL);
 }
 
+#if defined ESCM_USE_STRINGS && defined ESCM_USE_PORTS
 /* srfi 6 */
 escm_atom *
-escm_srfi_open_input_string(escm *e, escm_atom *args)
+escm_open_input_string(escm *e, escm_atom *args)
 {
     escm_atom *str;
-    escm_port *p;
 
     str = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(str), str, e);
 
-    p = xcalloc(1, sizeof *p);
-    p->input = 1;
-    p->d.input = escm_input_str(escm_str_val(str));
-
-    return escm_atom_new(e, ESCM_TYPE_PORT, p);
+    return escm_port_make(e, escm_input_str(escm_str_val(str)), 1);
 }
+
+escm_atom *
+escm_open_output_string(escm *e, escm_atom *args)
+{
+    (void) args;
+
+    return escm_port_make(e, escm_output_str(), 0);
+}
+
+escm_atom *
+escm_get_output_string(escm *e, escm_atom *args)
+{
+    escm_atom *port;
+    escm_output *outp;
+
+    port = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISPORT(port), port, e);
+
+    if (escm_port_val(port)->input) {
+	fprintf(stderr, "get-output-string: given port is not an output "
+		"port.\n");
+	e->err = -1;
+	return NULL;
+    }
+
+    outp = escm_port_val(port)->d.output;
+    return escm_string_make(e, escm_output_getstr(outp),
+			    outp->d.str.cur - outp->d.str.str);
+}
+#endif
 
 /* srfi 23 */
 escm_atom *
-escm_srfi_error(escm *e, escm_atom *args)
+escm_error(escm *e, escm_atom *args)
 {
     escm_atom *reason;
 
     reason = escm_cons_pop(e, &args);
 
     fprintf(stderr, "Error: ");
-    escm_atom_print0(e, reason, stderr, 1);
+    escm_atom_print4(e, reason, e->errp, 1);
     if (args)
 	fprintf(stderr, ": ");
     while (args) {
 	reason = escm_cons_pop(e, &args);
-	escm_atom_print(e, reason, stderr);
-	if (args)
-	    fprintf(stderr, ": ");
+	escm_atom_print4(e, reason, e->errp, 1);
     }
     fprintf(stderr, "\n");
 

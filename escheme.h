@@ -20,6 +20,7 @@
 #include "types.h"
 #include "utils.h"
 #include "input.h"
+#include "output.h"
 #include "hash.h"
 #include "escm.h"
 #include "atom.h"

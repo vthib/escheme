@@ -19,7 +19,7 @@
 static size_t promisetype = 0;
 
 static void promise_mark(escm *, escm_promise *);
-static void promise_print(escm *, escm_promise *, FILE *, int);
+static void promise_print(escm *, escm_promise *, escm_output *, int);
 
 void
 escm_promises_init(escm *e)
@@ -89,11 +89,11 @@ promise_mark(escm *e, escm_promise *p)
 }
 
 static void
-promise_print(escm *e, escm_promise *p, FILE *stream, int lvl)
+promise_print(escm *e, escm_promise *p, escm_output *stream, int lvl)
 {
     (void) e;
     (void) p;
     (void) lvl;
 
-    fprintf(stream, "#<promise>");
+    escm_printf(stream, "#<promise>");
 }

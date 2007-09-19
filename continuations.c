@@ -22,7 +22,7 @@ static size_t continuationtype = 0;
 static escm_continuation *curcont = NULL;
 
 static void continuation_free(escm_continuation *);
-static void continuation_print(escm *, escm_continuation *, FILE *, int);
+static void continuation_print(escm *, escm_continuation *, escm_output *, int);
 static escm_context *context_copy(escm_context *);
 
 void
@@ -49,7 +49,7 @@ escm_continuation_tget(void)
     return continuationtype;
 }
 
-escm_atom *
+void
 escm_continuation_exec(escm *e, escm_atom *continuation, escm_atom *arg)
 {
     escm_continuation *c;
@@ -59,7 +59,7 @@ escm_continuation_exec(escm *e, escm_atom *continuation, escm_atom *arg)
     c = continuation->ptr;
     c->ret = escm_atom_eval(e, escm_cons_car(arg));
     if (e->err == -1)
-	return NULL;
+	return;
 
     while (e->ctx)
 	escm_ctx_discard(e);
@@ -119,13 +119,14 @@ continuation_free(escm_continuation *c)
 }
 
 static void
-continuation_print(escm *e, escm_continuation *cont, FILE *stream, int lvl)
+continuation_print(escm *e, escm_continuation *cont, escm_output *stream,
+		   int lvl)
 {
     (void) e;
     (void) lvl;
     (void) cont;
 
-    fprintf(stream, "#<continuation>");
+    escm_printf(stream, "#<continuation>");
 }
 
 static escm_context *
@@ -137,10 +138,10 @@ context_copy(escm_context *ctx)
     for (; ctx; ctx = ctx->prev) {
 	new = xcalloc(1, sizeof *new);
 	new->first = ctx->first, new->last = ctx->last;
-	if (!ret)
-	    ret = new;
 	if (prev)
 	    prev->prev = new;
+	if (!ret)
+	    ret = new;
 	prev = new;
     }
 

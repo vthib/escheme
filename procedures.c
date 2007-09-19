@@ -21,7 +21,7 @@
 
 static void procedure_free(escm_procedure *);
 static void procedure_mark(escm *, escm_procedure *);
-static void procedure_print(escm *, escm_procedure *, FILE *, int);
+static void procedure_print(escm *, escm_procedure *, escm_output *, int);
 
 static escm_atom *runprimitive(escm *, escm_atom *, escm_atom *, int);
 static escm_atom *runlambda(escm *, escm_atom *, escm_atom *, int);
@@ -217,7 +217,8 @@ procedure_mark(escm *e, escm_procedure *proc)
 }
 
 static void
-procedure_print(escm *e, escm_procedure *procedure, FILE *stream, int lvl)
+procedure_print(escm *e, escm_procedure *procedure, escm_output *stream,
+		int lvl)
 {
     (void) e;
     (void) lvl;
@@ -225,9 +226,9 @@ procedure_print(escm *e, escm_procedure *procedure, FILE *stream, int lvl)
     assert(procedure != NULL);
 
     if (procedure->type == ESCM_CLOSURE)
-	fprintf(stream, "#<closure>");
+	escm_printf(stream, "#<closure>");
     else
-	fprintf(stream, "#<primitive %s >", procedure->name);
+	escm_printf(stream, "#<primitive %s>", procedure->name);
 }
 
 static escm_atom *
@@ -249,7 +250,7 @@ runprimitive(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
     for (param = 0; args; args = escm_cons_next(args), param++) {
 	/* check parameter's number */
 	if (fun->d.c.max != -1 && param >= (unsigned int) fun->d.c.max) {
-	    escm_atom_print(e, atomfun, stderr);
+	    escm_atom_printerr(e, atomfun);
 	    fprintf(stderr, ": too much arguments.\n");
 	    goto err;
 	}
@@ -272,7 +273,7 @@ runprimitive(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
     }
 
     if (param < fun->d.c.min) {
-	escm_atom_print(e, atomfun, stderr);
+	escm_atom_printerr(e, atomfun);
 	fprintf(stderr, ": too few arguments.\n");
 	goto err;
     }
@@ -342,7 +343,7 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomcons, int eval)
 	    for (args = escm_cons_val(fun->d.closure.args); cons;
 		 cons = escm_cons_next(cons), args = escm_cons_next(args)) {
 		if (!args) {
-		    escm_atom_print(e, atomfun, stderr);
+		    escm_atom_printerr(e, atomfun);
 		    fprintf(stderr, ": too much arguments.\n");
 		    escm_gc_ungard(e, env);
 		    goto err;
@@ -386,7 +387,7 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomcons, int eval)
 	    }
 
 	    if (args) {
-		escm_atom_print(e, atomfun, stderr);
+		escm_atom_printerr(e, atomfun);
 		fprintf(stderr, ": too few arguments.\n");
 		escm_gc_ungard(e, env);
 		goto err;

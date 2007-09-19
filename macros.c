@@ -42,7 +42,7 @@ static escm_match *add(escm *, escm_match *, escm_atom *, escm_atom *);
 static escm_match *checkup(escm *, escm_match *, escm_atom *);
 
 static void macro_mark(escm *, escm_macro *);
-static void macro_print(escm *, escm_macro *, FILE *, int);
+static void macro_print(escm *, escm_macro *, escm_output *, int);
 
 void
 escm_macros_init(escm *e)
@@ -92,9 +92,9 @@ escm_macro_expand(escm *e, escm_atom *macro, escm_atom *cont)
 	    }
 	    return a;
 #else
-	    escm_atom_print(e, escm_cons_car(a), stdout);
+	    escm_atom_print(e, escm_cons_car(a));
 	    printf(" match ");
-	    escm_atom_print(e, cont, stdout);
+	    escm_atom_print(e, cont);
 	    printf(".\n");
 	    return NULL;
 #endif
@@ -102,7 +102,7 @@ escm_macro_expand(escm *e, escm_atom *macro, escm_atom *cont)
     }
 
     fprintf(stderr, "can't expand macro ");
-    escm_atom_print(e, cont, stderr);
+    escm_atom_printerr(e, cont);
     fprintf(stderr, ".\n");
     e->err = -1;
     return NULL;
@@ -122,13 +122,13 @@ escm_expand(escm *e, escm_atom *args)
     if (e->err == -1)
 	return NULL;
     if (!macro) {
-	escm_atom_print(e, atom, stderr);
+	escm_atom_printerr(e, atom);
 	fprintf(stderr, ": expression do not yield an applicable value.\n");
 	e->err = -1;
 	return NULL;
     }
     if (!ESCM_ISMACRO(macro)) {
-	escm_atom_print(e, macro, stderr);
+	escm_atom_printerr(e, macro);
 	fprintf(stderr, ": not a macro.\n");
 	e->err = -1;
 	return NULL;
@@ -149,7 +149,7 @@ escm_define_syntax(escm *e, escm_atom *args)
     if (e->err == -1)
 	return NULL;
     if (!val) {
-	escm_atom_print(e, escm_cons_car(args), stderr);
+	escm_atom_printerr(e, escm_cons_car(args));
 	fprintf(stderr, ": expression not allowed in a definition.\n");
 	e->err = -1;
 	return NULL;
@@ -415,11 +415,11 @@ macro_mark(escm *e, escm_macro *m)
 }
 
 static void
-macro_print(escm *e, escm_macro *m, FILE *stream, int lvl)
+macro_print(escm *e, escm_macro *m, escm_output *stream, int lvl)
 {
     (void) e;
     (void) m;
     (void) lvl;
 
-    fprintf(stream, "#<macro>");
+    escm_printf(stream, "#<macro>");
 }

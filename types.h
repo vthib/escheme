@@ -73,11 +73,12 @@ typedef struct escm_context escm_context;
 typedef struct escm_atom escm_atom;
 typedef struct escm_hash escm_hash;
 typedef struct escm_input escm_input;
+typedef struct escm_output escm_output;
 typedef struct escm_type escm_type;
 
 typedef void (*Escm_Fun_Mark)(escm *, void *);
 typedef void (*Escm_Fun_Free)(void *);
-typedef void (*Escm_Fun_Print)(escm *, void *, FILE *, int);
+typedef void (*Escm_Fun_Print)(escm *, void *, escm_output *, int);
 typedef int (*Escm_Fun_Equal)(escm *, void *, void *, int);
 
 typedef int (*Escm_Fun_Parsetest)(escm *, int);

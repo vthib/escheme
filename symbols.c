@@ -22,7 +22,7 @@
 
 static size_t symboltype = 0;
 
-static void symbol_print(escm *, char *, FILE *, int);
+static void symbol_print(escm *, char *, escm_output *, int);
 static int symbol_equal(escm *, char *, char *, int);
 static int symbol_parsetest(escm *, int);
 static escm_atom *symbol_parse(escm *);
@@ -100,16 +100,16 @@ escm_string_to_symbol(escm *e, escm_atom *args)
 #endif
 
 static void
-symbol_print(escm *e, char *symbol, FILE *stream, int lvl)
+symbol_print(escm *e, char *symbol, escm_output *stream, int lvl)
 {
     (void) e;
 
     if (lvl == 0) {
-	print_slashify(stream, symbol);
+	escm_print_slashify(stream, symbol);
 	return;
     }
 
-    fprintf(stream, "%s", symbol);
+    escm_printf(stream, "%s", symbol);
 }
 
 static int
