@@ -33,4 +33,6 @@ escm_atom *escm_symbol_p(escm *, escm_atom *);
 escm_atom *escm_symbol_to_string(escm *, escm_atom *);
 escm_atom *escm_string_to_symbol(escm *, escm_atom *);
 
+escm_atom *escm_lookup(escm *, escm_atom *);
+
 #endif /* ESCHEME_SYMBOLS_H */

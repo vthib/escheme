@@ -34,6 +34,7 @@ void
 escm_symbols_init(escm *e)
 {
     escm_type *t;
+    escm_atom *a;
 
     t = xcalloc(1, sizeof *t);
     t->ffree = (Escm_Fun_Free) free;
@@ -46,12 +47,16 @@ escm_symbols_init(escm *e)
     symboltype = escm_type_add(e, t);
 
     (void) escm_procedure_new(e, "symbol?", 1, 1, escm_symbol_p, NULL);
+
 #ifdef ESCM_USE_STRINGS
     (void) escm_procedure_new(e, "symbol->string", 1, 1, escm_symbol_to_string,
 			      NULL);
     (void) escm_procedure_new(e, "string->symbol", 1, 1, escm_string_to_symbol,
 			      NULL);
 #endif
+
+    a = escm_procedure_new(e, "lookup", 1, 2, escm_lookup, NULL);
+    escm_proc_val(a)->d.c.quoted = 0x1;
 }
 
 size_t
@@ -98,6 +103,25 @@ escm_string_to_symbol(escm *e, escm_atom *args)
     return escm_atom_new(e, ESCM_TYPE_SYMBOL, xstrdup(escm_str_val(str)));
 }
 #endif
+
+escm_atom *
+escm_lookup(escm *e, escm_atom *args)
+{
+    escm_atom *sym, *ret, *env;
+
+    sym = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSYM(sym), sym, e);
+
+    env = escm_cons_pop(e, &args);
+    if (env) {
+	escm_assert(ESCM_ISENV(env), env, e);
+
+	ret = escm_env_get(env, escm_sym_val(sym));
+    } else
+	ret = escm_env_get(e->env, escm_sym_val(sym));
+
+    return (ret != NULL) ? ret : e->FALSE;
+}
 
 static void
 symbol_print(escm *e, char *symbol, escm_output *stream, int lvl)

@@ -152,11 +152,9 @@ escm_printf(escm_output *f, const char *format, ...)
 	offset = f->d.str.cur - f->d.str.str;
 
 	for (;;) {
-	    if (strlen(format) >= offset) {
-		f->d.str.maxlen += 30;
-		f->d.str.str = xrealloc(f->d.str.str, f->d.str.maxlen);
-		f->d.str.cur = f->d.str.str + offset;
-	    }
+	    f->d.str.maxlen += 30;
+	    f->d.str.str = xrealloc(f->d.str.str, f->d.str.maxlen);
+	    f->d.str.cur = f->d.str.str + offset;
 
 	    write = vsnprintf(f->d.str.cur, offset - f->d.str.maxlen, format,
 			      args);

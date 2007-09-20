@@ -60,6 +60,12 @@ escm_env_addprimitives(escm *e)
 			      escm_interaction_environment, NULL);
 }
 
+size_t
+escm_env_tget(void)
+{
+    return envtype;
+}
+
 escm_atom *
 escm_env_new(escm *e, escm_atom *prev)
 {
