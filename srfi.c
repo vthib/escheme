@@ -30,7 +30,7 @@ escm_srfi_init(escm *e)
 #endif
 
     /* srfi 23 */
-    (void) escm_procedure_new(e, "error", 1, -1, escm_error, NULL);
+    (void) escm_procedure_new(e, "error", 1, -1, escm_srfi_error, NULL);
 }
 
 #if defined ESCM_USE_STRINGS && defined ESCM_USE_PORTS
@@ -78,7 +78,7 @@ escm_get_output_string(escm *e, escm_atom *args)
 
 /* srfi 23 */
 escm_atom *
-escm_error(escm *e, escm_atom *args)
+escm_srfi_error(escm *e, escm_atom *args)
 {
     escm_atom *reason;
 

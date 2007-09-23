@@ -120,4 +120,6 @@ void escm_gc_collect(escm *);
 void escm_gc_gard(escm *, escm_atom *);
 void escm_gc_ungard(escm *, escm_atom *);
 
+void escm_error(escm *, const char *, ...);
+
 #endif /* ESCHEME_ESCM_H */

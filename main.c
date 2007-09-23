@@ -15,12 +15,13 @@
  * along with Escheme; If not, see <http://www.gnu.org/licenses/>.
  */
 #include <stdlib.h>
+#include <string.h>
 #include <locale.h>
 
 #include "escheme.h"
 
 int
-main(void)
+main(int argc, char **argv)
 {
     escm *e;
 
@@ -29,6 +30,12 @@ main(void)
         fprintf(stderr, "can't set the locale.\n");
 
     e = escm_new();
+    if (argc == 1 || 0 != strcmp(argv[1], "-n")) {
+	e->quiet = 1;
+	escm_fparse(e, "init.scm");
+	e->quiet = 0;
+    }
+
     if (!e)
 	return EXIT_FAILURE;
 

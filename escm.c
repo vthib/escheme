@@ -15,6 +15,7 @@
  * along with Escheme; If not, see <http://www.gnu.org/licenses/>.
  */
 #include <assert.h>
+#include <stdarg.h>
 #include <ctype.h>
 
 #include "escheme.h"
@@ -99,10 +100,6 @@ escm_new(void)
     e->casesensitive = 1;
 
     escm_srfi_init(e);
-
-    e->quiet = 1;
-    escm_fparse(e, "init.scm");
-    e->quiet = 0;
 
     return e;
 }
@@ -503,6 +500,43 @@ escm_gc_ungard(escm *e, escm_atom *a)
 	    prev->prev = li->prev;
 	free(li);
     }
+}
+
+void
+escm_error(escm *e, const char *format, ...)
+{
+    va_list va;
+    char *p;
+
+    va_start(va, format);
+
+    for (p = (char *) format; *p != '\0'; p++) {
+	if (*p == '~') {
+	    p++;
+	    switch (*p) {
+	    case '~':
+		escm_putc(e->errp, '~');
+		break;
+	    case 'a':
+		escm_atom_print4(e, va_arg(va, escm_atom *), e->errp, 1);
+		break;
+	    case 's':
+		escm_atom_print4(e, va_arg(va, escm_atom *), e->errp, 0);
+		break;
+	    case 'n': case '%':
+		escm_putc(e->errp, '\n');
+		break;
+	    default:
+		escm_putc(e->errp, '~');
+		escm_putc(e->errp, *p);
+		break;
+	    }
+	} else
+	    escm_putc(e->errp, *p);
+    }
+
+    va_end(va);
+    e->err = -1;
 }
 
 /* privates functions */

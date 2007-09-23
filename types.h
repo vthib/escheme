@@ -38,6 +38,8 @@
 				 2: check also when printing */
 #endif
 
+#define ESCM_USE_C99
+
 #ifdef ESCM_USE_CONTINUATIONS
 # ifndef ESCM_USE_C99
 #  define ESCM_USE_C99 /* continuation needs c99 */

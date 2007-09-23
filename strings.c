@@ -83,12 +83,12 @@ escm_strings_init(escm *e)
 #ifdef ESCM_USE_CHARACTERS
     (void) escm_procedure_new(e, "string-fill!", 2, 2, escm_string_fill_x,
 			      NULL);
-#endif
 
     (void) escm_procedure_new(e, "string->list", 1, 1, escm_string_to_list,
 			      NULL);
     (void) escm_procedure_new(e, "list->string", 1, 1, escm_list_to_string,
 			      NULL);
+#endif
 }
 
 size_t
@@ -521,7 +521,6 @@ escm_string_fill_x(escm *e, escm_atom *args)
     memset(escm_str_val(str), escm_char_val(c), escm_str_len(str));
     return NULL;
 }
-#endif
 
 escm_atom *
 escm_string_to_list(escm *e, escm_atom *args)
@@ -549,6 +548,7 @@ escm_list_to_string(escm *e, escm_atom *args)
 
     return escm_prim_string(e, list);
 }
+#endif
 
 static void
 string_free(escm_string *string)

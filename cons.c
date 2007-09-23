@@ -370,25 +370,23 @@ escm_reverse(escm *e, escm_atom *args)
 escm_atom *
 escm_list_tail(escm *e, escm_atom *args)
 {
-    escm_atom *list, *atom;
+    escm_atom *list, *ka, *atom;
     long k;
 
     list = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCONS(list), list, e);
 
-    atom = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISNUMBER(atom) && ESCM_ISINT(atom), atom, e);
+    ka = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISINT(ka), ka, e);
 
-    k = escm_number_ival(atom);
-    escm_assert(k >= 0, atom, e);
+    k = escm_number_ival(ka);
+    escm_assert(k >= 0, ka, e);
     atom = list;
 
     for (; k > 0; k--) {
 	if (atom == e->NIL || !atom) {
-	    fprintf(stderr, "index too large for list ");
-	    escm_atom_printerr(e, list);
-	    fprintf(stderr, "\n");
-	    e->err = -1;
+	    escm_error(e, "list-tail: index ~s is too large for the list ~s.~n",
+		       ka, list);
 	    return NULL;
 	}
 	if (!ESCM_ISCONS(atom)) {

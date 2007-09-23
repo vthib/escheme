@@ -1,17 +1,14 @@
- - Finish all primitives
- - Finish the Macro implementation
- - Verify compatibility with various scheme libraries
- - Try to implement some SRFIs
- - Strings-length and string-ref behavior with non ascii characters need to be
-   corrected.
- - Slashification
- - Bignums
- - Write "printf", "error"
+ - Bugs/TODO
+   - Implement hygienic macros
+   - Verify compatibility with various scheme libraries
+   - Try to implement some SRFIs
 
-Maybe:
+ - Features
+   - Unicode support (both characters and strings, see r6rs for possible impl)
+   - Create a new good number type with rationals, integers, reals and complex.
+   - Bignums
 
- - Unicode chars
- - Code a escm_abort
- - Correct the bug with the "do" macro
- - Create a new good number type with rationals, integers, reals and complex.
- - Create a new good number type with integers and reals unboxed.
+ - Maybe:
+   - Code a escm_abort
+   - Slashification
+   - Continuations

@@ -25,7 +25,7 @@ escm_atom *escm_open_output_string(escm *, escm_atom *);
 escm_atom *escm_get_output_string(escm *, escm_atom *);
 
 /* srfi 23 */
-escm_atom *escm_error(escm *, escm_atom *);
+escm_atom *escm_srfi_error(escm *, escm_atom *);
 
 /* srfi 28 */
 escm_atom *escm_format(escm *, escm_atom *);

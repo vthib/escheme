@@ -115,8 +115,9 @@ escm_quasiquote(escm *e, escm_atom *args)
     arg = escm_cons_pop(e, &args);
     if (!ESCM_ISCONS(arg)
 #ifdef ESCM_USE_VECTORS
-	& !ESCM_ISVECTOR(arg)) {
+	& !ESCM_ISVECTOR(arg)
 #endif
+	) {
 	arg->ro = 1;
 	return arg;
     }
@@ -207,9 +208,7 @@ escm_set_x(escm *e, escm_atom *args)
     escm_assert(ESCM_ISSYM(c), c, e);
 
     if (!escm_env_get(e->env, escm_sym_val(c))) {
-	escm_atom_printerr(e, c);
-	fprintf(stderr, ": unknown identifier.\n");
-	e->err = -1;
+	escm_error(e, "~s: unknown identifier.~n", c);
 	return NULL;
     }
 
@@ -823,7 +822,7 @@ escm_display(escm *e, escm_atom *args)
 
     atom = escm_cons_pop(e, &args);
 
-    escm_atom_print0(e, atom, stdout, 1);
+    escm_atom_display(e, atom);
 
     return NULL;
 }

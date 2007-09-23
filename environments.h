@@ -20,13 +20,7 @@
 #include "types.h"
 
 typedef struct escm_env {
-    union {
-	escm_hash *toplvl;
-	struct {
-	    struct escm_node *first;
-	    struct escm_node *last;
-	} lst;
-    } d;
+    struct escm_tst *tree;
 
     escm_atom *prev;
 } escm_env;

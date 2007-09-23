@@ -30,7 +30,9 @@ static escm_atom *number_parse(escm *);
 
 static escm_number *inputtonumber(escm_input *, int);
 static long pgcd(long, long);
+#ifdef ESCM_USE_STRINGS
 static char *bintostr(long);
+#endif
 static inline int isnumber(int);
 
 void
@@ -1242,6 +1244,7 @@ pgcd(long a, long b)
     return a;
 }
 
+#ifdef ESCM_USE_STRINGS
 static char *
 bintostr(long a)
 {
@@ -1262,6 +1265,7 @@ bintostr(long a)
 
     return buf;
 }
+#endif
 
 static inline int
 isnumber(int c)
