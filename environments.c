@@ -34,7 +34,7 @@ static void env_mark(escm *, escm_env *);
 static void env_print(escm *, escm_env *, escm_output *, int);
 
 static void tst_set(escm_tst **, const char *, escm_atom *);
-static void tst_edit(escm_tst **, const char *, escm_atom *);
+static int tst_edit(escm_tst **, const char *, escm_atom *);
 static escm_atom *tst_get(escm_tst *, const char *);
 static void tst_foreach(escm_tst *, void (*)(escm *, escm_atom *), escm *);
 static void tst_free(escm_tst *);
@@ -55,6 +55,8 @@ escm_environments_init(escm *e)
 void
 escm_env_addprimitives(escm *e)
 {
+    escm_atom *o;
+
     assert(e != NULL);
 
     (void) escm_procedure_new(e, "eval", 1, 2, escm_eval, NULL);
@@ -65,6 +67,11 @@ escm_env_addprimitives(escm *e)
 			      escm_null_environment, NULL);
     (void) escm_procedure_new(e, "interaction-environment", 0, 0,
 			      escm_interaction_environment, NULL);
+    o = escm_procedure_new(e, "alpha", 0, -1, escm_alpha, NULL);
+    escm_proc_val(o)->d.c.quoted = 0x3;
+
+    o = escm_procedure_new(e, "with", 2, -1, escm_with, NULL);
+    escm_proc_val(o)->d.c.quoted = 0x6;
 }
 
 size_t
@@ -153,7 +160,8 @@ escm_env_edit(escm_atom *atomenv, const char *name, escm_atom *atom)
 
     env = (escm_env *) atomenv->ptr;
 
-    tst_edit(&env->tree, name, atom);
+    if (!tst_edit(&env->tree, name, atom))
+	escm_env_edit(env->prev, name, atom);
 }
 
 escm_atom *
@@ -200,6 +208,40 @@ escm_eval(escm *e, escm_atom *args)
     return expr;
 }
 /*@=usedef@*/
+
+escm_atom *
+escm_alpha(escm *e, escm_atom *args)
+{
+    escm_atom *env, *prev;
+
+    env = escm_env_new(e, e->env);
+    prev = escm_env_enter(e, env);
+
+    (void) escm_begin(e, args);
+    if (e->err == -1) {
+	escm_env_leave(e, prev);
+	return NULL;
+    }
+
+    escm_env_leave(e, prev);
+    return env;
+}
+
+escm_atom *
+escm_with(escm *e, escm_atom *args)
+{
+    escm_atom *env, *prev, *ret;
+
+    env = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISENV(env), env, e);
+
+    prev = escm_env_enter(e, env);
+
+    ret = escm_begin(e, args);
+
+    escm_env_leave(e, prev);
+    return ret;
+}
 
 /* XXX: Write this function correctly */
 escm_atom *
@@ -281,7 +323,7 @@ env_print(escm *e, escm_env *env, escm_output *stream, int lvl)
     (void) env;
     (void) lvl;
 
-    escm_printf(stream, "#<Environment>");
+    escm_printf(stream, "#<Alpha>");
 }
 
 static void
@@ -318,28 +360,31 @@ tst_set(escm_tst **t, const char *s, escm_atom *atom)
     }
 }
 
-static void
+static int
 tst_edit(escm_tst **t, const char *s, escm_atom *atom)
 {
     if (*s == '\0')
-        return;
+        return 0;
 
     if (!*t) {
 	if (*(s + 1) == '\0')
-	    return;
+	    return 0;
         *t = xcalloc(1, sizeof **t);
         (*t)->cval = *s;
     }
 
     if (*s < (*t)->cval)
-        tst_set(&(*t)->lo, s, atom);
+        return tst_edit(&(*t)->lo, s, atom);
     else if (*s > (*t)->cval)
-        tst_set(&(*t)->hi, s, atom);
+        return tst_edit(&(*t)->hi, s, atom);
     else {
-        if (*(s + 1) == '\0')
-            (*t)->atom = atom;
-	else
-	    tst_set(&(*t)->down, s + 1, atom);
+        if (*(s + 1) == '\0') {
+	    if ((*t)->atom == NULL)
+		return 0;
+	    (*t)->atom = atom;
+	    return 1;
+	} else
+	    return tst_edit(&(*t)->down, s + 1, atom);
     }
 }
 

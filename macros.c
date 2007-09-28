@@ -37,9 +37,11 @@ static int checksym(escm *, escm_atom *);
 static int match(escm *, escm_macro *, escm_atom *, escm_atom *);
 static escm_match *bind(escm *, escm_macro *, escm_atom *, escm_atom *,
 			escm_match *);
-static escm_atom *expand(escm *, escm_macro *, escm_atom *, escm_match *, int);
+static escm_atom *expand(escm *, escm_macro *, escm_atom *, escm_atom *,
+			 escm_match *, int);
 static escm_match *add(escm *, escm_match *, escm_atom *, escm_atom *);
 static escm_match *checkup(escm *, escm_match *, escm_atom *);
+static escm_atom *color(escm *, escm_macro *, escm_atom *, escm_atom *);
 
 static void macro_mark(escm *, escm_macro *);
 static void macro_print(escm *, escm_macro *, escm_output *, int);
@@ -84,7 +86,7 @@ escm_macro_expand(escm *e, escm_atom *macro, escm_atom *cont)
 	if (match(e, m, escm_cons_car(a), cont)) {
 #if 1
 	    b = bind(e, m, escm_cons_car(a), cont, NULL);
-	    a = expand(e, m, escm_cons_car(escm_cons_val(a)->cdr), b, 0);
+	    a = expand(e, m, escm_cons_car(escm_cons_val(a)->cdr), NULL, b, 0);
 	    while (b) {
 		prev = b->prev;
 		free(b);
@@ -287,14 +289,36 @@ bind(escm *e, escm_macro *m, escm_atom *m1, escm_atom *m2, escm_match *match)
 }
 
 static escm_atom *
-expand(escm *e, escm_macro *m, escm_atom *tpl, escm_match *bind, int abort)
+expand(escm *e, escm_macro *m, escm_atom *tpl, escm_atom *env,
+       escm_match *bind, int abort)
 {
     escm_atom *a;
     escm_match *match;
+    int top = 0;
+
+    if (!env) {
+	env = escm_env_new(e, e->env);
+	escm_ctx_enter(e);
+	escm_ctx_put(e, escm_symbol_make(e, "with"));
+	escm_ctx_put(e, env);
+	top = 1;
+    }
 
     if (ESCM_ISSYM(tpl)) {
 	match = checkup(e, bind, tpl);
-	return (match) ? escm_cons_car(match->val.fst) : tpl;
+	if (match) {
+	    if (top) {
+		escm_ctx_put(e, escm_cons_car(match->val.fst));
+		return escm_ctx_leave(e);
+	    } else
+		return escm_cons_car(match->val.fst);
+	} else {
+	    if (top) {
+		escm_ctx_put(e, color(e, m, env, tpl));
+		return escm_ctx_leave(e);
+	    } else
+		return color(e, m, env, tpl);
+	}
     } else if (ESCM_ISCONS(tpl)) {
 	escm_ctx_enter(e);
 
@@ -326,27 +350,34 @@ expand(escm *e, escm_macro *m, escm_atom *tpl, escm_match *bind, int abort)
 		} else {
 		    if (!tpl || !ESCM_ISSYM(escm_cons_car(tpl)) ||
 			0 != strcmp(escm_sym_val(escm_cons_car(tpl)), "..."))
-		    escm_ctx_put(e, a);
+			escm_ctx_put(e,	color(e, m, env, a));
 		}
 	    } else if (ESCM_ISCONS(a)) {
 		if (tpl && ESCM_ISSYM(escm_cons_car(tpl)) &&
 		    0 == strcmp(escm_sym_val(escm_cons_car(tpl)), "...")) {
 		    escm_atom *ret;
 
-		    ret = expand(e, m, a, bind, 1);
+		    ret = expand(e, m, a, env, bind, 1);
 		    while (ret) {
 			escm_ctx_put(e, ret);
-			ret = expand(e, m, a, bind, 1);
+			ret = expand(e, m, a, env, bind, 1);
 		    }
 		} else
-		    escm_ctx_put(e, expand(e, m, a, bind, 0));
+		    escm_ctx_put(e, expand(e, m, a, env, bind, 0));
 	    } else
-		escm_ctx_put(e, a);
+		escm_ctx_put(e,	a);
 	}
 
+	if (top)
+	    escm_ctx_put(e, escm_ctx_leave(e));
 	return escm_ctx_leave(e);
-    } else
+    } else {
+	if (top) {
+	    escm_ctx_put(e, tpl);
+	    return escm_ctx_leave(e);
+	}
 	return tpl;
+    }
 }
 
 static escm_match *
@@ -405,6 +436,41 @@ checksym(escm *e, escm_atom *cons)
 
     return 1;
 }
+
+static escm_atom *
+color(escm *e, escm_macro *m, escm_atom *env, escm_atom *arg)
+{
+    unsigned int i;
+    escm_atom *a;
+    size_t len;
+    char *buf;
+
+    len = strlen(escm_sym_val(arg)) + 4;
+    buf = xmalloc(sizeof *buf * len);
+
+    for (i = 0; i < 20; i++) {
+	/* try different styles */
+	snprintf(buf, len, "%s~%u", escm_sym_val(arg), i);
+	if (!escm_env_get(e->env, buf))
+	    goto good;
+	snprintf(buf, len, "%s!%u", escm_sym_val(arg), i);
+	if (!escm_env_get(e->env, buf))
+	    goto good;
+	snprintf(buf, len, "%s%%%u", escm_sym_val(arg), i);
+	if (!escm_env_get(e->env, buf))
+	    goto good;
+    }
+
+    fprintf(stderr, "You have too many macros imbricated (or you use very "
+	    "silly names)! The code may not be fully hygienic.\n");
+
+good:
+    escm_env_set(env, buf, escm_env_get(m->env, escm_sym_val(arg)));
+    a = escm_symbol_make(e, buf);
+    free(buf);
+    return a;
+}
+
 
 static void
 macro_mark(escm *e, escm_macro *m)

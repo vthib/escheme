@@ -1,5 +1,4 @@
  - Bugs/TODO
-   - Implement hygienic macros
    - Verify compatibility with various scheme libraries
    - Try to implement some SRFIs
 
@@ -12,3 +11,4 @@
    - Code a escm_abort
    - Slashification
    - Continuations
+   - Recode Macro implementation

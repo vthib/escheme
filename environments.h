@@ -43,6 +43,8 @@ void escm_env_leave(escm *, escm_atom *);
 
 escm_atom *escm_eval(escm *, escm_atom *);
 
+escm_atom *escm_alpha(escm *, escm_atom *);
+escm_atom *escm_with(escm *, escm_atom *);
 escm_atom *escm_scheme_report_environment(escm *, escm_atom *);
 escm_atom *escm_null_environment(escm *, escm_atom *);
 escm_atom *escm_interaction_environment(escm *, escm_atom *);
