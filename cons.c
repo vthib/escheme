@@ -37,11 +37,11 @@ escm_cons_init(escm *e)
     t = xcalloc(1, sizeof *t);
     t->fmark = (Escm_Fun_Mark) cons_mark;
     t->ffree = (Escm_Fun_Free) free;
-    t->fprint = (Escm_Fun_Print) cons_print;
-    t->fequal = (Escm_Fun_Equal) cons_equal;
-    t->fparsetest = cons_parsetest;
-    t->fparse = cons_parse;
-    t->feval = (Escm_Fun_Eval) cons_eval;
+    t->d.c.fprint = (Escm_Fun_Print) cons_print;
+    t->d.c.fequal = (Escm_Fun_Equal) cons_equal;
+    t->d.c.fparsetest = cons_parsetest;
+    t->d.c.fparse = cons_parse;
+    t->d.c.feval = (Escm_Fun_Eval) cons_eval;
 
     constype = escm_type_add(e, t);
 
@@ -172,7 +172,7 @@ escm_set_car_x(escm *e, escm_atom *args)
 
     if (o->ro == 1) {
 	fprintf(stderr, "set-car!: Can't modify an immutable cons.\n");
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
 
@@ -201,7 +201,7 @@ escm_set_cdr_x(escm *e, escm_atom *args)
 
     if (o->ro == 1) {
 	fprintf(stderr, "set-cdr!: Can't modify an immutable cons.\n");
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
 
@@ -290,7 +290,7 @@ escm_length(escm *e, escm_atom *args)
 	    ) {
 	    fprintf(stderr, "Can't compute the length of a non proper "
 		    "list.\n");
-	    e->err = -1;
+	    e->err = 1;
 	    free(n);
 #if ESCM_CIRCULAR_LIST >= 1
 	    break;
@@ -333,7 +333,7 @@ escm_append(escm *e, escm_atom *args)
 	    escm_atom_printerr(e, flist);
 	    fprintf(stderr, ": improper list.\n");
 	    escm_ctx_discard(e);
-	    e->err = -1;
+	    e->err = 1;
 	    return NULL;
 	}
 	escm_ctx_put(e, a->car);
@@ -357,7 +357,7 @@ escm_reverse(escm *e, escm_atom *args)
 	if (!ESCM_ISCONS(c->cdr)) {
 	    escm_atom_printerr(e, arg);
 	    fprintf(stderr, ": Improper list.\n");
-	    e->err = -1;
+	    e->err = 1;
 	    return NULL;
 	}
 	new = escm_cons_make(e, c->car, (new != NULL) ? new : e->NIL);
@@ -392,7 +392,7 @@ escm_list_tail(escm *e, escm_atom *args)
 	if (!ESCM_ISCONS(atom)) {
 	    escm_atom_printerr(e, list);
 	    fprintf(stderr, ": improper list.\n");
-	    e->err = -1;
+	    e->err = 1;
 	    return NULL;
 	}
 	atom = escm_cons_val(atom)->cdr;
@@ -411,7 +411,7 @@ escm_list_ref(escm *e, escm_atom *args)
 	return NULL;
     if (sublist == e->NIL) {
 	fprintf(stderr, "index too large.\n");
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
 
@@ -630,31 +630,40 @@ static escm_atom *
 cons_parse(escm *e)
 {
     escm_atom *atom;
-    unsigned int qsave;
+    int c, open;
 
     assert(e != NULL);
 
-    (void) escm_input_getc(e->input); /* skip the '(' */
+    open = escm_input_getc(e->input);
 
-    qsave = e->quiet, e->quiet = 1;
     escm_ctx_enter(e);
 
-    while (e->err != ')' && (e->brackets == 0 || e->err != ']')) {
+    for (;;) {
+	c = escm_input_getc(e->input);
+	if (e->brackets == 1 && (c == ')' || c == ']')) {
+	    if ((open == '(' && c == ']') || (open == '[' && c == ')')) {
+		escm_input_print(e->input, "expecting a '%c' to close a '%c'",
+				 (open == '(') ? ')' : ']', open);
+		escm_ctx_discard(e);
+		e->err = 1;
+		return NULL;
+	    }
+	    break;
+	} else if (e->brackets == 0 && c == ')')
+	    break;
+	else
+	    escm_input_ungetc(e->input, c);
+
+	atom = escm_parse(e);
 	if (e->err != 0) {
-	    if (e->err > 0)
-		escm_input_print(e->input, "unknown character `%c'.", e->err);
 	    escm_ctx_discard(e);
-	    e->quiet = qsave;
 	    return NULL;
 	}
-	atom = escm_parse(e);
 	if (atom)
 	    escm_ctx_put(e, atom);
     }
-    e->err = 0;
 
     atom = escm_ctx_leave(e);
-    e->quiet = qsave;
 
     return atom;
 }
@@ -670,12 +679,12 @@ cons_eval(escm *e, escm_cons *cons)
     }
 
     atomfun = escm_atom_eval(e, cons->car);
-    if (e->err == -1)
+    if (e->err == 1)
 	return NULL;
     if (!atomfun) {
 	escm_atom_printerr(e, cons->car);
 	fprintf(stderr, ": expression do not yield an applicable value.\n");
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
 

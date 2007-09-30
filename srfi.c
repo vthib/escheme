@@ -66,7 +66,7 @@ escm_get_output_string(escm *e, escm_atom *args)
     if (escm_port_val(port)->input) {
 	fprintf(stderr, "get-output-string: given port is not an output "
 		"port.\n");
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
 
@@ -94,6 +94,6 @@ escm_srfi_error(escm *e, escm_atom *args)
     }
     fprintf(stderr, "\n");
 
-    e->err = -1;
+    e->err = 1;
     return NULL;
 }

@@ -55,7 +55,7 @@ escm_macros_init(escm *e)
     t = xcalloc(1, sizeof *t);
     t->fmark = (Escm_Fun_Mark) macro_mark;
     t->ffree = (Escm_Fun_Free) free;
-    t->fprint = (Escm_Fun_Print) macro_print;
+    t->d.c.fprint = (Escm_Fun_Print) macro_print;
 
     macrotype = escm_type_add(e, t);
 
@@ -106,7 +106,7 @@ escm_macro_expand(escm *e, escm_atom *macro, escm_atom *cont)
     fprintf(stderr, "can't expand macro ");
     escm_atom_printerr(e, cont);
     fprintf(stderr, ".\n");
-    e->err = -1;
+    e->err = 1;
     return NULL;
 }
 
@@ -121,18 +121,18 @@ escm_expand(escm *e, escm_atom *args)
 
     atom = escm_cons_car(arg);
     macro = escm_atom_eval(e, atom);
-    if (e->err == -1)
+    if (e->err == 1)
 	return NULL;
     if (!macro) {
 	escm_atom_printerr(e, atom);
 	fprintf(stderr, ": expression do not yield an applicable value.\n");
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
     if (!ESCM_ISMACRO(macro)) {
 	escm_atom_printerr(e, macro);
 	fprintf(stderr, ": not a macro.\n");
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
 
@@ -148,12 +148,12 @@ escm_define_syntax(escm *e, escm_atom *args)
     escm_assert(ESCM_ISSYM(name), name, e);
 
     val = escm_atom_eval(e, escm_cons_car(args));
-    if (e->err == -1)
+    if (e->err == 1)
 	return NULL;
     if (!val) {
 	escm_atom_printerr(e, escm_cons_car(args));
 	fprintf(stderr, ": expression not allowed in a definition.\n");
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
     escm_assert(ESCM_ISMACRO(val), val, e);
@@ -184,7 +184,7 @@ escm_syntax_rules(escm *e, escm_atom *args)
 
 	if (!checksym(e, c->car)) {
 	    fprintf(stderr, "invalid syntax-rules.\n");
-	    e->err = -1;
+	    e->err = 1;
 	    return NULL;
 	}
     }
@@ -450,13 +450,13 @@ color(escm *e, escm_macro *m, escm_atom *env, escm_atom *arg)
 
     for (i = 0; i < 20; i++) {
 	/* try different styles */
-	snprintf(buf, len, "%s~%u", escm_sym_val(arg), i);
+	(void) snprintf(buf, len, "%s~%u", escm_sym_val(arg), i);
 	if (!escm_env_get(e->env, buf))
 	    goto good;
-	snprintf(buf, len, "%s!%u", escm_sym_val(arg), i);
+	(void) snprintf(buf, len, "%s!%u", escm_sym_val(arg), i);
 	if (!escm_env_get(e->env, buf))
 	    goto good;
-	snprintf(buf, len, "%s%%%u", escm_sym_val(arg), i);
+	(void) snprintf(buf, len, "%s%%%u", escm_sym_val(arg), i);
 	if (!escm_env_get(e->env, buf))
 	    goto good;
     }

@@ -24,6 +24,7 @@
 #include "hash.h"
 #include "escm.h"
 #include "atom.h"
+#include "type.h"
 #include "environments.h"
 #include "cons.h"
 #include "procedures.h"

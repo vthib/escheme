@@ -35,10 +35,11 @@ escm_booleans_init(escm *e)
     escm_type *t;
 
     t = xcalloc(1, sizeof *t);
-    t->fprint = (Escm_Fun_Print) boolean_print;
-    t->fequal = (Escm_Fun_Equal) boolean_equal;
-    t->fparsetest = boolean_parsetest;
-    t->fparse = boolean_parse;
+    t->type = TYPE_BUILT;
+    t->d.c.fprint = (Escm_Fun_Print) boolean_print;
+    t->d.c.fequal = (Escm_Fun_Equal) boolean_equal;
+    t->d.c.fparsetest = boolean_parsetest;
+    t->d.c.fparse = boolean_parse;
 
     booleantype = escm_type_add(e, t);
 

@@ -30,11 +30,8 @@ main(int argc, char **argv)
         fprintf(stderr, "can't set the locale.\n");
 
     e = escm_new();
-    if (argc == 1 || 0 != strcmp(argv[1], "-n")) {
-	e->quiet = 1;
+    if (argc == 1 || 0 != strcmp(argv[1], "-n"))
 	escm_fparse(e, "init.scm");
-	e->quiet = 0;
-    }
 
     if (!e)
 	return EXIT_FAILURE;

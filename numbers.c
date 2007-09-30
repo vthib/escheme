@@ -42,10 +42,10 @@ escm_numbers_init(escm *e)
 
     t = xcalloc(1, sizeof *t);
     t->ffree = (Escm_Fun_Free) free;
-    t->fprint = (Escm_Fun_Print) number_print;
-    t->fequal = (Escm_Fun_Equal) number_equal;
-    t->fparsetest = number_parsetest;
-    t->fparse = number_parse;
+    t->d.c.fprint = (Escm_Fun_Print) number_print;
+    t->d.c.fequal = (Escm_Fun_Equal) number_equal;
+    t->d.c.fparsetest = number_parsetest;
+    t->d.c.fparse = number_parse;
 
     numbertype = escm_type_add(e, t);
 
@@ -249,7 +249,7 @@ escm_quotient(escm *e, escm_atom *args)
     escm_assert(ESCM_ISINT(m), m, e);
     if (escm_number_ival(m) == 0) {
 	fprintf(stderr, "quotient undefined with 0.\n");
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
 
@@ -268,7 +268,7 @@ escm_remainder(escm *e, escm_atom *args)
     escm_assert(ESCM_ISINT(m), m, e);
     if (escm_number_ival(m) == 0) {
 	fprintf(stderr, "remainder undefined with 0.\n");
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
 
@@ -288,7 +288,7 @@ escm_modulo(escm *e, escm_atom *args)
     escm_assert(ESCM_ISINT(m), m, e);
     if (escm_number_ival(m) == 0) {
 	fprintf(stderr, "modulo undefined with 0.\n");
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
 
@@ -642,7 +642,7 @@ escm_number_to_string(escm *e, escm_atom *args)
 	if (radix != 2 && radix != 8 && radix != 10 && radix != 16) {
 	    fprintf(stderr, "number->string: radix must be either 2, 8, 10 or "
 		    "16.\n");
-	    e->err = -1;
+	    e->err = 1;
 	    return NULL;
 	}
     }
@@ -727,7 +727,7 @@ escm_string_to_number(escm *e, escm_atom *args)
 	if (radix != 2 && radix != 8 && radix != 10 && radix != 16) {
 	    fprintf(stderr, "string->number: radix must be either 2, 8, 10 or "
 		    "16.\n");
-	    e->err = -1;
+	    e->err = 1;
 	    return NULL;
 	}
     }
@@ -747,7 +747,7 @@ escm_string_to_number(escm *e, escm_atom *args)
 
 err:
     escm_input_close(input);
-    e->err = -1;
+    e->err = 1;
     return e->FALSE;
 }
 #endif
@@ -900,7 +900,7 @@ escm_div(escm *e, escm_atom *params)
 
 	if ((b->fixnum) ? b->d.ival == 0 : DBL_EQ(b->d.rval, 0)) {
 	    fprintf(stderr, "division by zero.\n");
-	    e->err = -1;
+	    e->err = 1;
 	    return NULL;
 	}
 

@@ -17,6 +17,8 @@
 #ifndef ESCHEME_ATOM_H
 # define ESCHEME_ATOM_H
 
+#include "types.h"
+
 struct escm_atom {
     size_t type;
 
@@ -24,8 +26,9 @@ struct escm_atom {
 
     escm_atom *link;
 
-    unsigned int ro : 1;
     unsigned int marked : 1;
+    unsigned int nofree : 1;
+    unsigned int ro : 1;
 };
 
 escm_atom *escm_atom_new(escm *, size_t, void *);

@@ -38,11 +38,11 @@ escm_symbols_init(escm *e)
 
     t = xcalloc(1, sizeof *t);
     t->ffree = (Escm_Fun_Free) free;
-    t->fprint = (Escm_Fun_Print) symbol_print;
-    t->fequal = (Escm_Fun_Equal) symbol_equal;
-    t->fparsetest = symbol_parsetest;
-    t->fparse = symbol_parse;
-    t->feval = (Escm_Fun_Eval) symbol_eval;
+    t->d.c.fprint = (Escm_Fun_Print) symbol_print;
+    t->d.c.fequal = (Escm_Fun_Equal) symbol_equal;
+    t->d.c.fparsetest = symbol_parsetest;
+    t->d.c.fparse = symbol_parse;
+    t->d.c.feval = (Escm_Fun_Eval) symbol_eval;
 
     symboltype = escm_type_add(e, t);
 
@@ -189,7 +189,7 @@ symbol_eval(escm *e, const char *sym)
     atom = escm_env_get(e->env, sym);
     if (!atom) {
 	fprintf(stderr, "unknown symbol `%s'.\n", sym);
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
 

@@ -37,10 +37,10 @@ escm_vectors_init(escm *e)
     t = xcalloc(1, sizeof *t);
     t->fmark = (Escm_Fun_Mark) vector_mark;
     t->ffree = (Escm_Fun_Free) vector_free;
-    t->fprint = (Escm_Fun_Print) vector_print;
-    t->fequal = (Escm_Fun_Equal) vector_equal;
-    t->fparsetest = vector_parsetest;
-    t->fparse = vector_parse;
+    t->d.c.fprint = (Escm_Fun_Print) vector_print;
+    t->d.c.fequal = (Escm_Fun_Equal) vector_equal;
+    t->d.c.fparsetest = vector_parsetest;
+    t->d.c.fparse = vector_parse;
 
     vectortype = escm_type_add(e, t);
 
@@ -150,7 +150,7 @@ escm_vector_ref(escm *e, escm_atom *args)
 
     if ((size_t) escm_number_ival(k) >= escm_vector_len(v)) {
 	fprintf(stderr, "index %ld out of range.\n", escm_number_ival(k));
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
 
@@ -169,13 +169,13 @@ escm_vector_set_x(escm *e, escm_atom *args)
 
     if ((size_t) escm_number_ival(k) >= escm_vector_len(v)) {
 	fprintf(stderr, "index %ld out of range.\n", escm_number_ival(k));
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
 
     if (v->ro == 1) {
 	fprintf(stderr, "vector-set!: Can't modify an immutable vector.\n");
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
 
@@ -196,7 +196,7 @@ escm_vector_fill_x(escm *e, escm_atom *args)
 
     if (v->ro == 1) {
 	fprintf(stderr, "vector-fill!: Can't modify an immutable vector.\n");
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
 
@@ -307,33 +307,43 @@ vector_parse(escm *e)
 {
     escm_atom *atom;
     escm_atom **vec;
-    unsigned int qsave;
     size_t len, i;
+    int c, open;
 
     assert(e != NULL);
 
-    (void) escm_input_getc(e->input), escm_input_getc(e->input); /* skip "#(" */
+    (void) escm_input_getc(e->input); /* skip # */
+    open = escm_input_getc(e->input);
 
-    qsave = e->quiet, e->quiet = 1;
     escm_ctx_enter(e);
 
     len = 0;
-    while (e->err != ')' && (e->brackets == 0 || e->err != ']')) {
-	if (e->err != 0) {
-	    if (e->err > 0)
-		escm_input_print(e->input, "unknown character `%c'.", e->err);
-	    escm_ctx_discard(e);
-	    e->quiet = qsave;
-	    return NULL;
-	}
+    for (;;) {
+	c = escm_input_getc(e->input);
+	if (e->brackets == 1 && (c == ')' || c == ']')) {
+	    if ((open == '(' && c == ']') || (open == '[' && c == ')')) {
+		escm_input_print(e->input, "expecting a '%c' to close a '%c'",
+				 (open == '(') ? ')' : ']', open);
+		escm_ctx_discard(e);
+		e->err = 1;
+		return NULL;
+	    }
+	    break;
+	} else if (e->brackets == 0 && c == ')')
+	    break;
+	else
+	    escm_input_ungetc(e->input, c);
 
 	atom = escm_parse(e);
 	if (e->ctx->dotted) {
 	    fprintf(stderr, "dotted notation is forbidden in a vector "
 		    "context.\n");
-	    e->err = -1;
+	    e->err = 1;
 	    escm_ctx_discard(e);
-	    e->quiet = qsave;
+	    return NULL;
+	}
+	if (e->err != 0) {
+	    escm_ctx_discard(e);
 	    return NULL;
 	}
 	if (atom) {
@@ -341,8 +351,6 @@ vector_parse(escm *e)
 	    len++;
 	}
     }
-    e->err = 0;
-    e->quiet = qsave;
 
     atom = escm_ctx_leave(e);
 

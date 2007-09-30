@@ -34,7 +34,7 @@ escm_procedures_init(escm *e)
     t = xcalloc(1, sizeof *t);
     t->fmark = (Escm_Fun_Mark) procedure_mark;
     t->ffree = (Escm_Fun_Free) procedure_free;
-    t->fprint = (Escm_Fun_Print) procedure_print;
+    t->d.c.fprint = (Escm_Fun_Print) procedure_print;
 
     (void) escm_type_add(e, t);
 
@@ -134,7 +134,7 @@ escm_map(escm *e, escm_atom *args)
 	}
 	atom = escm_procedure_exec(e, proc, escm_ctx_leave(e), 0);
 	if (!atom) {
-	    if (e->err == -1) {
+	    if (e->err == 1) {
 		escm_ctx_discard(e);
 		return NULL;
 	    }
@@ -146,7 +146,7 @@ escm_map(escm *e, escm_atom *args)
 err_length:
     fprintf(stderr, "map: all lists must have the same length.\n");
     escm_ctx_discard(e), escm_ctx_discard(e);
-    e->err = -1;
+    e->err = 1;
     return NULL;
 }
 
@@ -191,7 +191,7 @@ escm_for_each(escm *e, escm_atom *args)
 err_length:
     fprintf(stderr, "for-each: all lists must have the same length.\n");
     escm_ctx_discard(e), escm_ctx_discard(e);
-    e->err = -1;
+    e->err = 1;
     return NULL;
 }
 
@@ -264,7 +264,7 @@ runprimitive(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
 		atom = args->car;
 	    else {
 		atom = escm_atom_eval(e, args->car);
-		if (!atom || e->err == -1)
+		if (!atom || e->err == 1)
 		    goto err;
 	    }
 	}
@@ -292,7 +292,7 @@ runprimitive(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
 
 err:
     escm_ctx_discard(e);
-    e->err = -1;
+    e->err = 1;
     return NULL;
 }
 
@@ -325,7 +325,7 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomcons, int eval)
 	    for (; cons; cons = escm_cons_next(cons)) {
 		if (eval) {
 		    ret = escm_atom_eval(e, cons->car);
-		    if (!ret || e->err == -1) {
+		    if (!ret || e->err == 1) {
 			escm_ctx_discard(e);
 			goto err;
 		    }
@@ -351,7 +351,7 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomcons, int eval)
 
 		if (eval) {
 		    ret = escm_atom_eval(e, cons->car);
-		    if (!ret || e->err == -1) {
+		    if (!ret || e->err == 1) {
 			escm_ctx_discard(e);
 			goto err;
 		    }
@@ -371,7 +371,7 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomcons, int eval)
 			    val = cons->car;
 			else
 			    val = escm_atom_eval(e, cons->car);
-			if (!val || e->err == -1) {
+			if (!val || e->err == 1) {
 			    escm_ctx_discard(e);
 			    escm_gc_ungard(e, env);
 			    goto err;
@@ -403,7 +403,7 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomcons, int eval)
     for (cons = escm_cons_val(fun->d.closure.code); cons;
 	 cons = escm_cons_next(cons)) {
 	ret = escm_atom_eval(e, cons->car);
-	if (e->err == -1) {
+	if (e->err == 1) {
 	    escm_env_leave(e, prevenv);
 	    goto err;
 	}
@@ -414,6 +414,6 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomcons, int eval)
     return ret;
 
 err:
-    e->err = -1;
+    e->err = 1;
     return NULL;
 }

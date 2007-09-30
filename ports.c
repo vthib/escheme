@@ -39,9 +39,9 @@ escm_ports_init(escm *e)
 
     t = xcalloc(1, sizeof *t);
     t->ffree = (Escm_Fun_Free) port_free;
-    t->fprint = (Escm_Fun_Print) port_print;
-    t->fexit = (Escm_Fun_Exit) port_exit;
-    t->dexit = cp;
+    t->d.c.fprint = (Escm_Fun_Print) port_print;
+    t->d.c.fexit = (Escm_Fun_Exit) port_exit;
+    t->d.c.dexit = cp;
 
     porttype = escm_type_add(e, t);
 
@@ -182,7 +182,7 @@ escm_with_input_from_file(escm *e, escm_atom *args, escm_curports *cp)
 
     input = escm_input_fopen(escm_str_val(str));
     if (!input) {
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
 
@@ -212,7 +212,7 @@ escm_with_output_to_file(escm *e, escm_atom *args, escm_curports *cp)
 
     o = escm_output_fopen(escm_str_val(str));
     if (!o) {
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
 
@@ -239,7 +239,7 @@ escm_open_input_file(escm *e, escm_atom *args)
 
     inp = escm_input_fopen(escm_str_val(name));
     if (!inp) {
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
 
@@ -257,7 +257,7 @@ escm_open_output_file(escm *e, escm_atom *args)
 
     outp = escm_output_fopen(escm_str_val(name));
     if (!outp) {
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
 
@@ -291,12 +291,12 @@ escm_read(escm *e, escm_atom *args, escm_curports *cp)
 
     if (!port->input) {
 	fprintf(stderr, "read: given port is not an input port.\n");
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
     if (port->closed) {
 	fprintf(stderr, "read: port is closed.\n");
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
 
@@ -323,12 +323,12 @@ escm_read_char(escm *e, escm_atom *args, escm_curports *cp)
 
     if (!port->input) {
 	fprintf(stderr, "read-char: given port is not an input port.\n");
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
     if (port->closed) {
 	fprintf(stderr, "read-char: port is closed.\n");
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
 
@@ -353,12 +353,12 @@ escm_peek_char(escm *e, escm_atom *args, escm_curports *cp)
 
     if (!port->input) {
 	fprintf(stderr, "peak-char: given port is not an input port.\n");
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
     if (port->closed) {
 	fprintf(stderr, "peak-char: port is closed.\n");
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
 
@@ -387,12 +387,12 @@ escm_write(escm *e, escm_atom *args, escm_curports *cp)
 
     if (port->input) {
 	fprintf(stderr, "write: given port is not an output port.\n");
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
     if (port->closed) {
 	fprintf(stderr, "write: port is closed.\n");
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
 
@@ -416,12 +416,12 @@ escm_display(escm *e, escm_atom *args, escm_curports *cp)
 
     if (port->input) {
 	fprintf(stderr, "write: given port is not an output port.\n");
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
     if (port->closed) {
 	fprintf(stderr, "write: port is closed.\n");
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
 
@@ -443,12 +443,12 @@ escm_newline(escm *e, escm_atom *args, escm_curports *cp)
 
     if (port->input) {
 	fprintf(stderr, "newline: given port is not an output port.\n");
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
     if (port->closed) {
 	fprintf(stderr, "newline: port is closed.\n");
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
 
@@ -474,12 +474,12 @@ escm_write_char(escm *e, escm_atom *args, escm_curports *cp)
 
     if (port->input) {
 	fprintf(stderr, "write-char: given port is not an output port.\n");
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
     if (port->closed) {
 	fprintf(stderr, "write-char: port is closed.\n");
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
 

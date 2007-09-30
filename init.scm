@@ -45,7 +45,7 @@
 			       (cdr list))))))
     (maxrec n next)))
 
-(define (min n . next)
+(dfine (min n . next)
   (letrec ((minrec
 	 (lambda (n list)
 	   (if (null? list) n (minrec

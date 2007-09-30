@@ -99,6 +99,7 @@ escm_new(void)
 
     e->casesensitive = 1;
 
+    escm_type_init(e);
     escm_srfi_init(e);
 
     return e;
@@ -117,8 +118,8 @@ escm_free(escm *e)
 	escm_atom_free(e, atom);
 
     for (i = 0; i < e->ntypes; i++) {
-	if (e->types[i]->fexit)
-	    e->types[i]->fexit(e, e->types[i]->dexit);
+	if (e->types[i]->type == TYPE_BUILT && e->types[i]->d.c.fexit)
+	    e->types[i]->d.c.fexit(e, e->types[i]->d.c.dexit);
 	free(e->types[i]);
     }
     free(e->types);
@@ -152,7 +153,7 @@ escm_fparse(escm *e, const char *filename)
     }
     do {
 	atom = escm_parse(e);
-	if (!e->quiet && atom) {
+	if (atom) {
 	    escm_atom_print(e, atom);
 	    printf("\n");
 	}
@@ -176,7 +177,7 @@ escm_sparse(escm *e, const char *str)
     }
     do {
 	atom = escm_parse(e);
-	if (!e->quiet && atom) {
+	if (atom) {
 	    escm_atom_print(e, atom);
 	    printf("\n");
 	}
@@ -266,24 +267,43 @@ escm_parse(escm *e)
     } else {
 	atom = NULL;
 	for (i = 0; i < e->ntypes && !atom; i++) {
-	    if (e->types[i]->fparsetest) {
-		if (e->types[i]->fparsetest(e, c)) {
-		    escm_input_ungetc(e->input, c);
-		    if (!e->types[i]->fparse)
-			continue;
-		    atom = e->types[i]->fparse(e);
-		    break;
+	    if (e->types[i]->type == TYPE_BUILT) {
+		if (e->types[i]->d.c.fparsetest) {
+		    if (e->types[i]->d.c.fparsetest(e, c)) {
+			escm_input_ungetc(e->input, c);
+			if (!e->types[i]->d.c.fparse)
+			    continue;
+			atom = e->types[i]->d.c.fparse(e);
+			break;
+		    }
 		}
+#ifdef ESCM_USE_CHARACTERS
+	    } else {
+		if (e->types[i]->d.dyn.fparsetest) {
+		    atom = escm_procedure_exec(e, e->types[i]->d.dyn.fparsetest,
+					       escm_char_make(e, c), 0);
+		    if (ESCM_ISTRUE(atom)) {
+			escm_input_ungetc(e->input, c);
+			if (!e->types[i]->d.dyn.fparse)
+			    continue;
+			atom = escm_procedure_exec(e, e->types[i]->d.dyn.fparse,
+						   e->NIL, 0);
+			break;
+		    }
+		}
+#endif
 	    }
 	}
 	if (i >= e->ntypes) {
-	    if (e->quiet)
-		e->err = c;
-	    else
-		fprintf(stderr, "unknown character `%c'.\n", c);
+	    fprintf(stderr, "unknown character `%c'.\n", c);
+	    e->err = 1;
 	    return NULL;
 	}
     }
+
+    c = escm_input_getc(e->input);
+    if (c != '\n')
+	escm_input_ungetc(e->input, c);
 
     if (!atom || e->ctx != NULL)
 	return atom;
@@ -340,7 +360,7 @@ escm_ctx_put(escm *e, escm_atom *atom)
     else {
 	if (!ESCM_ISCONS(e->ctx->last)) { /* it's a "foo . bar" */
 	    escm_input_print(e->input, "')' expected.\n");
-	    e->err = -1;
+	    e->err = 1;
 	    return;
 	}
 	escm_cons_val(e->ctx->last)->cdr = new;
@@ -431,6 +451,7 @@ escm_gc_collect(escm *e)
     escm_atom *white, *black, *c, *next;
     escm_context *ctx;
     struct escm_slist *li;
+    size_t i;
 
     /* we mark all the known atoms */
     for (ctx = e->ctx; ctx; ctx = ctx->prev)
@@ -439,6 +460,16 @@ escm_gc_collect(escm *e)
     /* plus the garded ones */
     for (li = e->gard; li; li = li->prev)
 	escm_atom_mark(e, li->atom);
+
+    /* plus the possible dynamic-types procedures */
+    for (i = 0; i < e->ntypes; i++) {
+	if (e->types[i]->type == TYPE_DYN) {
+	    escm_atom_mark(e, e->types[i]->d.dyn.fequal);
+	    escm_atom_mark(e, e->types[i]->d.dyn.feval);
+	    escm_atom_mark(e, e->types[i]->d.dyn.fparsetest);
+	    escm_atom_mark(e, e->types[i]->d.dyn.fparse);
+	}
+    }
 
     escm_atom_mark(e, e->env);
     escm_atom_mark(e, e->NIL);
@@ -536,7 +567,7 @@ escm_error(escm *e, const char *format, ...)
     }
 
     va_end(va);
-    e->err = -1;
+    e->err = 1;
 }
 
 /* privates functions */

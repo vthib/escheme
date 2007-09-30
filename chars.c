@@ -23,7 +23,7 @@
 static size_t chartype = 0;
 
 static void char_print(escm *, int, escm_output *, int);
-static int char_equal(escm *, char, char, int);
+static int char_equal(escm *, escm_intptr, escm_intptr, int);
 static int char_parsetest(escm *, int);
 static escm_atom *char_parse(escm *);
 static char input_getchar(escm *, escm_input *);
@@ -34,10 +34,10 @@ escm_chars_init(escm *e)
     escm_type *t;
 
     t = xcalloc(1, sizeof *t);
-    t->fprint = (Escm_Fun_Print) char_print;
-    t->fequal = (Escm_Fun_Equal) char_equal;
-    t->fparsetest = char_parsetest;
-    t->fparse = char_parse;
+    t->d.c.fprint = (Escm_Fun_Print) char_print;
+    t->d.c.fequal = (Escm_Fun_Equal) char_equal;
+    t->d.c.fparsetest = char_parsetest;
+    t->d.c.fparse = char_parse;
 
     chartype = escm_type_add(e, t);
 
@@ -315,7 +315,7 @@ escm_integer_to_char(escm *e, escm_atom *args)
 
     if (escm_number_ival(n) > 255 || escm_number_ival(n) < 0) {
 	fprintf(stderr, "%ld out of range [0;255].\n", escm_number_ival(n));
-	e->err = -1;
+	e->err = 1;
 	return NULL;
     }
 
@@ -377,7 +377,7 @@ char_print(escm *e, int c, escm_output *stream, int lvl)
 }
 
 static int
-char_equal(escm *e, char c1, char c2, int lvl)
+char_equal(escm *e, escm_intptr c1, escm_intptr c2, int lvl)
 {
     (void) e;
     (void) lvl;
@@ -407,7 +407,7 @@ char_parse(escm *e)
 
     (void) escm_input_getc(e->input), escm_input_getc(e->input); /* skip #\ */
     c = input_getchar(e, e->input);
-    if (c == '\0' && e->err == -1)
+    if (c == '\0' && e->err == 1)
 	return NULL;
 
     return escm_char_make(e, c);
@@ -465,7 +465,7 @@ input_getchar(escm *e, escm_input *input)
 
 err:
     free(str);
-    e->err = -1;
+    e->err = 1;
     return '\0';
 }
 

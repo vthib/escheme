@@ -30,7 +30,7 @@ escm_promises_init(escm *e)
     t = xcalloc(1, sizeof *t);
     t->fmark = (Escm_Fun_Mark) promise_mark;
     t->ffree = (Escm_Fun_Free) free;
-    t->fprint = (Escm_Fun_Print) promise_print;
+    t->d.c.fprint = (Escm_Fun_Print) promise_print;
 
     promisetype = escm_type_add(e, t);
 
@@ -75,7 +75,7 @@ escm_force(escm *e, escm_atom *args)
 
     p->atom = escm_atom_eval(e, p->atom);
     escm_env_leave(e, penv);
-    if (e->err == -1)
+    if (e->err == 1)
 	return NULL;
 
     p->env = NULL;

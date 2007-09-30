@@ -32,7 +32,7 @@ escm_continuations_init(escm *e)
 
     t = xcalloc(1, sizeof *t);
     t->ffree = (Escm_Fun_Free) continuation_free;
-    t->fprint = (Escm_Fun_Print) continuation_print;
+    t->d.c.fprint = (Escm_Fun_Print) continuation_print;
 
     continuationtype = escm_type_add(e, t);
 
@@ -58,7 +58,7 @@ escm_continuation_exec(escm *e, escm_atom *continuation, escm_atom *arg)
 
     c = continuation->ptr;
     c->ret = escm_atom_eval(e, escm_cons_car(arg));
-    if (e->err == -1)
+    if (e->err == 1)
 	return;
 
     while (e->ctx)

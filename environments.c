@@ -47,7 +47,7 @@ escm_environments_init(escm *e)
     t = xcalloc(1, sizeof *t);
     t->fmark = (Escm_Fun_Mark) env_mark;
     t->ffree = (Escm_Fun_Free) env_free;
-    t->fprint = (Escm_Fun_Print) env_print;
+    t->d.c.fprint = (Escm_Fun_Print) env_print;
 
     envtype = escm_type_add(e, t);
 }
@@ -218,7 +218,7 @@ escm_alpha(escm *e, escm_atom *args)
     prev = escm_env_enter(e, env);
 
     (void) escm_begin(e, args);
-    if (e->err == -1) {
+    if (e->err == 1) {
 	escm_env_leave(e, prev);
 	return NULL;
     }
@@ -256,7 +256,7 @@ escm_scheme_report_environment(escm *e, escm_atom *args)
 
 	if (escm_number_ival(n) != 5) {
 	    fprintf(stderr,"scheme-report-environment expect 5 as argument.\n");
-	    e->err = -1;
+	    e->err = 1;
 	    return NULL;
 	}
     }
@@ -280,7 +280,7 @@ escm_null_environment(escm *e, escm_atom *args)
 
 	if (escm_number_ival(o) != 5) {
 	    fprintf(stderr, "null-environment expect 5 as argument.\n");
-	    e->err = -1;
+	    e->err = 1;
 	    return NULL;
 	}
     }

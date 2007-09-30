@@ -40,21 +40,39 @@
 	return NULL;					\
     }
 
+enum { TYPE_BUILT, TYPE_DYN };
+
 struct escm_type {
     Escm_Fun_Mark fmark;
     Escm_Fun_Free ffree;
-    Escm_Fun_Print fprint;
-    Escm_Fun_Equal fequal;
 
-    /* those two functions needs to be not null if only it add a new syntax to
-       the parser */
-    Escm_Fun_Parsetest fparsetest;
-    Escm_Fun_Parse fparse;
+    union {
+	struct {
+	    Escm_Fun_Print fprint;
+	    Escm_Fun_Equal fequal;
 
-    Escm_Fun_Eval feval;
+	    /* those two functions needs to be not null if only it add a new
+	       syntax to the parser */
+	    Escm_Fun_Parsetest fparsetest;
+	    Escm_Fun_Parse fparse;
 
-    Escm_Fun_Exit fexit;
-    void *dexit;
+	    Escm_Fun_Eval feval;
+
+	    Escm_Fun_Exit fexit;
+	    void *dexit;
+	} c;
+	struct {
+	    escm_atom *fprint;
+	    escm_atom *fequal;
+	    escm_atom *fparsetest;
+	    escm_atom *fparse;
+	    escm_atom *feval;
+
+	    unsigned long basetype;
+	} dyn;
+    } d;
+
+    unsigned int type : 1;
 };
 
 struct escm_context {
@@ -91,11 +109,9 @@ struct escm {
     escm_type **types;
     size_t ntypes;
 
-    int err;
-
+    unsigned int err : 1;
     unsigned int brackets : 1;
     unsigned int casesensitive : 1;
-    unsigned int quiet : 1;
 };
 
 escm *escm_new(void);
