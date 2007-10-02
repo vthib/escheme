@@ -182,8 +182,7 @@ escm_define(escm *e, escm_atom *args)
 
 	if (escm_cons_cdr(args) != e->NIL) {
 	    fprintf(stderr, "define: error: multiples expressions.\n");
-	    e->err = 1;
-	    return NULL;
+	    escm_abort(e);
 	}
 
 	escm_gc_gard(e, c);
@@ -471,8 +470,7 @@ escm_cond(escm *e, escm_atom *args)
 		if (!ESCM_ISPROC(proc)) {
 		    escm_atom_printerr(e, proc);
 		    fprintf(stderr, ": procedure expected.\n");
-		    e->err = 1;
-		    return NULL;
+		    escm_abort(e);
 		}
 		return escm_procedure_exec(e, proc,
 					   escm_cons_make(e, ret, e->NIL), 0);
@@ -497,8 +495,7 @@ escm_case(escm *e, escm_atom *args)
 	    escm_atom_printerr(e, d);
 	    fprintf(stderr, ": expression not allowed in this context.\n");
 	}
-	e->err = 1;
-	return NULL;
+	escm_abort(e);
     }
 
     for (clause = escm_cons_pop(e, &args); clause;
@@ -568,8 +565,7 @@ escm_begin(escm *e, escm_atom *args)
     escm_atom *a, *ret;
     if (!args) {
 	fprintf(stderr, "begin: no arguments given.\n");
-	e->err = 1;
-	return NULL;
+	escm_abort(e);
     }
 
     ret = NULL;
@@ -888,8 +884,7 @@ named_let(escm *e, escm_atom *name, escm_atom *args)
     escm_assert(ESCM_ISCONS(bindings), bindings, e);
     if (!args) {
 	fprintf(stderr, "missing body.\n");
-	e->err = 1;
-	return NULL;
+	escm_abort(e);
     }
     
     escm_ctx_enter(e); /* the context of the lambda construction */

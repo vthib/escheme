@@ -21,24 +21,29 @@
 #include "types.h"
 #include "cons.h"
 
-/* XXX: stderr not stdout */
-#define escm_assert(test, atom, e)			\
-    if (!(test)) {					\
-	escm_atom_printerr(e, atom);			\
-	escm_printf(e->errp, ": wrong argument.\n");	\
-	(e)->err = -1;					\
-	return NULL;					\
-    }
+#define escm_assert(test, atom, e)				\
+    do {							\
+	if (!(test)) {						\
+	    escm_atom_printerr(e, atom);			\
+	    escm_printf(e->errp, ": wrong argument.\n");	\
+	    (e)->err = -1;					\
+	    return NULL;					\
+	}							\
+    } while(0)
 
 /* Okay, this is ugly, but there is no other solution */
-#define escm_assert1(test, atom, e, st)			\
-    if (!(test)) {					\
-	escm_atom_printerr(e, atom);			\
-	escm_printf(e->errp, ": wrong argument.\n");	\
-	st;						\
-	(e)->err = -1;					\
-	return NULL;					\
-    }
+#define escm_assert1(test, atom, e, st)				\
+    do {							\
+	if (!(test)) {						\
+	    escm_atom_printerr(e, atom);			\
+	    escm_printf(e->errp, ": wrong argument.\n");	\
+	    st;							\
+	    (e)->err = -1;					\
+	    return NULL;					\
+	}							\
+    } while(0)
+
+#define escm_abort(e) do { (e)->err = 1; return NULL; } while(0)
 
 enum { TYPE_BUILT, TYPE_DYN };
 

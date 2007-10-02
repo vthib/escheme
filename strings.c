@@ -202,8 +202,7 @@ escm_string_ref(escm *e, escm_atom *args)
 
     if ((size_t) i >= escm_str_len(str)) {
 	fprintf(stderr, "index %ld is out of range.\n", i);
-	e->err = 1;
-	return NULL;
+	escm_abort(e);
     }
 
     return escm_char_make(e, escm_str_val(str)[i]);
@@ -228,14 +227,12 @@ escm_string_set_x(escm *e, escm_atom *args)
 
     if ((size_t) i >= escm_str_len(str)) {
 	fprintf(stderr, "index %ld is out of range.\n", i);
-	e->err = 1;
-	return NULL;
+	escm_abort(e);
     }
 
     if (str->ro == 1) {
 	fprintf(stderr, "string-set!: Can't modify an immutable string.\n");
-	e->err = 1;
-	return NULL;
+	escm_abort(e);
     }
 
     escm_str_val(str)[i] = escm_char_val(c);
@@ -440,8 +437,7 @@ escm_substring(escm *e, escm_atom *args)
     start = escm_number_ival(a);
     if (start < 0 || (size_t) start > escm_str_len(str)) {
 	fprintf(stderr, "index %ld out of range.\n", start);
-	e->err = 1;
-	return NULL;
+	escm_abort(e);
     }
 
     a = escm_cons_pop(e, &args);
@@ -449,8 +445,7 @@ escm_substring(escm *e, escm_atom *args)
     end = escm_number_ival(a);
     if (end < 0 || (size_t) end > escm_str_len(str) || end < start) {
 	fprintf(stderr, "index %ld out of range.\n", end);
-	e->err = 1;
-	return NULL;
+	escm_abort(e);
     }
 
     s = xmalloc((size_t) (end - start + 1) * sizeof *s);
@@ -514,8 +509,7 @@ escm_string_fill_x(escm *e, escm_atom *args)
 
     if (str->ro == 1) {
 	fprintf(stderr, "string-set!: Can't modify an immutable string.\n");
-	e->err = 1;
-	return NULL;
+	escm_abort(e);
     }
 
     memset(escm_str_val(str), escm_char_val(c), escm_str_len(str));

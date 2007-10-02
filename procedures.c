@@ -146,8 +146,7 @@ escm_map(escm *e, escm_atom *args)
 err_length:
     fprintf(stderr, "map: all lists must have the same length.\n");
     escm_ctx_discard(e), escm_ctx_discard(e);
-    e->err = 1;
-    return NULL;
+    escm_abort(e);
 }
 
 escm_atom *
@@ -191,8 +190,7 @@ escm_for_each(escm *e, escm_atom *args)
 err_length:
     fprintf(stderr, "for-each: all lists must have the same length.\n");
     escm_ctx_discard(e), escm_ctx_discard(e);
-    e->err = 1;
-    return NULL;
+    escm_abort(e);
 }
 
 static void
@@ -292,8 +290,7 @@ runprimitive(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
 
 err:
     escm_ctx_discard(e);
-    e->err = 1;
-    return NULL;
+    escm_abort(e);
 }
 
 static escm_atom *
@@ -414,6 +411,5 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomcons, int eval)
     return ret;
 
 err:
-    e->err = 1;
-    return NULL;
+    escm_abort(e);
 }

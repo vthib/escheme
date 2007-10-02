@@ -256,8 +256,7 @@ escm_scheme_report_environment(escm *e, escm_atom *args)
 
 	if (escm_number_ival(n) != 5) {
 	    fprintf(stderr,"scheme-report-environment expect 5 as argument.\n");
-	    e->err = 1;
-	    return NULL;
+	    escm_abort(e);
 	}
     }
 
@@ -280,8 +279,7 @@ escm_null_environment(escm *e, escm_atom *args)
 
 	if (escm_number_ival(o) != 5) {
 	    fprintf(stderr, "null-environment expect 5 as argument.\n");
-	    e->err = 1;
-	    return NULL;
+	    escm_abort(e);
 	}
     }
 

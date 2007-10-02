@@ -150,8 +150,7 @@ escm_vector_ref(escm *e, escm_atom *args)
 
     if ((size_t) escm_number_ival(k) >= escm_vector_len(v)) {
 	fprintf(stderr, "index %ld out of range.\n", escm_number_ival(k));
-	e->err = 1;
-	return NULL;
+	escm_abort(e);
     }
 
     return escm_vector_val(v)->vec[escm_number_ival(k)];
@@ -169,14 +168,12 @@ escm_vector_set_x(escm *e, escm_atom *args)
 
     if ((size_t) escm_number_ival(k) >= escm_vector_len(v)) {
 	fprintf(stderr, "index %ld out of range.\n", escm_number_ival(k));
-	e->err = 1;
-	return NULL;
+	escm_abort(e);
     }
 
     if (v->ro == 1) {
 	fprintf(stderr, "vector-set!: Can't modify an immutable vector.\n");
-	e->err = 1;
-	return NULL;
+	escm_abort(e);
     }
 
     escm_vector_val(v)->vec[escm_number_ival(k)] = escm_cons_pop(e, &args);
@@ -196,8 +193,7 @@ escm_vector_fill_x(escm *e, escm_atom *args)
 
     if (v->ro == 1) {
 	fprintf(stderr, "vector-fill!: Can't modify an immutable vector.\n");
-	e->err = 1;
-	return NULL;
+	escm_abort(e);
     }
 
     for (i = 0; i < escm_vector_len(v); i++)
@@ -325,8 +321,7 @@ vector_parse(escm *e)
 		escm_input_print(e->input, "expecting a '%c' to close a '%c'",
 				 (open == '(') ? ')' : ']', open);
 		escm_ctx_discard(e);
-		e->err = 1;
-		return NULL;
+		escm_abort(e);
 	    }
 	    break;
 	} else if (e->brackets == 0 && c == ')')

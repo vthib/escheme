@@ -98,8 +98,7 @@ escm_atom_eval(escm *e, escm_atom *atom)
 	return NULL;
     if (atom->type >= e->ntypes) {
 	fprintf(stderr, "An atom have a unknown type.\n");
-	e->err = 1;
-	return NULL;
+	escm_abort(e);
     }
 
     old = e->curobj, e->curobj = atom;

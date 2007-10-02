@@ -106,8 +106,7 @@ escm_macro_expand(escm *e, escm_atom *macro, escm_atom *cont)
     fprintf(stderr, "can't expand macro ");
     escm_atom_printerr(e, cont);
     fprintf(stderr, ".\n");
-    e->err = 1;
-    return NULL;
+    escm_abort(e);
 }
 
 escm_atom *
@@ -126,14 +125,12 @@ escm_expand(escm *e, escm_atom *args)
     if (!macro) {
 	escm_atom_printerr(e, atom);
 	fprintf(stderr, ": expression do not yield an applicable value.\n");
-	e->err = 1;
-	return NULL;
+	escm_abort(e);
     }
     if (!ESCM_ISMACRO(macro)) {
 	escm_atom_printerr(e, macro);
 	fprintf(stderr, ": not a macro.\n");
-	e->err = 1;
-	return NULL;
+	escm_abort(e);
     }
 
     return escm_macro_expand(e, macro, arg);
@@ -153,8 +150,7 @@ escm_define_syntax(escm *e, escm_atom *args)
     if (!val) {
 	escm_atom_printerr(e, escm_cons_car(args));
 	fprintf(stderr, ": expression not allowed in a definition.\n");
-	e->err = 1;
-	return NULL;
+	escm_abort(e);
     }
     escm_assert(ESCM_ISMACRO(val), val, e);
 
@@ -184,8 +180,7 @@ escm_syntax_rules(escm *e, escm_atom *args)
 
 	if (!checksym(e, c->car)) {
 	    fprintf(stderr, "invalid syntax-rules.\n");
-	    e->err = 1;
-	    return NULL;
+	    escm_abort(e);
 	}
     }
 

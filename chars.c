@@ -315,8 +315,7 @@ escm_integer_to_char(escm *e, escm_atom *args)
 
     if (escm_number_ival(n) > 255 || escm_number_ival(n) < 0) {
 	fprintf(stderr, "%ld out of range [0;255].\n", escm_number_ival(n));
-	e->err = 1;
-	return NULL;
+	escm_abort(e);
     }
 
     return escm_char_make(e, (char) escm_number_ival(n));

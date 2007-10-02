@@ -296,8 +296,7 @@ escm_parse(escm *e)
 	}
 	if (i >= e->ntypes) {
 	    fprintf(stderr, "unknown character `%c'.\n", c);
-	    e->err = 1;
-	    return NULL;
+	    escm_abort(e);
 	}
     }
 

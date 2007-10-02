@@ -9,7 +9,6 @@
    - Bignums
 
  - Maybe:
-   - Code a escm_abort
    - Slashification
    - Continuations
    - Recode Macro implementation

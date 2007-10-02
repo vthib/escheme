@@ -189,8 +189,7 @@ symbol_eval(escm *e, const char *sym)
     atom = escm_env_get(e->env, sym);
     if (!atom) {
 	fprintf(stderr, "unknown symbol `%s'.\n", sym);
-	e->err = 1;
-	return NULL;
+	escm_abort(e);
     }
 
     return atom;

@@ -172,8 +172,7 @@ escm_set_car_x(escm *e, escm_atom *args)
 
     if (o->ro == 1) {
 	fprintf(stderr, "set-car!: Can't modify an immutable cons.\n");
-	e->err = 1;
-	return NULL;
+	escm_abort(e);
     }
 
     escm_cons_val(o)->car = escm_cons_pop(e, &args);
@@ -201,8 +200,7 @@ escm_set_cdr_x(escm *e, escm_atom *args)
 
     if (o->ro == 1) {
 	fprintf(stderr, "set-cdr!: Can't modify an immutable cons.\n");
-	e->err = 1;
-	return NULL;
+	escm_abort(e);
     }
 
     escm_cons_val(o)->cdr = escm_cons_pop(e, &args);
@@ -333,8 +331,7 @@ escm_append(escm *e, escm_atom *args)
 	    escm_atom_printerr(e, flist);
 	    fprintf(stderr, ": improper list.\n");
 	    escm_ctx_discard(e);
-	    e->err = 1;
-	    return NULL;
+	    escm_abort(e);
 	}
 	escm_ctx_put(e, a->car);
     }
@@ -357,8 +354,7 @@ escm_reverse(escm *e, escm_atom *args)
 	if (!ESCM_ISCONS(c->cdr)) {
 	    escm_atom_printerr(e, arg);
 	    fprintf(stderr, ": Improper list.\n");
-	    e->err = 1;
-	    return NULL;
+	    escm_abort(e);
 	}
 	new = escm_cons_make(e, c->car, (new != NULL) ? new : e->NIL);
     }
@@ -392,8 +388,7 @@ escm_list_tail(escm *e, escm_atom *args)
 	if (!ESCM_ISCONS(atom)) {
 	    escm_atom_printerr(e, list);
 	    fprintf(stderr, ": improper list.\n");
-	    e->err = 1;
-	    return NULL;
+	    escm_abort(e);
 	}
 	atom = escm_cons_val(atom)->cdr;
     }
@@ -411,8 +406,7 @@ escm_list_ref(escm *e, escm_atom *args)
 	return NULL;
     if (sublist == e->NIL) {
 	fprintf(stderr, "index too large.\n");
-	e->err = 1;
-	return NULL;
+	escm_abort(e);
     }
 
     return escm_cons_val(sublist)->car;
@@ -645,8 +639,7 @@ cons_parse(escm *e)
 		escm_input_print(e->input, "expecting a '%c' to close a '%c'",
 				 (open == '(') ? ')' : ']', open);
 		escm_ctx_discard(e);
-		e->err = 1;
-		return NULL;
+		escm_abort(e);
 	    }
 	    break;
 	} else if (e->brackets == 0 && c == ')')
@@ -684,8 +677,7 @@ cons_eval(escm *e, escm_cons *cons)
     if (!atomfun) {
 	escm_atom_printerr(e, cons->car);
 	fprintf(stderr, ": expression do not yield an applicable value.\n");
-	e->err = 1;
-	return NULL;
+	escm_abort(e);
     }
 
 #ifdef ESCM_USE_MACROS
