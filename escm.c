@@ -313,14 +313,15 @@ escm_parse(escm *e)
     return ret;
 }
 
-size_t
+unsigned long
 escm_type_add(escm *e, escm_type *type)
 {
     assert(e != NULL);
     assert(type != NULL);
 
     e->ntypes++;
-    e->types = xrealloc(e->types, e->ntypes * sizeof *type);
+    if (e->ntypes % 2 == 1)
+	e->types = xrealloc(e->types, (e->ntypes + 1) * sizeof *type);
     e->types[e->ntypes - 1] = type;
 
     return e->ntypes - 1;

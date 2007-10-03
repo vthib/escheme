@@ -30,7 +30,7 @@ struct escm_match {
     escm_match *prev;
 };
 
-static size_t macrotype = 0;
+static unsigned long macrotype = 0;
 
 static int checksym(escm *, escm_atom *);
 

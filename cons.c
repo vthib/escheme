@@ -20,7 +20,7 @@
 
 #include "escheme.h"
 
-static size_t constype = 0;
+static unsigned long constype = 0;
 
 static void cons_mark(escm *, escm_cons *);
 static void cons_print(escm *, escm_cons *, escm_output *, int);

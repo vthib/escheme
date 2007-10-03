@@ -20,7 +20,7 @@
 
 #include "escheme.h"
 
-static size_t stringtype = 0;
+static unsigned long stringtype = 0;
 
 static void string_free(escm_string *);
 static void string_print(escm *, escm_string *, escm_output *, int);

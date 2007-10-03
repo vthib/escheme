@@ -20,7 +20,7 @@
 
 #include "escheme.h"
 
-static size_t symboltype = 0;
+static unsigned long symboltype = 0;
 
 static void symbol_print(escm *, char *, escm_output *, int);
 static int symbol_equal(escm *, char *, char *, int);

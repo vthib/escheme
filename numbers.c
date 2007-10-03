@@ -21,7 +21,7 @@
 
 #include "escheme.h"
 
-static size_t numbertype = 0;
+static unsigned long numbertype = 0;
 
 static void number_print(escm *, escm_number *, escm_output *, int);
 static int number_equal(escm *, escm_number *, escm_number *, int);

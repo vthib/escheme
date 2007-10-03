@@ -48,7 +48,7 @@ escm_create_type(escm *e, escm_atom *args)
 
     basetype = escm_cons_pop(e, &args);
     if (escm_number_ival(basetype) < 0 ||
-	(size_t) escm_number_ival(basetype) >= e->ntypes) {
+	(unsigned long) escm_number_ival(basetype) >= e->ntypes) {
 	escm_error(e, "create-type: ~s is not a type.~%", basetype);
 	escm_abort(e);
     }
@@ -73,7 +73,7 @@ escm_set_type_x(escm *e, escm_atom *args)
     type = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISINT(type), type, e);
     t = escm_number_ival(type);
-    if (t < 0 || (size_t) t >= e->ntypes) {
+    if (t < 0 || (unsigned long) t >= e->ntypes) {
 	escm_error(e, "set-type!: ~s is not a type.~%", type);
 	escm_abort(e);
     }
@@ -89,7 +89,7 @@ escm_set_type_x(escm *e, escm_atom *args)
 	escm_abort(e);
     }
 
-    atom->type = (size_t) t;
+    atom->type = (unsigned long) t;
     return NULL;
 }
 
@@ -102,12 +102,13 @@ escm_type_p(escm *e, escm_atom *args)
     type = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISINT(type), type, e);
     if (escm_number_ival(type) < 0 ||
-	(size_t) escm_number_ival(type) >= e->ntypes) {
+	(unsigned long) escm_number_ival(type) >= e->ntypes) {
 	escm_error(e, "type?: ~s is not a type.~%", type);
 	escm_abort(e);
     }
 
-    return ((size_t) escm_number_ival(type) == atom->type) ? e->TRUE : e->FALSE;
+    return ((unsigned long) escm_number_ival(type) == atom->type) ? e->TRUE :
+	e->FALSE;
 }
 
 escm_atom *
@@ -135,7 +136,7 @@ escm_set_print(escm *e, escm_atom *args)
     type = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISINT(type), type, e);
     if (escm_number_ival(type) < 0 ||
-	(size_t) escm_number_ival(type) >= e->ntypes) {
+	(unsigned long) escm_number_ival(type) >= e->ntypes) {
 	escm_error(e, "set-print: ~s is not a type.~%", type);
 	escm_abort(e);
     }
@@ -157,7 +158,7 @@ escm_set_eval(escm *e, escm_atom *args)
     type = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISINT(type), type, e);
     if (escm_number_ival(type) < 0 ||
-	(size_t) escm_number_ival(type) >= e->ntypes) {
+	(unsigned long) escm_number_ival(type) >= e->ntypes) {
 	escm_error(e, "set-eval: ~s is not a type.~%", type);
 	escm_abort(e);
     }
@@ -179,7 +180,7 @@ escm_set_equal(escm *e, escm_atom *args)
     type = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISINT(type), type, e);
     if (escm_number_ival(type) < 0 ||
-	(size_t) escm_number_ival(type) >= e->ntypes) {
+	(unsigned long) escm_number_ival(type) >= e->ntypes) {
 	escm_error(e, "set-equal: ~s is not a type.~%", type);
 	escm_abort(e);
     }
@@ -201,7 +202,7 @@ escm_set_parse_p(escm *e, escm_atom *args)
     type = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISINT(type), type, e);
     if (escm_number_ival(type) < 0 ||
-	(size_t) escm_number_ival(type) >= e->ntypes) {
+	(unsigned long) escm_number_ival(type) >= e->ntypes) {
 	escm_error(e, "set-parse?: ~s is not a type.~%", type);
 	escm_abort(e);
     }
@@ -223,7 +224,7 @@ escm_set_parse(escm *e, escm_atom *args)
     type = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISINT(type), type, e);
     if (escm_number_ival(type) < 0 ||
-	(size_t) escm_number_ival(type) >= e->ntypes) {
+	(unsigned long) escm_number_ival(type) >= e->ntypes) {
 	escm_error(e, "set-parse: ~s is not a type.~%", type);
 	escm_abort(e);
     }

@@ -153,8 +153,8 @@ escm_atom_print4(escm *e, escm_atom *atom, escm_output *stream, int lvl)
 	    escm_ctx_put(e, a);
 	    escm_ctx_put(e, escm_int_make(e, (long) lvl));
 
-	    escm_procedure_exec(e, e->types[atom->type]->d.dyn.fprint,
-				escm_ctx_leave(e), 0);
+	    (void) escm_procedure_exec(e, e->types[atom->type]->d.dyn.fprint,
+				       escm_ctx_leave(e), 0);
 	}
     }
 #endif

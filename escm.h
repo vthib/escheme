@@ -26,8 +26,7 @@
 	if (!(test)) {						\
 	    escm_atom_printerr(e, atom);			\
 	    escm_printf(e->errp, ": wrong argument.\n");	\
-	    (e)->err = -1;					\
-	    return NULL;					\
+	    escm_abort(e);					\
 	}							\
     } while(0)
 
@@ -38,8 +37,7 @@
 	    escm_atom_printerr(e, atom);			\
 	    escm_printf(e->errp, ": wrong argument.\n");	\
 	    st;							\
-	    (e)->err = -1;					\
-	    return NULL;					\
+	    escm_abort(e);					\
 	}							\
     } while(0)
 
@@ -112,7 +110,7 @@ struct escm {
     escm_atom *curobj; /* the object we currently are treating */
 
     escm_type **types;
-    size_t ntypes;
+    unsigned long ntypes;
 
     unsigned int err : 1;
     unsigned int brackets : 1;
@@ -128,7 +126,7 @@ escm_atom *escm_parse(escm *);
 
 void escm_shell(escm *);
 
-size_t escm_type_add(escm *, escm_type *);
+unsigned long escm_type_add(escm *, escm_type *);
 
 void escm_ctx_enter(escm *);
 void escm_ctx_put(escm *, escm_atom *);

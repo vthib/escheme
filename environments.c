@@ -27,7 +27,7 @@ struct escm_tst {
     escm_atom *atom;
 };
 
-static size_t envtype;
+static unsigned long envtype;
 
 static void env_free(escm_env *);
 static void env_mark(escm *, escm_env *);

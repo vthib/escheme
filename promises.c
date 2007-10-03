@@ -16,7 +16,7 @@
  */
 #include "escheme.h"
 
-static size_t promisetype = 0;
+static unsigned long promisetype = 0;
 
 static void promise_mark(escm *, escm_promise *);
 static void promise_print(escm *, escm_promise *, escm_output *, int);

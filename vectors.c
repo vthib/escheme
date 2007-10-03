@@ -20,7 +20,7 @@
 
 #include "escheme.h"
 
-static size_t vectortype = 0;
+static unsigned long vectortype = 0;
 
 static void vector_free(escm_vector *);
 static void vector_mark(escm *, escm_vector *);

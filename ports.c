@@ -18,7 +18,7 @@
 
 #include "escheme.h"
 
-static size_t porttype = 0;
+static unsigned long porttype = 0;
 
 static void port_free(escm_port *);
 static void port_exit(escm *, escm_curports *);

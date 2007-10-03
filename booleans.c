@@ -22,7 +22,7 @@
 #define ESCM_BOOL_T ((void *) 1)
 #define ESCM_BOOL_F NULL
 
-static size_t booleantype = 0;
+static unsigned long booleantype = 0;
 
 static void boolean_print(escm *, void *, escm_output *, int);
 static int boolean_equal(escm *, void *, void *, int);

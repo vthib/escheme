@@ -18,7 +18,7 @@
 
 #include "escheme.h"
 
-static size_t continuationtype = 0;
+static unsigned long continuationtype = 0;
 static escm_continuation *curcont = NULL;
 
 static void continuation_free(escm_continuation *);
