@@ -24,7 +24,7 @@
 # define ESCM_USE_CHARACTERS
 # define ESCM_USE_VECTORS
 # define ESCM_USE_STRINGS
-# define ESCM_USE_NUMBERS
+# define ESCM_USE_COMPLETE_NUMBERS
 # define ESCM_USE_PROMISES
 # define ESCM_USE_MACROS
 # define ESCM_USE_PORTS
@@ -50,8 +50,12 @@
 # define ESCM_CIRCULAR_LIST 0 /* default */
 #endif
 
+#if defined ESCM_USE_BASIC_NUMBERS || defined ESCM_USE_COMPLETE_NUMBERS
+# define ESCM_USE_NUMBERS
+#endif
+
 #if !defined ESCM_USE_BOOLEANS
-# if !defined ESCM_USE_NUMBERS
+# ifndef ESCM_USE_NUMBERS
 #  error "At least one of the boolean and number types need to be activated."
 # else
 #  define ESCM_INTBOOL

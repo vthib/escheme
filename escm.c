@@ -60,11 +60,14 @@ escm_new(void)
     escm_cons_init(e);
     escm_procedures_init(e);
 
-    escm_symbols_init(e);
-
-#ifdef ESCM_USE_NUMBERS
-    escm_numbers_init(e); /* numbers needs to be declared after symbols */
+    /* numbers needs to be declared before symbols */
+#ifdef ESCM_USE_BASIC_NUMBERS
+    escm_bnumbers_init(e);
+#elif defined ESCM_USE_COMPLETE_NUMBERS
+    escm_numbers_init(e);
 #endif
+
+    escm_symbols_init(e);
 
 #ifdef ESCM_USE_STRINGS
     escm_strings_init(e);
@@ -151,13 +154,12 @@ escm_fparse(escm *e, const char *filename)
 	e->input = save;
 	return;
     }
-    do {
-	atom = escm_parse(e);
+    while ((atom = escm_parse(e)) != e->EOF_OBJ) {
 	if (atom) {
 	    escm_atom_print(e, atom);
 	    printf("\n");
 	}
-    } while (e->input->end == 0);
+    }
 
     escm_input_close(e->input), e->input = save;
 }
@@ -175,13 +177,12 @@ escm_sparse(escm *e, const char *str)
 	e->input = save;
 	return;
     }
-    do {
-	atom = escm_parse(e);
+    while ((atom = escm_parse(e)) != e->EOF_OBJ) {
 	if (atom) {
 	    escm_atom_print(e, atom);
 	    printf("\n");
 	}
-    } while (e->input->end == 0);
+    }
 
     escm_input_close(e->input), e->input = save;
 }
@@ -233,15 +234,12 @@ escm_parse(escm *e)
 	if (c == '.') {
 	    int c2;
 
-	    c2 = escm_input_getc(e->input);
-	    if (c2 == '.') {
-		escm_input_ungetc(e->input, c2);
-		break;
-	    }
 	    if (!e->ctx)
 		break;
-	    e->ctx->dotted = 1;
-	    c = escm_input_getc(e->input);
+	    c2 = escm_input_getc(e->input);
+	    if (c2 != '.' && !isdigit(c2))
+		e->ctx->dotted = 1;
+	    c = c2;
 	} else if (c == ';') {
 	    while (c != '\n')
 		c = escm_input_getc(e->input);
@@ -300,9 +298,9 @@ escm_parse(escm *e)
 	}
     }
 
-    c = escm_input_getc(e->input);
+/*    c = escm_input_getc(e->input);
     if (c != '\n')
-	escm_input_ungetc(e->input, c);
+    escm_input_ungetc(e->input, c);*/
 
     if (!atom || e->ctx != NULL)
 	return atom;
@@ -597,7 +595,7 @@ enterin(escm *e, const char *name)
     assert(e != NULL);
 
     escm_ctx_enter(e);
-    escm_ctx_put(e, escm_atom_new(e, ESCM_TYPE_SYMBOL, xstrdup(name)));
+    escm_ctx_put(e, escm_symbol_make(e, name));
     atom = escm_parse(e);
     if (!atom) {
 	escm_ctx_discard(e);

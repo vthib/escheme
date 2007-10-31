@@ -156,8 +156,8 @@ escm_atom_print4(escm *e, escm_atom *atom, escm_output *stream, int lvl)
 	    (void) escm_procedure_exec(e, e->types[atom->type]->d.dyn.fprint,
 				       escm_ctx_leave(e), 0);
 	}
-    }
 #endif
+    }
     e->curobj = old;
 }
 
@@ -165,6 +165,7 @@ int
 escm_atom_equal(escm *e, escm_atom *o1, escm_atom *o2, int lvl)
 {
     assert(e != NULL);
+
     if (!o1 || !o2 || o1->type != o2->type)
 	return 0;
     if (o1->type >= e->ntypes) {
@@ -175,7 +176,7 @@ escm_atom_equal(escm *e, escm_atom *o1, escm_atom *o2, int lvl)
     if (o1->ptr == o2->ptr)
 	return 1;
 
-    if (e->types[o1->type]->type == TYPE_BUILT) {
+    if (e->types[o1->type]->type == TYPE_DYN) {
 	escm_atom *a;
 
 	if (!e->types[o1->type]->d.dyn.fequal)

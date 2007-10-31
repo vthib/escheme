@@ -268,13 +268,12 @@ escm_length(escm *e, escm_atom *args)
 {
     escm_atom *arg;
     escm_cons *c, *end;
-    escm_number *n;
+    long n;
 
     arg = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCONS(arg), arg, e);
 
-    n = xcalloc(1, sizeof *n);
-    n->fixnum = 1;
+    n = 0;
 
 #if ESCM_CIRCULAR_LIST >= 1
     arg->marked = 1; /* mark all atoms to check circular lists */
@@ -289,7 +288,6 @@ escm_length(escm *e, escm_atom *args)
 	    fprintf(stderr, "Can't compute the length of a non proper "
 		    "list.\n");
 	    e->err = 1;
-	    free(n);
 #if ESCM_CIRCULAR_LIST >= 1
 	    break;
 #else
@@ -299,7 +297,7 @@ escm_length(escm *e, escm_atom *args)
 #if ESCM_CIRCULAR_LIST >= 1
 	c->cdr->marked = 1;
 #endif
-	n->d.ival++;
+	n++;
     }
 
 #if ESCM_CIRCULAR_LIST >= 1
@@ -311,7 +309,7 @@ escm_length(escm *e, escm_atom *args)
 	return NULL;
 #endif
 
-    return escm_atom_new(e, ESCM_TYPE_NUMBER, n);
+    return escm_int_make(e, n);
 }
 #endif /* USE_NUMBERS */
 

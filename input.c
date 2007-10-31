@@ -158,6 +158,31 @@ escm_input_getc(escm_input *f)
     return c;
 }
 
+int
+escm_input_peek(escm_input *f)
+{
+    int c;
+
+    assert(f != NULL);
+
+    if (f->end)
+	return EOF;
+
+    if (f->type == INPUT_FILE) {
+	c = getc(f->d.file.fp);
+	
+	if (f->d.file.usize <= f->d.file.un) {
+	    f->d.file.usize += 2;
+	    f->d.file.ub = xrealloc(f->d.file.ub, f->d.file.usize);
+	}
+	f->d.file.ub[f->d.file.un++] = (char) c;
+    } else
+	c = *f->d.str.cur;
+
+    return c;
+}
+
+
 /**
  * @brief return a text that end with one of the `end' chars
  */

@@ -294,15 +294,11 @@ escm_atom *
 escm_char_to_integer(escm *e, escm_atom *args)
 {
     escm_atom *c;
-    escm_number *n;
 
     c = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCHAR(c), c, e);
 
-    n = xmalloc(sizeof *n);
-    n->fixnum = 1, n->d.ival = escm_char_val(c);
-
-    return escm_atom_new(e, ESCM_TYPE_NUMBER, n);
+    return escm_int_make(e, (long) escm_char_val(c));
 }
 
 escm_atom *

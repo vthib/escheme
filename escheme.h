@@ -30,6 +30,7 @@
 #include "procedures.h"
 #include "symbols.h"
 #include "booleans.h"
+#include "bnumbers.h"
 #include "numbers.h"
 #include "primitives.h"
 #include "strings.h"
