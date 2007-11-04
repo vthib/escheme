@@ -169,6 +169,9 @@ escm_input_peek(escm_input *f)
 	return EOF;
 
     if (f->type == INPUT_FILE) {
+	if (f->d.file.un > 0)
+	    return f->d.file.ub[f->d.file.un - 1];
+
 	c = getc(f->d.file.fp);
 	
 	if (f->d.file.usize <= f->d.file.un) {

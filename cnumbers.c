@@ -82,19 +82,10 @@ escm_cnumbers_init(escm *e)
 
     numbertype = escm_type_add(e, t);
 
-#ifdef ESCM_INTBOOL
-    {
-	escm_number *n;
-
-	n = xcalloc(1, sizeof *n);
-	n->type = ESCM_INTEGER, n->d.i = 0;
-	e->FALSE = escm_atom_new(e, numbertype, n);
-
-	n = xcalloc(1, sizeof *n);
-	n->type = ESCM_INTEGER, n->d.i = 1;
-	e->TRUE = escm_atom_new(e, numbertype, n);
+    if (!escm_type_ison(ESCM_TYPE_BOOL)) {
+	e->FALSE = makeatom(e, makeint(0));
+	e->TRUE = makeatom(e, makeint(1));
     }
-#endif
 
     (void) escm_procedure_new(e, "exact->inexact", 1, 2, escm_exact_to_inexact,
 			      NULL);

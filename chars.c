@@ -397,14 +397,8 @@ char_equal(escm *e, escm_intptr c1, escm_intptr c2, int lvl)
 static int
 char_parsetest(escm *e, int c)
 {
-    int c2, ret;
-
-    if (c == '#') {
-	c2 = escm_input_getc(e->input);
-	ret = (c2 == '\\');
-	escm_input_ungetc(e->input, c2);
-	return ret;
-    }
+    if (c == '#')
+	return escm_input_peek(e->input) == '\\';
 
     return 0;
 }    

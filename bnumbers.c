@@ -50,8 +50,7 @@ escm_bnumbers_init(escm *e)
 
     bnumbertype = escm_type_add(e, t);
 
-#ifdef ESCM_INTBOOL
-    {
+    if (!escm_type_ison(ESCM_TYPE_BOOL)) {
 	escm_bnumber *n;
 
 	n = xmalloc(sizeof *n);
@@ -62,7 +61,6 @@ escm_bnumbers_init(escm *e)
 	n->fixnum = 1, n->d.ival = 1;
 	e->TRUE = escm_atom_new(e, bnumbertype, n);
     }
-#endif
 
     (void) escm_procedure_new(e, "number?", 1, 1, escm_bnumber_p, NULL);
     (void) escm_procedure_new(e, "integer?", 1, 1, escm_binteger_p, NULL);

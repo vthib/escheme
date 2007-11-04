@@ -44,7 +44,7 @@ escm_vectors_init(escm *e)
 
     vectortype = escm_type_add(e, t);
 
-    (void) escm_procedure_new(e, "vector?", 1, 1, escm_char_p, NULL);
+    (void) escm_procedure_new(e, "vector?", 1, 1, escm_vector_p, NULL);
 
     (void) escm_procedure_new(e, "vector", 0, -1, escm_prim_vector, NULL);
 #ifdef ESCM_USE_NUMBERS
@@ -83,7 +83,7 @@ escm_vector_make(escm *e, escm_atom **vec, size_t len)
 escm_atom *
 escm_vector_p(escm *e, escm_atom *args)
 {
-    return ESCM_ISVECTOR(escm_cons_val(args)->car) ? e->TRUE : e->FALSE;
+    return ESCM_ISVECTOR(escm_cons_car(args)) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *

@@ -59,51 +59,6 @@ escm_new(void)
     escm_cons_init(e);
     escm_procedures_init(e);
 
-    /* numbers needs to be declared before symbols */
-#ifdef ESCM_USE_COMPLETE_NUMBERS
-    escm_cnumbers_init(e);
-#elif defined ESCM_USE_BASIC_NUMBERS
-    escm_bnumbers_init(e);
-#endif
-
-    escm_symbols_init(e);
-
-#ifdef ESCM_USE_STRINGS
-    escm_strings_init(e);
-#endif
-#ifdef ESCM_USE_BOOLEANS
-    escm_booleans_init(e);
-#endif
-#ifdef ESCM_USE_VECTORS
-    escm_vectors_init(e);
-#endif
-#ifdef ESCM_USE_CHARACTERS
-    escm_chars_init(e);
-#endif
-#ifdef ESCM_USE_PROMISES
-    escm_promises_init(e);
-#endif
-#ifdef ESCM_USE_PORTS
-    escm_ports_init(e);
-#endif
-#ifdef ESCM_USE_MACROS
-    escm_macros_init(e);
-#endif
-#ifdef ESCM_USE_CONTINUATIONS
-    escm_continuations_init(e);
-#endif
-
-#ifndef ESCM_USE_CHARACTERS
-    e->EOF_OBJ = e->FALSE;
-#endif
-
-    escm_primitives_load(e);
-
-    e->casesensitive = 1;
-
-    escm_type_init(e);
-    escm_srfi_init(e);
-
     return e;
 }
 

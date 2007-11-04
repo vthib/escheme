@@ -55,16 +55,8 @@
 # define ESCM_USE_NUMBERS
 #endif
 
-#if !defined ESCM_USE_BOOLEANS
-# ifndef ESCM_USE_NUMBERS
-#  error "At least one of the boolean and number types need to be activated."
-# else
-#  define ESCM_INTBOOL
-# endif
-#endif
-
-#if defined ESCM_INTBOOL && defined ESCM_USE_BOOLEANS
-# undef ESCM_INTBOOL /* use boolean instead of integers */
+#if !defined ESCM_USE_BOOLEANS && !defined ESCM_USE_NUMBERS
+# error "At least one of the boolean and number types need to be activated."
 #endif
 
 /* typedefs */

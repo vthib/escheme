@@ -102,13 +102,9 @@ boolean_parsetest(escm *e, int c)
 {
     if (c == '#') {
 	int c2;
-	int ret;
 
-	c2 = escm_input_getc(e->input);
-	ret = (c2 == 't' || c2 == 'f');
-	escm_input_ungetc(e->input, c2);
-
-	return ret;
+	c2 = escm_input_peek(e->input);
+	return (c2 == 't' || c2 == 'f');
     }
 
     return 0;
