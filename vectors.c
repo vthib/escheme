@@ -112,6 +112,11 @@ escm_make_vector(escm *e, escm_atom *args)
     escm_atom *k, *fill;
     escm_atom **vec;
 
+    if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
+	escm_error(e, "~s: number type is off.~%", e->curobj);
+	escm_abort(e);
+    }
+
     k = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISINT(k) && escm_number_ival(k) >= 0, k, e);
     fill = escm_cons_pop(e, &args);
@@ -132,6 +137,11 @@ escm_vector_length(escm *e, escm_atom *args)
 {
     escm_atom *v;
 
+    if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
+	escm_error(e, "~s: number type is off.~%", e->curobj);
+	escm_abort(e);
+    }
+
     v = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISVECTOR(v), v, e);
 
@@ -142,6 +152,11 @@ escm_atom *
 escm_vector_ref(escm *e, escm_atom *args)
 {
     escm_atom *v, *k;
+
+    if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
+	escm_error(e, "~s: number type is off.~%", e->curobj);
+	escm_abort(e);
+    }
 
     v = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISVECTOR(v), v, e);
@@ -160,6 +175,11 @@ escm_atom *
 escm_vector_set_x(escm *e, escm_atom *args)
 {
     escm_atom *v, *k;
+
+    if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
+	escm_error(e, "~s: number type is off.~%", e->curobj);
+	escm_abort(e);
+    }
 
     v = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISVECTOR(v), v, e);

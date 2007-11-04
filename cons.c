@@ -59,13 +59,11 @@ escm_cons_init(escm *e)
     (void) escm_procedure_new(e, "pair?", 1, 1, escm_pair_p, NULL);
     (void) escm_procedure_new(e, "list?", 1, 1, escm_list_p, NULL);
 
-#ifdef ESCM_USE_NUMBERS
-    (void) escm_procedure_new(e, "length", 1, 1, escm_length, NULL);
-#endif
     (void) escm_procedure_new(e, "append", 2, 2, escm_append, NULL);
     (void) escm_procedure_new(e, "reverse", 1, 1, escm_reverse, NULL);
 
 #ifdef ESCM_USE_NUMBERS
+    (void) escm_procedure_new(e, "length", 1, 1, escm_length, NULL);
     (void) escm_procedure_new(e, "list-tail", 2, 2, escm_list_tail, NULL);
     (void) escm_procedure_new(e, "list-ref", 2, 2, escm_list_ref, NULL);
 #endif
@@ -171,7 +169,7 @@ escm_set_car_x(escm *e, escm_atom *args)
     escm_assert(ESCM_ISCONS(o) && escm_cons_val(o) != NULL, o, e);
 
     if (o->ro == 1) {
-	fprintf(stderr, "set-car!: Can't modify an immutable cons.\n");
+	escm_error(e, "~s: Can't modify ~s: immutable cons.~%", e->curobj, o);
 	escm_abort(e);
     }
 
@@ -199,7 +197,7 @@ escm_set_cdr_x(escm *e, escm_atom *args)
     escm_assert(ESCM_ISCONS(o) && escm_cons_val(o) != NULL, o, e);
 
     if (o->ro == 1) {
-	fprintf(stderr, "set-cdr!: Can't modify an immutable cons.\n");
+	escm_error(e, "~s: Can't modify ~s: immutable cons.~%", e->curobj, o);
 	escm_abort(e);
     }
 
@@ -262,6 +260,53 @@ escm_list_p(escm *e, escm_atom *args)
     return (res == 1) ? e->TRUE : e->FALSE;
 }
 
+escm_atom *
+escm_append(escm *e, escm_atom *args)
+{
+    escm_atom *flist;
+    escm_cons *a;
+
+    flist = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISCONS(flist), flist, e);
+
+    escm_ctx_enter(e);
+
+    for (a = escm_cons_val(flist); a; a = escm_cons_next(a)) {
+	if (!ESCM_ISCONS(a->cdr)) {
+	    escm_atom_printerr(e, flist);
+	    escm_error(e, "~s: ~s: improper list.~%", e->curobj, flist);
+	    escm_ctx_discard(e);
+	    escm_abort(e);
+	}
+	escm_ctx_put(e, a->car);
+    }
+
+    escm_ctx_put_splicing(e, escm_cons_pop(e, &args));
+    return escm_ctx_leave(e);
+}
+
+escm_atom *
+escm_reverse(escm *e, escm_atom *args)
+{
+    escm_atom *new, *arg;
+    escm_cons *c;
+
+    arg = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISCONS(arg), arg, e);
+
+    new = NULL;
+    for (c = escm_cons_val(arg); c; c = escm_cons_next(c)) {
+	if (!ESCM_ISCONS(c->cdr)) {
+	    escm_atom_printerr(e, arg);
+	    escm_error(e, "~s: ~s: improper list.~%", e->curobj, arg);
+	    escm_abort(e);
+	}
+	new = escm_cons_make(e, c->car, (new != NULL) ? new : e->NIL);
+    }
+
+    return new;
+}
+
 #ifdef ESCM_USE_NUMBERS
 escm_atom *
 escm_length(escm *e, escm_atom *args)
@@ -269,6 +314,11 @@ escm_length(escm *e, escm_atom *args)
     escm_atom *arg;
     escm_cons *c, *end;
     long n;
+
+    if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
+	escm_error(e, "~s: number type is off.~%", e->curobj);
+	escm_abort(e);
+    }
 
     arg = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCONS(arg), arg, e);
@@ -285,8 +335,8 @@ escm_length(escm *e, escm_atom *args)
 	    || (c->cdr->marked == 1)
 #endif
 	    ) {
-	    fprintf(stderr, "Can't compute the length of a non proper "
-		    "list.\n");
+	    escm_error(e, "~s: Can't compute the length of a non proper "
+		       "list.~%", e->curobj);
 	    e->err = 1;
 #if ESCM_CIRCULAR_LIST >= 1
 	    break;
@@ -311,61 +361,17 @@ escm_length(escm *e, escm_atom *args)
 
     return escm_int_make(e, n);
 }
-#endif /* USE_NUMBERS */
 
-escm_atom *
-escm_append(escm *e, escm_atom *args)
-{
-    escm_atom *flist;
-    escm_cons *a;
-
-    flist = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISCONS(flist), flist, e);
-
-    escm_ctx_enter(e);
-
-    for (a = escm_cons_val(flist); a; a = escm_cons_next(a)) {
-	if (!ESCM_ISCONS(a->cdr)) {
-	    escm_atom_printerr(e, flist);
-	    fprintf(stderr, ": improper list.\n");
-	    escm_ctx_discard(e);
-	    escm_abort(e);
-	}
-	escm_ctx_put(e, a->car);
-    }
-
-    escm_ctx_put_splicing(e, escm_cons_pop(e, &args));
-    return escm_ctx_leave(e);
-}
-
-escm_atom *
-escm_reverse(escm *e, escm_atom *args)
-{
-    escm_atom *new, *arg;
-    escm_cons *c;
-
-    arg = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISCONS(arg), arg, e);
-
-    new = NULL;
-    for (c = escm_cons_val(arg); c; c = escm_cons_next(c)) {
-	if (!ESCM_ISCONS(c->cdr)) {
-	    escm_atom_printerr(e, arg);
-	    fprintf(stderr, ": Improper list.\n");
-	    escm_abort(e);
-	}
-	new = escm_cons_make(e, c->car, (new != NULL) ? new : e->NIL);
-    }
-
-    return new;
-}
-
-#ifdef ESCM_USE_NUMBERS
 escm_atom *
 escm_list_tail(escm *e, escm_atom *args)
 {
     escm_atom *list, *ka, *atom;
     long k;
+
+    if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
+	escm_error(e, "~s: number type is off.~%", e->curobj);
+	escm_abort(e);
+    }
 
     list = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCONS(list), list, e);
@@ -379,13 +385,12 @@ escm_list_tail(escm *e, escm_atom *args)
 
     for (; k > 0; k--) {
 	if (atom == e->NIL || !atom) {
-	    escm_error(e, "list-tail: index ~s is too large for the list ~s.~n",
+	    escm_error(e, "list-tail: index ~s is too large for the list ~s.~%",
 		       ka, list);
 	    return NULL;
 	}
 	if (!ESCM_ISCONS(atom)) {
-	    escm_atom_printerr(e, list);
-	    fprintf(stderr, ": improper list.\n");
+	    escm_error(e, "~s: improper list.~%", list);
 	    escm_abort(e);
 	}
 	atom = escm_cons_val(atom)->cdr;
@@ -399,11 +404,16 @@ escm_list_ref(escm *e, escm_atom *args)
 {
     escm_atom *sublist;
 
+    if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
+	escm_error(e, "~s: number type is off.~%", e->curobj);
+	escm_abort(e);
+    }
+
     sublist = escm_list_tail(e, args);
     if (!sublist)
 	return NULL;
     if (sublist == e->NIL) {
-	fprintf(stderr, "index too large.\n");
+	escm_error(e, "~s: index too large.~%", e->curobj);
 	escm_abort(e);
     }
 
@@ -422,8 +432,8 @@ escm_memq(escm *e, escm_atom *args)
     escm_assert(ESCM_ISCONS(list), list, e);
 
     for (c = list; c != NULL && c != e->NIL;
-	 c = ESCM_ISCONS(escm_cons_val(c)->cdr) ? escm_cons_val(c)->cdr :
-	     NULL) {
+	 c = ESCM_ISCONS(escm_cons_val(c)->cdr) ?
+	     escm_cons_val(c)->cdr : NULL) {
 	if (escm_atom_equal(e, escm_cons_val(c)->car, elem, 0))
 	    return c;
     }
@@ -673,8 +683,8 @@ cons_eval(escm *e, escm_cons *cons)
     if (e->err == 1)
 	return NULL;
     if (!atomfun) {
-	escm_atom_printerr(e, cons->car);
-	fprintf(stderr, ": expression do not yield an applicable value.\n");
+	escm_error(e, "~s: expression do not yield an applicable value.~%",
+		   cons->car);
 	escm_abort(e);
     }
 
@@ -702,6 +712,6 @@ cons_eval(escm *e, escm_cons *cons)
 
 noexec:
     escm_atom_printerr(e, atomfun);
-    fprintf(stderr, ": object isn't applicable.\n");
-    return NULL;
+    escm_error(e, "~s: object isn't applicable.~%", atomfun);
+    escm_abort(e);
 }

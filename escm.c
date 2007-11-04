@@ -51,7 +51,6 @@ escm_new(void)
     e->output = escm_output_fmng(stdout, "standard output");
     e->errp = escm_output_fmng(stderr, "standard error output");
 
-    /* XXX: do not change the order, or change the macros ESCM_TYPE_CONS etc! */
     escm_environments_init(e);
     e->env = escm_env_new(e, NULL);
     e->env->ro = 1;
@@ -61,10 +60,10 @@ escm_new(void)
     escm_procedures_init(e);
 
     /* numbers needs to be declared before symbols */
-#ifdef ESCM_USE_BASIC_NUMBERS
+#ifdef ESCM_USE_COMPLETE_NUMBERS
+    escm_cnumbers_init(e);
+#elif defined ESCM_USE_BASIC_NUMBERS
     escm_bnumbers_init(e);
-#elif defined ESCM_USE_COMPLETE_NUMBERS
-    escm_numbers_init(e);
 #endif
 
     escm_symbols_init(e);

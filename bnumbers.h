@@ -24,16 +24,15 @@
 #define ESCM_ISBNUMBER(x) ((x)->type == ESCM_TYPE_BNUMBER)
 #define ESCM_ISBINT(x) (ESCM_ISBNUMBER(x) && \
 		       ((escm_bnumber *) (x)->ptr)->fixnum == 1)
+#define ESCM_ISBREAL(x) (!ESCM_ISBINT(x))
 
 #define escm_bnumber_ival(x) (((escm_bnumber *) (x)->ptr)->d.ival)
 #define escm_bnumber_rval(x) (((escm_bnumber *) (x)->ptr)->d.rval)
 
-#ifdef ESCM_INTBOOL
-# define ESCM_ISTRUE(x) (!x || !ESCM_ISBNUMBER(x) || \
-			 (((escm_bnumber *) (x)->ptr)->fixnum == 1) ? \
-			 escm_bnumber_ival(x) != 0 : \
+#define ESCM_ISBTRUE(x) (!x || !ESCM_ISBNUMBER(x) ||			\
+			 (((escm_bnumber *) (x)->ptr)->fixnum == 1) ?	\
+			 escm_bnumber_ival(x) != 0 :			\
 			 DBL_EQ(0., escm_bnumber_rval(x)))
-#endif
 
 #define ESCM_BNUMBER_EXACTP(x) \
     (ESCM_ISINT(x) || DBL_EQ(escm_bnumber_rval(x), floor(escm_bnumber_rval(x))))

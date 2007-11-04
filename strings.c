@@ -125,6 +125,15 @@ escm_make_string(escm *e, escm_atom *args)
     char *str;
     size_t k;
 
+    if (!escm_type_ison(ESCM_TYPE_CHAR)) {
+	escm_error(e, "~s: character type is off.~%", e->curobj);
+	escm_abort(e);
+    }
+    if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
+	escm_error(e, "~s: number type is off.~%", e->curobj);
+	escm_abort(e);
+    }
+
     length = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISINT(length) && escm_number_ival(length) >= 0,
 		length, e);
@@ -153,6 +162,11 @@ escm_prim_string(escm *e, escm_atom *args)
     char *str;
     size_t len;
 
+    if (!escm_type_ison(ESCM_TYPE_CHAR)) {
+	escm_error(e, "~s: character type is off.~%", e->curobj);
+	escm_abort(e);
+    }
+
     len = 0;
     for (cons = escm_cons_val(args); cons; cons = escm_cons_next(cons)) {
 	escm_assert(ESCM_ISCHAR(cons->car), cons->car, e);
@@ -178,6 +192,11 @@ escm_string_length(escm *e, escm_atom *args)
 {
     escm_atom *str;
 
+    if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
+	escm_error(e, "~s: number type is off.~%", e->curobj);
+	escm_abort(e);
+    }
+
     str = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(str), str, e);
 
@@ -191,6 +210,15 @@ escm_string_ref(escm *e, escm_atom *args)
 {
     escm_atom *str, *k;
     long i;
+
+    if (!escm_type_ison(ESCM_TYPE_CHAR)) {
+	escm_error(e, "~s: character type is off.~%", e->curobj);
+	escm_abort(e);
+    }
+    if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
+	escm_error(e, "~s: number type is off.~%", e->curobj);
+	escm_abort(e);
+    }
 
     str = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(str), str, e);
@@ -213,6 +241,15 @@ escm_string_set_x(escm *e, escm_atom *args)
 {
     escm_atom *str, *k, *c;
     long i;
+
+    if (!escm_type_ison(ESCM_TYPE_CHAR)) {
+	escm_error(e, "~s: character type is off.~%", e->curobj);
+	escm_abort(e);
+    }
+    if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
+	escm_error(e, "~s: number type is off.~%", e->curobj);
+	escm_abort(e);
+    }
 
     str = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(str), str, e);
@@ -429,6 +466,11 @@ escm_substring(escm *e, escm_atom *args)
     escm_atom *str, *a;
     char *s;
 
+    if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
+	escm_error(e, "~s: number type is off.~%", e->curobj);
+	escm_abort(e);
+    }
+
     str = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(str), str, e);
 
@@ -502,6 +544,11 @@ escm_string_fill_x(escm *e, escm_atom *args)
 {
     escm_atom *str, *c;
 
+    if (!escm_type_ison(ESCM_TYPE_CHAR)) {
+	escm_error(e, "~s: character type is off.~%", e->curobj);
+	escm_abort(e);
+    }
+
     str = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(str), str, e);
     c = escm_cons_pop(e, &args);
@@ -522,6 +569,11 @@ escm_string_to_list(escm *e, escm_atom *args)
     escm_atom *str;
     char *p;
 
+    if (!escm_type_ison(ESCM_TYPE_CHAR)) {
+	escm_error(e, "~s: character type is off.~%", e->curobj);
+	escm_abort(e);
+    }
+
     str = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(str), str, e);
 
@@ -536,6 +588,11 @@ escm_atom *
 escm_list_to_string(escm *e, escm_atom *args)
 {
     escm_atom *list;
+
+    if (!escm_type_ison(ESCM_TYPE_CHAR)) {
+	escm_error(e, "~s: character type is off.~%", e->curobj);
+	escm_abort(e);
+    }
 
     list = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCONS(list), list, e);

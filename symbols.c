@@ -86,6 +86,11 @@ escm_symbol_to_string(escm *e, escm_atom *args)
 {
     escm_atom *sym;
 
+    if (!escm_type_ison(ESCM_TYPE_STRING)) {
+	escm_error(e, "~s: string type is off.~%", e->curobj);
+	escm_abort(e);
+    }
+
     sym = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSYM(sym), sym, e);
 
@@ -96,6 +101,11 @@ escm_atom *
 escm_string_to_symbol(escm *e, escm_atom *args)
 {
     escm_atom *str;
+
+    if (!escm_type_ison(ESCM_TYPE_STRING)) {
+	escm_error(e, "~s: string type is off.~%", e->curobj);
+	escm_abort(e);
+    }
 
     str = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(str), str, e);

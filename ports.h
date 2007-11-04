@@ -57,9 +57,6 @@ escm_atom *escm_open_output_file(escm *, escm_atom *);
 
 escm_atom *escm_close_port(escm *, escm_atom *);
 
-/* XXX: move to primitives.c? (even with ESCM_USE_PORTS undefined we can use
-   those functions */
-
 # ifdef ESCM_USE_PORTS
 escm_atom *escm_read(escm *, escm_atom *, escm_curports *);
 escm_atom *escm_read_char(escm *, escm_atom *, escm_curports *);

@@ -68,10 +68,12 @@ escm_chars_init(escm *e)
     (void) escm_procedure_new(e, "char-lower_case?", 1, 1,
 			      escm_char_lower_case_p, NULL);
 
+#ifdef ESCM_USE_NUMBERS
     (void) escm_procedure_new(e, "char->integer", 1, 1,
 			      escm_char_to_integer, NULL);
     (void) escm_procedure_new(e, "integer->char", 1, 1,
 			      escm_integer_to_char, NULL);
+#endif
 
     (void) escm_procedure_new(e, "char-upcase", 1, 1,
 			      escm_char_upcase, NULL);
@@ -290,10 +292,16 @@ escm_char_lower_case_p(escm *e, escm_atom *args)
     return islower(escm_char_val(c)) ? e->TRUE : e->FALSE;
 }
 
+#ifdef ESCM_USE_NUMBERS
 escm_atom *
 escm_char_to_integer(escm *e, escm_atom *args)
 {
     escm_atom *c;
+
+    if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
+	escm_error(e, "~s: number type is off.~%", e->curobj);
+	escm_abort(e);
+    }
 
     c = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCHAR(c), c, e);
@@ -306,6 +314,11 @@ escm_integer_to_char(escm *e, escm_atom *args)
 {
     escm_atom *n;
 
+    if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
+	escm_error(e, "~s: number type is off.~%", e->curobj);
+	escm_abort(e);
+    }
+
     n = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISINT(n), n, e);
 
@@ -316,6 +329,7 @@ escm_integer_to_char(escm *e, escm_atom *args)
 
     return escm_char_make(e, (char) escm_number_ival(n));
 }
+#endif
 
 escm_atom *
 escm_char_upcase(escm *e, escm_atom *args)

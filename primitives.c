@@ -747,22 +747,6 @@ escm_load(escm *e, escm_atom *args)
 /* if we don't use ports, we implement those functions to work only with
    stdin and stdout */
 #ifndef ESCM_USE_PORTS
-escm_atom *
-escm_read(escm *e, escm_atom *args)
-{
-    escm_atom *a;
-    escm_input *save;
-
-    (void) args;
-
-    save = e->input;
-    e->input = escm_input_fmng(stdin, "standard input");
-    a = escm_parse(e);
-    escm_input_close(e->input), e->input = save;
-
-    return a;
-}
-
 # ifdef ESCM_USE_CHARACTERS
 escm_atom *
 escm_read_char(escm *e, escm_atom *args)
@@ -770,6 +754,11 @@ escm_read_char(escm *e, escm_atom *args)
     int c;
 
     (void) args;
+
+    if (!escm_type_ison(ESCM_TYPE_CHAR)) {
+	escm_error(e, "~s: character type is off.~%", e->curobj);
+	escm_abort(e);
+    }
 
     c = getchar();
     if (c == EOF)
@@ -785,6 +774,11 @@ escm_peek_char(escm *e, escm_atom *args)
 
     (void) args;
 
+    if (!escm_type_ison(ESCM_TYPE_CHAR)) {
+	escm_error(e, "~s: character type is off.~%", e->curobj);
+	escm_abort(e);
+    }
+
     c = getchar();
     if (c == EOF)
 	return e->EOF_OBJ;
@@ -794,7 +788,41 @@ escm_peek_char(escm *e, escm_atom *args)
 
     return escm_char_make(e, c);
 }
+
+escm_atom *
+escm_write_char(escm *e, escm_atom *args)
+{
+    escm_atom *c;
+
+    if (!escm_type_ison(ESCM_TYPE_CHAR)) {
+	escm_error(e, "~s: character type is off.~%", e->curobj);
+	escm_abort(e);
+    }
+
+    c = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISCHAR(c), c, e);
+
+    putc(escm_char_val(c), stdout);
+
+    return NULL;
+}
 # endif /* ESCM_USE_CHARACTERS */
+
+escm_atom *
+escm_read(escm *e, escm_atom *args)
+{
+    escm_atom *a;
+    escm_input *save;
+
+    (void) args;
+
+    save = e->input;
+    e->input = escm_input_fmng(stdin, "standard input");
+    a = escm_parse(e);
+    escm_input_close(e->input), e->input = save;
+
+    return a;
+}
 
 escm_atom *
 escm_write(escm *e, escm_atom *args)
@@ -830,21 +858,6 @@ escm_newline(escm *e, escm_atom *args)
 
     return NULL;
 }
-
-# ifdef ESCM_USE_CHARACTERS
-escm_atom *
-escm_write_char(escm *e, escm_atom *args)
-{
-    escm_atom *c;
-
-    c = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISCHAR(c), c, e);
-
-    putc(escm_char_val(c), stdout);
-
-    return NULL;
-}
-# endif /* ESCM_USE_CHARACTERS */
 #endif /* ESCM_USE_PORTS */
 
 escm_atom *
@@ -1058,6 +1071,11 @@ quasiquote_vector(escm *e, escm_atom *atom, unsigned int lvl)
     escm_atom *ret;
     escm_vector *v;
     size_t i;
+
+    if (!escm_type_ison(ESCM_TYPE_VECTOR)) {
+	escm_error(e, "~s: vector type is off.~%", e->curobj);
+	escm_abort(e);
+    }
 
     escm_ctx_enter(e);
 

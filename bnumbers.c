@@ -20,6 +20,7 @@
 #include <math.h>
 
 #include "escheme.h"
+#include "bnumbers.h"
 
 static unsigned long bnumbertype = 0;
 
@@ -165,12 +166,10 @@ escm_binteger_p(escm *e, escm_atom *args)
     if (!ESCM_ISNUMBER(arg))
        return e->FALSE;
     n = arg->ptr;
-    if (n->fixnum == 1)
-       return e->TRUE;
 #ifdef ESCM_USE_MATH
-    return (DBL_EQ(n->d.rval, floor(n->d.rval))) ? e->TRUE : e->FALSE;
+    return (ESCM_BNUMBER_EXACTP(arg)) ? e->TRUE : e->FALSE;
 #else
-    return e->FALSE;
+    return (n->fixnum == 1) ? e->TRUE : e->FALSE;
 #endif
 }
 
@@ -376,7 +375,7 @@ escm_bnumerator(escm *e, escm_atom *args)
 
     a = escm_number_rval(n);
     while (!DBL_EQ(a, floor(a))) {
-	if ((LONG_MAX / 2) < a) {
+	if (DBL_LT((LONG_MAX / 2), a)) {	
 	    escm_error(e, "~s: integer overflow.~%", e->curobj);
 	    escm_abort(e);
 	}
@@ -402,7 +401,7 @@ escm_bdenominator(escm *e, escm_atom *args)
     b = 1;
     a = escm_number_rval(n);
     while (!DBL_EQ(a, floor(a))) {
-	if ((LONG_MAX / 2) < a || (LONG_MAX / 2) < b) {
+	if (DBL_LT((LONG_MAX / 2), a) || DBL_LT((LONG_MAX / 2), b)) {
 	    escm_error(e, "~s: integer overflow.~%", e->curobj);
 	    escm_abort(e);
 	}
@@ -642,6 +641,11 @@ escm_bnumber_to_string(escm *e, escm_atom *args)
     int radix;
     int len;
 
+    if (!escm_type_ison(ESCM_TYPE_STRING)) {
+	escm_error(e, "~s: string type is off.~%", e->curobj);
+	escm_abort(e);
+    }
+
     a = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISNUMBER(a), a, e);
 
@@ -725,6 +729,11 @@ escm_string_to_bnumber(escm *e, escm_atom *args)
     escm_input *input;
     escm_bnumber *number;
     int radix;
+
+    if (!escm_type_ison(ESCM_TYPE_STRING)) {
+	escm_error(e, "~s: string type is off.~%", e->curobj);
+	escm_abort(e);
+    }
 
     a = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(a), a, e);

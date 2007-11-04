@@ -40,6 +40,15 @@ escm_open_input_string(escm *e, escm_atom *args)
 {
     escm_atom *str;
 
+    if (!escm_type_ison(ESCM_TYPE_STRING)) {
+	escm_error(e, "~s: string type is off.~%", e->curobj);
+	escm_abort(e);
+    }
+    if (!escm_type_ison(ESCM_TYPE_PORT)) {
+	escm_error(e, "~s: port type is off.~%", e->curobj);
+	escm_abort(e);
+    }
+
     str = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(str), str, e);
 
@@ -51,6 +60,15 @@ escm_open_output_string(escm *e, escm_atom *args)
 {
     (void) args;
 
+    if (!escm_type_ison(ESCM_TYPE_STRING)) {
+	escm_error(e, "~s: string type is off.~%", e->curobj);
+	escm_abort(e);
+    }
+    if (!escm_type_ison(ESCM_TYPE_PORT)) {
+	escm_error(e, "~s: port type is off.~%", e->curobj);
+	escm_abort(e);
+    }
+
     return escm_port_make(e, escm_output_str(), 0);
 }
 
@@ -59,6 +77,15 @@ escm_get_output_string(escm *e, escm_atom *args)
 {
     escm_atom *port;
     escm_output *outp;
+
+    if (!escm_type_ison(ESCM_TYPE_STRING)) {
+	escm_error(e, "~s: string type is off.~%", e->curobj);
+	escm_abort(e);
+    }
+    if (!escm_type_ison(ESCM_TYPE_PORT)) {
+	escm_error(e, "~s: port type is off.~%", e->curobj);
+	escm_abort(e);
+    }
 
     port = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISPORT(port), port, e);

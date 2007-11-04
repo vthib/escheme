@@ -25,7 +25,8 @@ typedef struct escm_env {
     escm_atom *prev;
 } escm_env;
 
-#define ESCM_ISENV(x) ((x)->type == escm_env_tget())
+#define ESCM_TYPE_ENV (escm_env_tget())
+#define ESCM_ISENV(x) ((x)->type == ESCM_TYPE_ENV)
 
 void escm_environments_init(escm *);
 void escm_env_addprimitives(escm *);

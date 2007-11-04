@@ -126,6 +126,7 @@ escm_atom *escm_parse(escm *);
 
 void escm_shell(escm *);
 
+#define escm_type_ison(type) ((type) != 0)
 unsigned long escm_type_add(escm *, escm_type *);
 
 void escm_ctx_enter(escm *);

@@ -20,6 +20,7 @@
 #include <math.h>
 
 #include "escheme.h"
+#include "cnumbers.h"
 
 static unsigned long numbertype = 0;
 
@@ -68,7 +69,7 @@ static escm_number *inextoex(escm_number *);
 static escm_number *dupl(escm_number *);
 
 void
-escm_numbers_init(escm *e)
+escm_cnumbers_init(escm *e)
 {
     escm_type *t;
 
@@ -170,13 +171,13 @@ escm_numbers_init(escm *e)
 }
 
 size_t
-escm_number_tget(void)
+escm_cnumber_tget(void)
 {
     return numbertype;
 }
 
 escm_atom *
-escm_int_make(escm *e, long i)
+escm_cint_make(escm *e, long i)
 {
     escm_number *n;
 
@@ -188,7 +189,7 @@ escm_int_make(escm *e, long i)
 }
 
 escm_atom *
-escm_real_make(escm *e, double r)
+escm_creal_make(escm *e, double r)
 {
     escm_number *n;
 
@@ -837,17 +838,14 @@ number_parsetest(escm *e, int c)
 	int c2;
 
 	c2 = escm_input_peek(e->input);
-	return (isdigit(c2) || (c2 == '.') || (c2 == 'i'));
-    } else if (c == '.') {
-	int c2;
-
-	c2 = escm_input_peek(e->input);
-	return isdigit(c2);
-    } else if (c == '#') {
-	c = escm_input_peek(e->input);
-
-	return strchr("boxdei", c) != NULL;
-    } else
+	if (c2 == '.')
+	    return isdigit(escm_input_peek(e->input));
+	return (isdigit(c2) || (c2 == 'i'));
+    } else if (c == '.')
+	return isdigit(escm_input_peek(e->input));
+    else if (c == '#')
+	return (strchr("boxdei", escm_input_peek(e->input)) != NULL);
+    else
 	return 0;
 }    
 
