@@ -46,8 +46,21 @@ char *escm_output_getstr(escm_output *);
 
 void escm_output_close(escm_output *);
 
-void escm_putc(escm_output *, int);
 void escm_printf(escm_output *, const char *, ...);
+
 void escm_print_slashify(escm_output *, const char *);
+
+#ifdef ESCM_USE_C99
+/* void escm_putwc(escm_output *, wint_t); */
+
+/* XXX: wordaround */
+#define escm_putwc(o, c) escm_printf(o, "%lc", c)
+
+void escm_print_wslashify(escm_output *, const wchar_t *);
+
+# define escm_putc escm_putwc
+#else
+void escm_putc(escm_output *, int);
+#endif /* ESCM_USE_C99 */
 
 #endif /* ESCHEME_OUTPUT_H */

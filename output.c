@@ -23,6 +23,10 @@
 #include "utils.h"
 #include "output.h"
 
+#ifdef ESCM_USE_C99
+# include <wchar.h>
+#endif
+
 /**
  * @brief open `name' with the read rights
  */
@@ -113,29 +117,6 @@ escm_output_close(escm_output *f)
 }
 
 void
-escm_putc(escm_output *f, int c)
-{
-    assert(f != NULL);
-
-    if (f->type == OUTPUT_FILE) {
-	if (EOF == putc(c, f->d.file.fp))
-	    fprintf(stderr, "putc('%c') failed.\n", c);
-    } else {
-	size_t offset;
-
-	*f->d.str.cur++ = c;
-
-	offset = f->d.str.cur - f->d.str.str;
-
-	if (offset >= f->d.str.maxlen) {
-	    f->d.str.maxlen += 5;
-	    f->d.str.str = xrealloc(f->d.str.str, f->d.str.maxlen);
-	    f->d.str.cur = f->d.str.str + offset;
-	}
-    }
-}
-
-void
 escm_printf(escm_output *f, const char *format, ...)
 {
     va_list args;
@@ -185,3 +166,94 @@ escm_print_slashify(escm_output *stream, const char *str)
     }
 }
 
+#ifdef ESCM_USE_C99
+/*
+void
+escm_putwc(escm_output *f, wint_t c)
+{
+    assert(f != NULL);
+
+    if (f->type == OUTPUT_FILE) {
+	if (WEOF == fputwc(c, f->d.file.fp))
+	    fprintf(stderr, "fputwc('%lc') failed.\n", c);
+    } else {
+	size_t offset;
+
+	*f->d.str.cur++ = c;
+
+	offset = f->d.str.cur - f->d.str.str;
+
+	if (offset >= f->d.str.maxlen) {
+	    f->d.str.maxlen += 5;
+	    f->d.str.str = xrealloc(f->d.str.str, f->d.str.maxlen);
+	    f->d.str.cur = f->d.str.str + offset;
+	}
+    }
+}
+*/
+
+void
+escm_print_wslashify(escm_output *stream, const wchar_t *str)
+{
+    size_t i;
+
+    for (i = 0; str[i] != L'\0'; i++) {
+	switch (str[i]) {
+	case L'"':
+	case L'\\':
+	    escm_putc(stream, '\\');
+	    escm_putc(stream, str[i]);
+	    break;
+	case L'\a':
+	    escm_putc(stream, '\\'); escm_putc(stream, 'a');
+	    break;
+	case L'\b':
+	    escm_putc(stream, '\\'); escm_putc(stream, 'b');
+	    break;
+	case L'\f':
+	    escm_putc(stream, '\\'); escm_putc(stream, 'f');
+	    break;
+	case L'\n':
+	    escm_putc(stream, '\\'); escm_putc(stream, 'n');
+	    break;
+	case L'\r':
+	    escm_putc(stream, '\\'); escm_putc(stream, 'r');
+	    break;
+	case L'\t':
+	    escm_putc(stream, '\\'); escm_putc(stream, 't');
+	    break;
+	case L'\v':
+	    escm_putc(stream, '\\'); escm_putc(stream, 'v');
+	    break;
+	default:
+	    escm_putc(stream, str[i]);
+	    break;
+	}
+    }
+}
+#else
+
+void
+escm_putc(escm_output *f, int c)
+{
+    assert(f != NULL);
+
+    if (f->type == OUTPUT_FILE) {
+	if (EOF == fputc(c, f->d.file.fp))
+	    fprintf(stderr, "fputc('%c') failed.\n", c);
+    } else {
+	size_t offset;
+
+	*f->d.str.cur++ = c;
+
+	offset = f->d.str.cur - f->d.str.str;
+
+	if (offset >= f->d.str.maxlen) {
+	    f->d.str.maxlen += 5;
+	    f->d.str.str = xrealloc(f->d.str.str, f->d.str.maxlen);
+	    f->d.str.cur = f->d.str.str + offset;
+	}
+    }
+}
+
+#endif /* ESCM_USE_C99 */

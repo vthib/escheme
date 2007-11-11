@@ -2,7 +2,8 @@
    - Verify compatibility with various scheme libraries
    - Try to implement some SRFIs
    - Allow to override built type functions with closures
-   - Fix unicode string input
+   - Fix unicode string input/output
+   - Fix fputwc failure after a printf
 
  - Features
    - Unicode support (both characters and strings, see r6rs for possible impl)

@@ -102,7 +102,11 @@ main(int argc, char **argv)
 
 #ifdef ESCM_USE_STRINGS
     if (!noload[STRING])
+# ifdef ESCM_USE_C99
+	escm_ustrings_init(e);
+# else
 	escm_strings_init(e);
+# endif /* ESCM_USE_C99 */
 #endif
 #ifdef ESCM_USE_VECTORS
     if (!noload[VECT])

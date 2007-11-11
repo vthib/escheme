@@ -441,6 +441,45 @@ escm_input_wpeek(escm_input *f)
     return c;
 }
 
+wchar_t *
+escm_input_getwtext(escm_input *f, const wchar_t *end)
+{
+    size_t len = 0;
+    wint_t c;
+
+    assert(f != NULL);
+    assert(end != NULL);
+
+    c = escm_input_getwc(f);
+    while (c != WEOF && !wcschr(end, c)) {
+	if (c == L'\\') {
+	    c = escm_input_getwc(f);
+	    switch (c) {
+	    case L'a': c = L'\a'; break;
+	    case L'b': c = L'\b'; break;
+	    case L'f': c = L'\f'; break;
+	    case L'n': c = L'\n'; break;
+	    case L'r': c = L'\r'; break;
+	    case L't': c = L'\t'; break;
+	    case L'v': c = L'\v'; break;
+	    case L'\\': case '\"': break;
+	    default:
+		wcsbuf[len++] = '\\';
+		break; /* keep the new character */
+	    }
+	    wcsbuf[len++] = c;
+	} else
+	    wcsbuf[len++] = c;
+	c = escm_input_getwc(f);
+    } 
+
+    if (!f->end)
+	escm_input_ungetwc(f, c);
+    wcsbuf[len] = L'\0';
+
+    return xwcsdup(wcsbuf);
+}
+
 /**
  * @brief get a wide string. Each character is passed to "fun" which must
  * return 1 if the character is valid, 0 else (cf ctype.h)

@@ -46,12 +46,14 @@ void *xmalloc(size_t);
 void *xcalloc(size_t, size_t);
 void *xrealloc(void *, size_t);
 char *xstrdup(const char *);
-#ifdef ESCM_USE_C99
-wchar_t *xwcsdup(const wchar_t *);
-#endif
 
 int xstrcasecmp(const char *, const char *);
 double xround(double);
+
+#ifdef ESCM_USE_C99
+wchar_t *xwcsdup(const wchar_t *);
+int xwcscasecmp(const wchar_t *, const wchar_t *);
+#endif
 
 #define xfree(p) free(p), (p) = NULL;
 

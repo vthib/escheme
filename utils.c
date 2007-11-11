@@ -94,24 +94,6 @@ xstrdup(const char *s)
     return copy;
 }
 
-#ifdef ESCM_USE_C99
-/**
- * @brief duplicate a wide string and return it
- */
-wchar_t *
-xwcsdup(const wchar_t *s)
-{
-    size_t len;
-    wchar_t *copy;
-
-    len = sizeof *s * (wcslen(s) + 1);
-    copy = xmalloc(len);
-    memcpy(copy, s, len);
-
-    return copy;
-}
-#endif
-
 int
 xstrcasecmp(const char *s1, const char *s2)
 {
@@ -148,5 +130,38 @@ xround(double a)
 	return c - 1;
 #endif
 }
+
+#ifdef ESCM_USE_C99
+/**
+ * @brief duplicate a wide string and return it
+ */
+wchar_t *
+xwcsdup(const wchar_t *s)
+{
+    size_t len;
+    wchar_t *copy;
+
+    len = sizeof *s * (wcslen(s) + 1);
+    copy = xmalloc(len);
+    memcpy(copy, s, len);
+
+    return copy;
+}
+
+int
+xwcscasecmp(const wchar_t *s1, const wchar_t *s2)
+{
+    size_t i1, i2;
+
+    for (i1 = 0, i2 = 0; s1[i1] != L'\0'; i1++, i2++) {
+	if (s2[i2] == L'\0')
+	    return 1;
+	else if (s1[i1] != s2[i2])
+	    return (s1[i1] > s2[i2]) ? 1 : -1;
+    }
+
+    return (s2[i2] != L'\0') ? -1 : 0;
+}
+#endif
 
 /**@}*/
