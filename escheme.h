@@ -33,6 +33,7 @@
 #include "primitives.h"
 #include "strings.h"
 #include "chars.h"
+#include "uchars.h"
 #include "promises.h"
 #include "vectors.h"
 #include "macros.h"

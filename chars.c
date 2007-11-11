@@ -15,6 +15,7 @@
  * along with Escheme; If not, see <http://www.gnu.org/licenses/>.
  */
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 
@@ -453,10 +454,28 @@ input_getchar(escm *e, escm_input *input)
 		else
 		    c <<= 4, c |= ((*p - 'a') + 10);
 	    }
-	} else if (strcmp(str, "newline") == 0)
+	} else if (strcmp(str, "newline") == 0 || strcmp(str, "linefeed") == 0)
 	    c = '\n';
 	else if (strcmp(str, "space") == 0)
 	    c = ' ';
+	else if (strcmp(str, "nul") == 0)
+	    c = '\0';
+	else if (strcmp(str, "alarm") == 0)
+	    c = '\a';
+	else if (strcmp(str, "backspace") == 0)
+	    c = '\b';
+	else if (strcmp(str, "tab") == 0)
+	    c = '\t';
+	else if (strcmp(str, "vtab") == 0)
+	    c = '\v';
+	else if (strcmp(str, "page") == 0)
+	    c = '\f';
+	else if (strcmp(str, "return") == 0)
+	    c = '\r';
+	else if (strcmp(str, "esc") == 0)
+	    c = '\x1B';
+	else if (strcmp(str, "delete") == 0)
+	    c = '\x7F';
 	else {
 	    escm_input_print(input, "unknown character #\\%s.", str);
 	    goto err;

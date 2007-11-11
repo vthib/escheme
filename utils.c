@@ -19,13 +19,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <math.h>
+#include "types.h"
+
+#ifdef ESCM_USE_C99
+#include <wchar.h>
+#endif
 
 #include "utils.h"
 
 /**
  * @brief alloc @p n bytes
  */
-/*@out@*/ /*@only@*/ void *
+void *
 xmalloc(size_t n)
 {
     void *p;
@@ -42,7 +48,7 @@ xmalloc(size_t n)
 /**
  * @brief alloc @p nelem elements of @p n bytes  and set the memory to zero
  */
-/*@only@*/ void *
+void *
 xcalloc(size_t nelem, size_t n)
 {
     void *p;
@@ -58,7 +64,7 @@ xcalloc(size_t nelem, size_t n)
 /**
  * @brief reallocate a pointer
  */
-/*@only@*/ void *
+void *
 xrealloc(void *ptr, size_t size)
 {
     void *p;
@@ -75,7 +81,7 @@ xrealloc(void *ptr, size_t size)
 /**
  * @brief duplicate a string and return it
  */
-/*@only@*/ char *
+char *
 xstrdup(const char *s)
 {
     size_t len;
@@ -87,6 +93,24 @@ xstrdup(const char *s)
 
     return copy;
 }
+
+#ifdef ESCM_USE_C99
+/**
+ * @brief duplicate a wide string and return it
+ */
+wchar_t *
+xwcsdup(const wchar_t *s)
+{
+    size_t len;
+    wchar_t *copy;
+
+    len = sizeof *s * (wcslen(s) + 1);
+    copy = xmalloc(len);
+    memcpy(copy, s, len);
+
+    return copy;
+}
+#endif
 
 int
 xstrcasecmp(const char *s1, const char *s2)

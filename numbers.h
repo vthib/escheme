@@ -59,7 +59,7 @@
 # include "bnumbers.h"
 # include "cnumbers.h"
 
-# define ESCM_TYPE_NUMBER (ESCM_TYPE_CNUMBER || ESCM_TYPE_BNUMBER)
+# define ESCM_TYPE_NUMBER (ESCM_TYPE_CNUMBER | ESCM_TYPE_BNUMBER)
 
 # define ESCM_ISNUMBER(x) ((x)->type == ESCM_TYPE_NUMBER)
 # define ESCM_ISINT(x)							\

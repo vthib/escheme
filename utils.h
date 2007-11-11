@@ -17,10 +17,7 @@
 #ifndef ESCHEME_UTILS_H
 # define ESCHEME_UTILS_H
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <float.h>
-#include <math.h>
 
 #ifdef _
 # undef _
@@ -45,10 +42,13 @@
 #define DBL_GE(a, b) (((double) (a) - (b)) >= 0)
 #define DBL_LE(a, b) DBL_GE(b, a)
 
-/*@out@*/ /*@only@*/ void *xmalloc(size_t);
-/*@only@*/ void *xcalloc(size_t, size_t);
-/*@only@*/ void *xrealloc(void *, size_t);
-/*@only@*/ char *xstrdup(const char *);
+void *xmalloc(size_t);
+void *xcalloc(size_t, size_t);
+void *xrealloc(void *, size_t);
+char *xstrdup(const char *);
+#ifdef ESCM_USE_C99
+wchar_t *xwcsdup(const wchar_t *);
+#endif
 
 int xstrcasecmp(const char *, const char *);
 double xround(double);

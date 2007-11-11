@@ -110,8 +110,13 @@ main(int argc, char **argv)
 #endif
 #ifdef ESCM_USE_CHARACTERS
     if (!noload[CHAR])
+# ifdef ESCM_USE_C99
+	escm_uchars_init(e);
+# else
 	escm_chars_init(e);
-#endif
+# endif /* ESCM_USE_C99 */
+#endif /* ESCM_USE_CHARACTERS */
+
 #ifdef ESCM_USE_PROMISES
     if (!noload[PROMISE])
 	escm_promises_init(e);

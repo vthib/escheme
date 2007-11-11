@@ -15,6 +15,7 @@
  * along with Escheme; If not, see <http://www.gnu.org/licenses/>.
  */
 #include <string.h>
+#include <stdlib.h>
 #include <ctype.h>
 #include <limits.h>
 #include <math.h>

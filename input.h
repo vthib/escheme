@@ -32,7 +32,11 @@ struct escm_input {
 	    char *name;
 
 	    /* used to allow multiples calls to ungetc */
-	    char *ub;
+#ifdef ESCM_USE_C99
+	    wint_t *ub;
+#else
+	    int *ub;
+#endif
 	    size_t usize;
 	    size_t un;
 	} file;
@@ -53,16 +57,28 @@ escm_input *escm_input_str(const char *);
 
 void escm_input_close(escm_input *);
 
-int escm_input_getc(escm_input *);
-int escm_input_peek(escm_input *);
 char *escm_input_gettext(escm_input *, const char *);
 char *escm_input_getstr_fun(escm_input *, int (*)(int), int);
 
 void escm_input_rewind(escm_input *);
-void escm_input_pushback(escm_input *, size_t);
-void escm_input_ungetc(escm_input *, int);
 
 void escm_input_badend(escm_input *);
 void escm_input_print(escm_input *, const char *, ...);
+
+#ifdef ESCM_USE_C99
+wint_t escm_input_getwc(escm_input *);
+wint_t escm_input_wpeek(escm_input *);
+void escm_input_ungetwc(escm_input *, wint_t);
+
+wchar_t *escm_input_getwstr_fun(escm_input *, int (*)(wint_t), int);
+
+# define escm_input_getc escm_input_getwc
+# define escm_input_ungetc escm_input_ungetwc
+# define escm_input_peek escm_input_wpeek
+#else
+int escm_input_getc(escm_input *);
+void escm_input_ungetc(escm_input *, int);
+int escm_input_peek(escm_input *);
+#endif
 
 #endif /* ESCHEME_INPUT_H */
