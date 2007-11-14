@@ -59,9 +59,11 @@ static escm_atom *number_parse(escm *);
 
 static escm_number *inputtonumber(escm_input *, int);
 static escm_number *getreal(escm_input *, char **, int);
+#if 0
 static long pgcd(long, long);
-#ifdef ESCM_USE_STRINGS
+# ifdef ESCM_USE_STRINGS
 static char *bintostr(long);
+# endif
 #endif
 static inline int isnumber(int);
 
@@ -1023,6 +1025,7 @@ isnumber(int c)
     return (strchr(".+-iesfdl/", c) || isxdigit(c));
 }
 
+#if 0
 static long
 pgcd(long a, long b)
 {
@@ -1067,6 +1070,7 @@ bintostr(long a)
     return buf;
 }
 #endif
+#endif /* 0 */
 
 static escm_number *
 extoinex(escm_number *n)

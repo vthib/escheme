@@ -22,7 +22,7 @@
 #include <math.h>
 #include "types.h"
 
-#ifdef ESCM_USE_C99
+#ifdef ESCM_USE_UNICODE
 #include <wchar.h>
 #endif
 
@@ -112,7 +112,7 @@ xstrcasecmp(const char *s1, const char *s2)
 double
 xround(double a)
 {
-#ifdef ESCM_USE_C99
+#ifdef ESCM_USE_UNICODE
     return rint(a);
 #else
     double c;
@@ -131,7 +131,33 @@ xround(double a)
 #endif
 }
 
-#ifdef ESCM_USE_C99
+char *
+wcstostr(const wchar_t *w)
+{
+    char *str;
+    size_t n;
+
+    n = wcstombs(NULL, w, 0) + 1;
+    str = xmalloc(sizeof *str * n);
+    if (wcstombs(str, w, n) == (size_t) (-1))
+	fprintf(stderr, "wcstombs: conversion error.\n");
+    return str;
+}
+
+wchar_t *
+strtowcs(const char *str)
+{
+    wchar_t *w;
+    size_t n;
+
+    n = mbstowcs(NULL, str, 0) + 1;
+    w = xmalloc(sizeof *w * n);
+    if (mbstowcs(w, str, n) == (size_t) (-1))
+	fprintf(stderr, "mbstowcs: conversion error.\n");
+    return w;
+}
+
+#ifdef ESCM_USE_UNICODE
 /**
  * @brief duplicate a wide string and return it
  */

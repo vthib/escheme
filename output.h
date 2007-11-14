@@ -50,7 +50,7 @@ void escm_printf(escm_output *, const char *, ...);
 
 void escm_print_slashify(escm_output *, const char *);
 
-#ifdef ESCM_USE_C99
+#ifdef ESCM_USE_UNICODE
 /* void escm_putwc(escm_output *, wint_t); */
 
 /* XXX: wordaround */
@@ -61,6 +61,6 @@ void escm_print_wslashify(escm_output *, const wchar_t *);
 # define escm_putc escm_putwc
 #else
 void escm_putc(escm_output *, int);
-#endif /* ESCM_USE_C99 */
+#endif /* ESCM_USE_UNICODE */
 
 #endif /* ESCHEME_OUTPUT_H */

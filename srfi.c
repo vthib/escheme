@@ -14,6 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with Escheme; If not, see <http://www.gnu.org/licenses/>.
  */
+#include <stdlib.h>
+
 #include "escheme.h"
 
 void
@@ -52,7 +54,20 @@ escm_open_input_string(escm *e, escm_atom *args)
     str = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(str), str, e);
 
+#ifdef ESCM_USE_UNICODE
+    if (escm_type_ison(ESCM_TYPE_ASTRING)) {
+	wchar_t *w;
+	escm_atom *atom;
+
+	w = strtowcs(escm_astr_val(str));
+	atom = escm_port_make(e, escm_input_str(w), 1);
+	free(w);
+	return atom;
+    } else
+	return escm_port_make(e, escm_input_str(escm_ustr_val(str)), 1);
+#else
     return escm_port_make(e, escm_input_str(escm_str_val(str)), 1);
+#endif
 }
 
 escm_atom *
@@ -91,14 +106,15 @@ escm_get_output_string(escm *e, escm_atom *args)
     escm_assert(ESCM_ISPORT(port), port, e);
 
     if (escm_port_val(port)->input) {
-	fprintf(stderr, "get-output-string: given port is not an output "
-		"port.\n");
+	escm_error(e, "~s: given port is not an output port.~%", e->curobj);
 	escm_abort(e);
     }
 
     outp = escm_port_val(port)->d.output;
-    return escm_string_make(e, escm_output_getstr(outp),
-			    outp->d.str.cur - outp->d.str.str);
+    /* XXX: fixme */
+    return NULL;
+    /*return escm_string_make(e, escm_output_getstr(outp),
+      outp->d.str.cur - outp->d.str.str);*/
 }
 #endif
 

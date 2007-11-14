@@ -15,6 +15,7 @@
  * along with Escheme; If not, see <http://www.gnu.org/licenses/>.
  */
 #include <assert.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "escheme.h"
@@ -739,7 +740,17 @@ escm_load(escm *e, escm_atom *args)
     escm_assert(ESCM_ISSTR(str), str, e);
 
     ctx = e->ctx, e->ctx = NULL;
+#ifdef ESCM_USE_UNICODE
+    if (escm_type_ison(ESCM_TYPE_USTRING)) {
+	char *s;
+
+	s = wcstostr(escm_ustr_val(str));
+	escm_fparse(e, s);
+	free(s);
+    }
+#else
     escm_fparse(e, escm_str_val(str));
+#endif
 
     return NULL;
 }
@@ -751,7 +762,11 @@ escm_load(escm *e, escm_atom *args)
 escm_atom *
 escm_read_char(escm *e, escm_atom *args)
 {
+#ifdef ESCM_USE_UNICODE
+    wint_t c;
+#else
     int c;
+#endif
 
     (void) args;
 
@@ -760,17 +775,32 @@ escm_read_char(escm *e, escm_atom *args)
 	escm_abort(e);
     }
 
-    c = getchar();
+#ifdef ESCM_USE_UNICODE
+    c = escm_input_getwc(e->input);
+    if (c == WEOF)
+	return e->EOF_OBJ;
+
+    if (escm_type_ison(ESCM_TYPE_UCHAR))
+	return escm_uchar_make(e, c);
+    else
+	return escm_achar_make(e, (char) c);
+#else
+    c = escm_input_getc(e->input);
     if (c == EOF)
 	return e->EOF_OBJ;
 
-    return escm_char_make(e, c);
+    return escm_achar_make(e, c);
+#endif
 }
 
 escm_atom *
 escm_peek_char(escm *e, escm_atom *args)
 {
+#ifdef ESCM_USE_UNICODE
+    wint_t c;
+#else
     int c;
+#endif
 
     (void) args;
 
@@ -779,14 +809,24 @@ escm_peek_char(escm *e, escm_atom *args)
 	escm_abort(e);
     }
 
-    c = getchar();
+#ifdef ESCM_USE_UNICODE
+    c = escm_input_getwc(e->input);
+    if (c == WEOF)
+	return e->EOF_OBJ;
+
+    escm_input_ungetwc(e->input, c);
+    if (escm_type_ison(ESCM_TYPE_UCHAR))
+	return escm_uchar_make(e, c);
+    else
+	return escm_achar_make(e, (char) c);
+#else
+    c = escm_input_getc(e->input);
     if (c == EOF)
 	return e->EOF_OBJ;
 
-    if (EOF == ungetc(c, stdin))
-	fprintf(stderr, "ungetc failed.\n");
-
-    return escm_char_make(e, c);
+    escm_input_ungetwc(e->input, c);
+    return escm_achar_make(e, c);
+#endif
 }
 
 escm_atom *
@@ -802,7 +842,7 @@ escm_write_char(escm *e, escm_atom *args)
     c = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCHAR(c), c, e);
 
-    putc(escm_char_val(c), stdout);
+    escm_output_putc(e->output, escm_char_val(c));
 
     return NULL;
 }

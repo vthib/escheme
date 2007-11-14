@@ -41,10 +41,8 @@
 
 #define ESCM_USE_C99
 
-#ifdef ESCM_USE_CONTINUATIONS
-# ifndef ESCM_USE_C99
-#  define ESCM_USE_C99 /* continuation needs c99 */
-# endif
+#if defined ESCM_USE_UNICODE && !defined ESCM_USE_C99
+# error "unicode needs c99"
 #endif
 
 #ifndef ESCM_CIRCULAR_LIST

@@ -19,47 +19,27 @@
 
 #include "types.h"
 
-#define ESCM_TYPE_STRING escm_string_tget()
+#ifndef ESCM_USE_UNICODE
 
-#define ESCM_ISSTR(x) ((x)->type == ESCM_TYPE_STRING)
+# include "astrings.h"
 
-#define escm_str_val(x) (((escm_string *) (x)->ptr)->str)
-#define escm_str_len(x) (((escm_string *) (x)->ptr)->len)
+# define ESCM_TYPE_STRING ESCM_TYPE_ASTRING
+# define ESCM_ISSTR ESCM_ISASTR
+# define escm_str_val escm_astr_val
+# define escm_str_len escm_astr_len
+# define escm_string_make escm_astring_make
 
-typedef struct escm_string {
-    char *str;
-    size_t len;
-} escm_string;
+#else
+# include "astrings.h"
+# include "ustrings.h"
 
-void escm_strings_init(escm *);
-size_t escm_string_tget(void);
-escm_atom *escm_string_make(escm *, const char *, size_t);
+# define ESCM_TYPE_STRING (ESCM_TYPE_ASTRING | ESCM_TYPE_USTRING)
 
-escm_atom *escm_string_p(escm *, escm_atom *);
-escm_atom *escm_make_string(escm *, escm_atom *);
-escm_atom *escm_prim_string(escm *, escm_atom *);
-escm_atom *escm_string_length(escm *, escm_atom *);
-escm_atom *escm_string_ref(escm *, escm_atom *);
-escm_atom *escm_string_set_x(escm *, escm_atom *);
-
-escm_atom *escm_string_eq_p(escm *, escm_atom *);
-escm_atom *escm_string_lt_p(escm *, escm_atom *);
-escm_atom *escm_string_gt_p(escm *, escm_atom *);
-escm_atom *escm_string_le_p(escm *, escm_atom *);
-escm_atom *escm_string_ge_p(escm *, escm_atom *);
-
-escm_atom *escm_string_ci_eq_p(escm *, escm_atom *);
-escm_atom *escm_string_ci_lt_p(escm *, escm_atom *);
-escm_atom *escm_string_ci_gt_p(escm *, escm_atom *);
-escm_atom *escm_string_ci_le_p(escm *, escm_atom *);
-escm_atom *escm_string_ci_ge_p(escm *, escm_atom *);
-
-escm_atom *escm_substring(escm *, escm_atom *);
-escm_atom *escm_string_append(escm *, escm_atom *);
-escm_atom *escm_string_copy(escm *, escm_atom *);
-escm_atom *escm_string_fill_x(escm *, escm_atom *);
-
-escm_atom *escm_string_to_list(escm *, escm_atom *);
-escm_atom *escm_list_to_string(escm *, escm_atom *);
+# define ESCM_ISSTR(x) ((x)->type == ESCM_TYPE_STRING)
+# define escm_str_val(x)						\
+    ((escm_type_ison(ESCM_TYPE_ASTRING)) ? escm_astr_val(x) : escm_ustr_val(x))
+# define escm_str_len(x)						\
+    ((escm_type_ison(ESCM_TYPE_ASTRING)) ? escm_astr_len(x) : escm_ustr_len(x))
+#endif
 
 #endif /* ESCHEME_STRINGS_H */

@@ -24,36 +24,36 @@
 # include "bnumbers.h"
 
 # define ESCM_TYPE_NUMBER ESCM_TYPE_BNUMBER
-# define ESCM_ISNUMBER(x) ESCM_ISBNUMBER(x)
-# define ESCM_ISINT(x) ESCM_ISBINT(x)
-# define ESCM_ISREAL(x) ESCM_ISBREAL(x)
-# define escm_number_ival(x) escm_bnumber_ival(x)
-# define escm_number_rval(x) escm_bnumber_rval(x)
+# define ESCM_ISNUMBER ESCM_ISBNUMBER
+# define ESCM_ISINT ESCM_ISBINT
+# define ESCM_ISREAL ESCM_ISBREAL
+# define escm_number_ival escm_bnumber_ival
+# define escm_number_rval escm_bnumber_rval
 # ifdef ESCM_INTBOOL
-#  define ESCM_ISTRUE(x) ESCM_ISBTRUE(x)
+#  define ESCM_ISTRUE ESCM_ISBTRUE
 # endif
-# define escm_int_make(e, i) escm_bint_make(e, i)
-# define escm_real_make(e, i) escm_breal_make(e, i)
+# define escm_int_make escm_bint_make
+# define escm_real_make escm_breal_make
 
-# define ESCM_NUMBER_EXACTP(x) ESCM_BNUMBER_EXACTP(x)
+# define ESCM_NUMBER_EXACTP ESCM_BNUMBER_EXACTP
 
 #elif !defined ESCM_USE_BASIC_NUMBERS
 
 # include "cnumbers.h"
 
 # define ESCM_TYPE_NUMBER ESCM_TYPE_CNUMBER
-# define ESCM_ISNUMBER(x) ESCM_ISCNUMBER(x)
-# define ESCM_ISINT(x) ESCM_ISCINT(x)
-# define ESCM_ISREAL(x) ESCM_ISCREAL(x)
-# define escm_number_ival(x) escm_cnumber_ival(x)
-# define escm_number_rval(x) escm_cnumber_rval(x)
+# define ESCM_ISNUMBER ESCM_ISCNUMBER
+# define ESCM_ISINT ESCM_ISCINT
+# define ESCM_ISREAL ESCM_ISCREAL
+# define escm_number_ival escm_cnumber_ival
+# define escm_number_rval escm_cnumber_rval
 # ifdef ESCM_INTBOOL
-#  define ESCM_ISTRUE(x) ESCM_ISCTRUE(x)
+#  define ESCM_ISTRUE ESCM_ISCTRUE
 # endif
-# define escm_int_make(e, i) escm_cint_make(e, i)
-# define escm_real_make(e, i) escm_creal_make(e, i)
+# define escm_int_make escm_cint_make
+# define escm_real_make escm_creal_make
 
-# define ESCM_NUMBER_EXACTP(x) ESCM_CNUMBER_EXACTP(x)
+# define ESCM_NUMBER_EXACTP ESCM_CNUMBER_EXACTP
 
 #else
 # include "bnumbers.h"

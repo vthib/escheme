@@ -32,7 +32,7 @@ struct escm_input {
 	    char *name;
 
 	    /* used to allow multiples calls to ungetc */
-#ifdef ESCM_USE_C99
+#ifdef ESCM_USE_UNICODE
 	    wint_t *ub;
 #else
 	    int *ub;
@@ -41,8 +41,13 @@ struct escm_input {
 	    size_t un;
 	} file;
 	struct {
+#ifdef ESCM_USE_UNICODE
+	    const wchar_t *str;
+	    wchar_t *cur;
+#else
 	    const char *str;
 	    char *cur;
+#endif
 	} str;
     } d;
 
@@ -53,7 +58,11 @@ struct escm_input {
 
 escm_input *escm_input_fopen(const char *);
 escm_input *escm_input_fmng(FILE *, const char *);
+#ifdef ESCM_USE_UNICODE
+escm_input *escm_input_str(const wchar_t *);
+#else
 escm_input *escm_input_str(const char *);
+#endif
 
 char *escm_input_gettext(escm_input *, const char *);
 char *escm_input_getstr_fun(escm_input *, int (*)(int), int);
@@ -65,7 +74,7 @@ void escm_input_rewind(escm_input *);
 void escm_input_badend(escm_input *);
 void escm_input_print(escm_input *, const char *, ...);
 
-#ifdef ESCM_USE_C99
+#ifdef ESCM_USE_UNICODE
 wint_t escm_input_getwc(escm_input *);
 wint_t escm_input_wpeek(escm_input *);
 void escm_input_ungetwc(escm_input *, wint_t);

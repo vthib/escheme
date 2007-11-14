@@ -23,7 +23,7 @@
 #include "utils.h"
 #include "output.h"
 
-#ifdef ESCM_USE_C99
+#ifdef ESCM_USE_UNICODE
 # include <wchar.h>
 #endif
 
@@ -166,7 +166,7 @@ escm_print_slashify(escm_output *stream, const char *str)
     }
 }
 
-#ifdef ESCM_USE_C99
+#ifdef ESCM_USE_UNICODE
 /*
 void
 escm_putwc(escm_output *f, wint_t c)
@@ -256,4 +256,4 @@ escm_putc(escm_output *f, int c)
     }
 }
 
-#endif /* ESCM_USE_C99 */
+#endif /* ESCM_USE_UNICODE */

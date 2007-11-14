@@ -23,7 +23,7 @@
 
 #include "types.h"
 
-#ifdef ESCM_USE_C99
+#ifdef ESCM_USE_UNICODE
 # include <wchar.h>
 # include <wctype.h>
 #endif
@@ -34,7 +34,7 @@
 #define MAX_BUFFSIZE 2048
 
 static char strbuf[MAX_BUFFSIZE];
-#ifdef ESCM_USE_C99
+#ifdef ESCM_USE_UNICODE
 static wchar_t wcsbuf[MAX_BUFFSIZE];
 #endif
 
@@ -87,6 +87,26 @@ escm_input_fmng(FILE *fp, const char *name)
     return f;
 }
 
+#ifdef ESCM_USE_UNICODE
+/**
+ * @brief set the string as input
+ */
+escm_input *
+escm_input_str(const wchar_t *str)
+{
+    escm_input *f;
+
+    assert(str != NULL);
+
+    f = xcalloc(1, sizeof *f);
+    f->type = INPUT_STR;
+
+    f->d.str.str = str;
+    f->d.str.cur = (wchar_t *) f->d.str.str;
+
+    return f;
+}
+#else
 /**
  * @brief set the string as input
  */
@@ -105,6 +125,7 @@ escm_input_str(const char *str)
 
     return f;
 }
+#endif /* ESCM_USE_UNICODE */
 
 /**
  * @brief close the input and free it
@@ -208,7 +229,11 @@ escm_input_rewind(escm_input *f)
 	f->d.file.line = 0;
 	f->d.file.car = 0;
     } else
+#ifdef ESCM_USE_UNICODE
+	f->d.str.cur = (wchar_t *) f->d.str.str;
+#else
 	f->d.str.cur = (char *) f->d.str.str;
+#endif
 
     f->end = 0;
 }
@@ -254,6 +279,17 @@ escm_input_print(escm_input *f, const char *s, ...)
 	(void) vfprintf(stderr, s, va);
 	fprintf(stderr, "\n");
     } else {
+#ifdef ESCM_USE_UNICODE
+	size_t i;
+
+	fprintf(stderr, "%ls: ", f->d.str.str);
+	(void) vfprintf(stderr, s, va);
+	fprintf(stderr, "\n");
+
+	for (i = 0; &(f->d.str.str[i]) < f->d.str.cur; i++)
+	    fprintf(stderr, " ");
+	fprintf(stderr, "^\n");
+#else
 	char *p;
 
 	fprintf(stderr, "%s: ", f->d.str.str);
@@ -263,12 +299,13 @@ escm_input_print(escm_input *f, const char *s, ...)
 	for (p = (char *) f->d.str.str; p < (f->d.str.cur - 1); p++)
 	    fprintf(stderr, " ");
 	fprintf(stderr, "^\n");
+#endif
     }
 
     va_end(va);
 }
 
-#ifndef ESCM_USE_C99
+#ifndef ESCM_USE_UNICODE
 /**
  * @brief return the next char in the stream
  */
@@ -401,11 +438,12 @@ escm_input_getwc(escm_input *f)
 		f->d.file.car++;
 	}
     } else {
-	if (*f->d.str.cur == '\0')
+	if (*f->d.str.cur == L'\0')
 	    f->end = 1, c = WEOF;
 	else {
-	    c = *f->d.str.cur++;
-	    if (*f->d.str.cur == '\0')
+	    c = *f->d.str.cur;
+	    f->d.str.cur += sizeof *f->d.str.cur;
+	    if (*f->d.str.cur == L'\0')
 		f->end = 1;
 	}
     }
@@ -530,7 +568,7 @@ escm_input_ungetwc(escm_input *f, wint_t c)
 	f->d.file.ub[f->d.file.un++] = c;
     } else {
 	if (f->d.str.cur > f->d.str.str)
-	    f->d.str.cur--;
+	    f->d.str.cur -= sizeof *f->d.str.cur;
     }
 
     f->end = 0;

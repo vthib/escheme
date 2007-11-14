@@ -36,6 +36,11 @@ static long pgcd(long, long);
 static char *bintostr(long);
 #endif
 static inline int isnumber(int);
+#ifdef ESCM_USE_UNICODE
+escm_atom *makestr(escm *, char *, size_t);
+#else
+# define makestr escm_string_make
+#endif
 
 void
 escm_bnumbers_init(escm *e)
@@ -666,7 +671,7 @@ escm_bnumber_to_string(escm *e, escm_atom *args)
 	    escm_atom *atom;
 
 	    str = bintostr(escm_number_ival(a));
-	    atom = escm_string_make(e, str, strlen(str));
+	    atom = makestr(e, str, strlen(str));
 	    free(str);
 	    return atom;
 	} else {
@@ -697,7 +702,7 @@ escm_bnumber_to_string(escm *e, escm_atom *args)
 			    "respected.\n");
 	    }
 
-	    return escm_string_make(e, s, len);
+	    return makestr(e, s, len);
 	}
     } else {
 	double d;
@@ -717,7 +722,7 @@ escm_bnumber_to_string(escm *e, escm_atom *args)
 			"respected.\n");
 	}
 
-	return escm_string_make(e, s, len);
+	return makestr(e, s, len);
     }
 }
 
@@ -750,7 +755,18 @@ escm_string_to_bnumber(escm *e, escm_atom *args)
 	}
     }
 
+#ifdef ESCM_USE_UNICODE
+    if (escm_type_ison(ESCM_TYPE_ASTRING)) {
+	wchar_t *w;
+
+	w = strtowcs(escm_astr_val(a));
+	input = escm_input_str(w);
+	free(w);
+    } else
+	input = escm_input_str(escm_ustr_val(a));
+#else
     input = escm_input_str(escm_str_val(a));
+#endif
 
     number = inputtonumber(input, radix);
     if (!number)
@@ -1292,7 +1308,12 @@ inputtonumber(escm_input *input, int radix)
 	if (input->type == INPUT_FILE)
 	    input->d.file.car -= strlen(str) - (ec - str) - 1;
 	else
+#ifdef ESCM_USE_UNICODE
+	    input->d.str.cur = (wchar_t *) input->d.str.str +
+		((ec - str + 1) * sizeof (wchar_t));
+#else
 	    input->d.str.cur = (char *) input->d.str.str + (ec - str + 1);
+#endif
 	escm_input_print(input, "Character `%c' unexpected.", *ec);
 	free(str);
 	free(n);
@@ -1353,3 +1374,22 @@ isnumber(int c)
 {
     return (strchr("+-i/#.e", c) != NULL || isxdigit(c));
 }
+
+#ifdef ESCM_USE_UNICODE
+escm_atom *
+makestr(escm *e, char *str, size_t len)
+{
+    escm_ustring *ustr;
+    wchar_t *w;
+    size_t n;
+
+    (void) len;
+
+    n = mbstowcs(NULL, str, 0) + 1;
+    w = xmalloc(sizeof *w * n);
+    mbstowcs(w, str, n);
+    ustr = xmalloc(sizeof *ustr);
+    ustr->str = w, ustr->len = n;
+    return escm_atom_new(e, ESCM_TYPE_USTRING, ustr);
+}
+#endif

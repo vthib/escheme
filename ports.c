@@ -19,6 +19,10 @@
 
 #include "escheme.h"
 
+#ifdef ESCM_USE_UNICODE
+# include <wchar.h>
+#endif
+
 static unsigned long porttype = 0;
 
 static void port_free(escm_port *);
@@ -177,7 +181,18 @@ escm_with_input_from_file(escm *e, escm_atom *args, escm_curports *cp)
     thunk = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISPROC(thunk), thunk, e);
 
+#ifdef ESCM_USE_UNICODE
+    if (escm_type_ison(ESCM_TYPE_USTRING)) {
+	char *s;
+
+	s = wcstostr(escm_ustr_val(str));
+	input = escm_input_fopen(s);
+	free(s);
+    }
+#else
     input = escm_input_fopen(escm_str_val(str));
+#endif
+
     if (!input) {
 	escm_abort(e);
     }
@@ -206,7 +221,18 @@ escm_with_output_to_file(escm *e, escm_atom *args, escm_curports *cp)
     thunk = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISPROC(thunk), thunk, e);
 
+#ifdef ESCM_USE_UNICODE
+    if (escm_type_ison(ESCM_TYPE_USTRING)) {
+	char *s;
+
+	s = wcstostr(escm_ustr_val(str));
+	o = escm_output_fopen(s);
+	free(s);
+    }
+#else
     o = escm_output_fopen(escm_str_val(str));
+#endif
+
     if (!o) {
 	escm_abort(e);
     }
@@ -232,7 +258,18 @@ escm_open_input_file(escm *e, escm_atom *args)
     name = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(name), name, e);
 
+#ifdef ESCM_USE_UNICODE
+    if (escm_type_ison(ESCM_TYPE_USTRING)) {
+	char *s;
+
+	s = wcstostr(escm_ustr_val(name));
+	inp = escm_input_fopen(s);
+	free(s);
+    }
+#else
     inp = escm_input_fopen(escm_str_val(name));
+#endif
+
     if (!inp) {
 	escm_abort(e);
     }
@@ -249,7 +286,17 @@ escm_open_output_file(escm *e, escm_atom *args)
     name = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(name), name, e);
 
+#ifdef ESCM_USE_UNICODE
+    if (escm_type_ison(ESCM_TYPE_USTRING)) {
+	char *s;
+
+	s = wcstostr(escm_ustr_val(name));
+	outp = escm_output_fopen(s);
+	free(s);
+    }
+#else
     outp = escm_output_fopen(escm_str_val(name));
+#endif
     if (!outp) {
 	escm_abort(e);
     }
@@ -275,7 +322,11 @@ escm_read_char(escm *e, escm_atom *args, escm_curports *cp)
 {
     escm_atom *a;
     escm_port *port;
+#ifdef ESCM_USE_UNICODE
+    wint_t c;
+#else
     int c;
+#endif
 
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
 	escm_error(e, "~s: character type is off.~%", e->curobj);
@@ -296,11 +347,22 @@ escm_read_char(escm *e, escm_atom *args, escm_curports *cp)
 	escm_abort(e);
     }
 
+#ifdef ESCM_USE_UNICODE
+    c = escm_input_getwc(port->d.input);
+    if (c == WEOF)
+	return e->EOF_OBJ;
+
+    if (escm_type_ison(ESCM_TYPE_UCHAR))
+	return escm_uchar_make(e, c);
+    else
+	return escm_achar_make(e, c);
+#else
     c = escm_input_getc(port->d.input);
     if (c == EOF)
 	return e->EOF_OBJ;
 
-    return escm_char_make(e, c);
+    return escm_achar_make(e, c);
+#endif
 }
 
 escm_atom *
@@ -308,7 +370,11 @@ escm_peek_char(escm *e, escm_atom *args, escm_curports *cp)
 {
     escm_atom *a;
     escm_port *port;
+#ifdef ESCM_USE_UNICODE
+    wint_t c;
+#else
     int c;
+#endif
 
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
 	escm_error(e, "~s: character type is off.~%", e->curobj);
@@ -329,12 +395,24 @@ escm_peek_char(escm *e, escm_atom *args, escm_curports *cp)
 	escm_abort(e);
     }
 
+#ifdef ESCM_USE_UNICODE
+    c = escm_input_getwc(port->d.input);
+    if (c == WEOF)
+	return e->EOF_OBJ;
+    escm_input_ungetc(port->d.input, c);
+
+    if (escm_type_ison(ESCM_TYPE_UCHAR))
+	return escm_uchar_make(e, c);
+    else
+	return escm_achar_make(e, c);
+#else
     c = escm_input_getc(port->d.input);
     if (c == EOF)
 	return e->EOF_OBJ;
 
     escm_input_ungetc(port->d.input, c);
-    return escm_char_make(e, c);
+    return escm_achar_make(e, c);
+#endif
 }
 
 escm_atom *

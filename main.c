@@ -43,6 +43,7 @@ main(int argc, char **argv)
     unsigned int noload[10];
     unsigned int loadinit = 1;
     unsigned int casesens = 1;
+    unsigned int useascii = 0;
     char *p;
 
     memset(noload, 0, sizeof noload);
@@ -59,6 +60,7 @@ main(int argc, char **argv)
 	if (*argv[i] == '-' && argv[i][1] != 'e') {
 	    for (p = argv[i] + 1; *p != '\0'; p++) {
 		switch (*p) {
+		case 'a': useascii = 1; break;
 		case 'N': noload[CNUM] = 1; break;
 		case 'n': noload[BNUM] = 1; break;
 		case 's': noload[STRING] = 1; break;
@@ -101,25 +103,29 @@ main(int argc, char **argv)
     escm_symbols_init(e);
 
 #ifdef ESCM_USE_STRINGS
-    if (!noload[STRING])
-# ifdef ESCM_USE_C99
-	escm_ustrings_init(e);
-# else
-	escm_strings_init(e);
-# endif /* ESCM_USE_C99 */
+    if (!noload[STRING]) {
+# ifdef ESCM_USE_UNICODE
+	if (useascii)
+	    escm_ustrings_init(e);
+	else
+# endif
+	    escm_astrings_init(e);
+    }
 #endif
 #ifdef ESCM_USE_VECTORS
     if (!noload[VECT])
 	escm_vectors_init(e);
 #endif
 #ifdef ESCM_USE_CHARACTERS
-    if (!noload[CHAR])
-# ifdef ESCM_USE_C99
-	escm_uchars_init(e);
-# else
-	escm_chars_init(e);
-# endif /* ESCM_USE_C99 */
-#endif /* ESCM_USE_CHARACTERS */
+    if (!noload[CHAR]) {
+# ifdef ESCM_USE_UNICODE
+	if (useascii)
+	    escm_uchars_init(e);
+	else
+# endif
+	    escm_achars_init(e);
+    }
+#endif
 
 #ifdef ESCM_USE_PROMISES
     if (!noload[PROMISE])
@@ -177,6 +183,7 @@ usage(char *name)
 	   "if no file is present, display a prompt.\n"
 	   "\n"
 	   "-h\tprint this help.\n"
+	   "-a\tuse ascii (do not use unicode version of char and string).\n"
 	   "-N\tdo not load the complete number type.\n"
 	   "-n\tdo not load the basic number type.\n"
 	   "-s\tdo not load the string type.\n"
@@ -184,15 +191,15 @@ usage(char *name)
 	   "-v\tdo not load the vector type.\n"
 	   "-c\tdo not load the character type.\n"
 	   "-P\tdo not load the promise type.\n"
-	   "-p\tdo not load the port type.\n"
-	   "-m\tdo not load the macro type.\n"
+	   "-p\tdo not load the port type.\n", name);
+    printf("-m\tdo not load the macro type.\n"
 	   "-C\tdo not load the continuation type.\n"
 	   "\n"
 	   "-q\tdo not load the init file.\n"
 	   "-g\tSymbols are treated case-insensitively (default).\n"
 	   "-G\tSymbols are treated case-sensitively (default).\n"
 	   "\n"
-	   "-e expr\tEvaluates expr.\n\n", name);
+	   "-e expr\tEvaluates expr.\n\n");
 }
 
 

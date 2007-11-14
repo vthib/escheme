@@ -18,6 +18,9 @@
 #include <assert.h>
 #include <string.h>
 #include <ctype.h>
+#ifdef ESCM_USE_UNICODE
+#include <wchar.h>
+#endif
 
 #include "escheme.h"
 
@@ -95,7 +98,19 @@ escm_symbol_to_string(escm *e, escm_atom *args)
     sym = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSYM(sym), sym, e);
 
-    return escm_atom_new(e, ESCM_TYPE_STRING, xstrdup(escm_sym_val(sym)));
+#ifdef ESCM_USE_UNICODE
+    if (escm_type_ison(ESCM_TYPE_USTRING)) {
+	wchar_t *w;
+	escm_atom *a;
+
+	w = strtowcs(escm_sym_val(sym));
+	a = escm_ustring_make(e, w, wcslen(w));
+	free(w);
+	return a;
+    } else
+#endif
+	return escm_astring_make(e, xstrdup(escm_sym_val(sym)),
+				 strlen(escm_sym_val(sym)));
 }
 
 escm_atom *
@@ -111,7 +126,14 @@ escm_string_to_symbol(escm *e, escm_atom *args)
     str = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(str), str, e);
 
-    return escm_atom_new(e, ESCM_TYPE_SYMBOL, xstrdup(escm_str_val(str)));
+#ifdef ESCM_USE_UNICODE
+    if (escm_type_ison(ESCM_TYPE_USTRING))
+	return escm_atom_new(e, ESCM_TYPE_SYMBOL, wcstostr(escm_ustr_val(str)));
+    else
+	return escm_atom_new(e, ESCM_TYPE_SYMBOL, xstrdup(escm_astr_val(str)));
+#else
+	return escm_atom_new(e, ESCM_TYPE_SYMBOL, xstrdup(escm_str_val(str)));
+#endif
 }
 #endif
 
