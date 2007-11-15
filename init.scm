@@ -55,11 +55,13 @@
 
 ;; Ports primitives
 (define (call-with-input-file string proc)
-  (let ((port (open-input-file string)))
-    (begin (proc port) (close-input-port port))))
+  (let* ((port (open-input-file string))
+	 (ret (proc port)))
+    (begin (close-input-port port) ret)))
 (define (call-with-output-file string proc)
-  (let ((port (open-output-file string)))
-    (begin (proc port) (close-output-port port))))
+  (let* ((port (open-output-file string))
+	 (ret (proc port)))
+    (begin (close-output-port port) ret)))
 
 
 (define (printf format . args)

@@ -657,7 +657,7 @@ cons_parse(escm *e)
 	    escm_input_ungetc(e->input, c);
 
 	atom = escm_parse(e);
-	if (e->err != 0) {
+	if (e->err != 0 || atom == e->EOF_OBJ) {
 	    escm_ctx_discard(e);
 	    return NULL;
 	}

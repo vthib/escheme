@@ -22,6 +22,7 @@
 #include <wctype.h>
 
 #include "escheme.h"
+#include "ustrings.h"
 
 static unsigned long ustringtype = 0;
 
@@ -125,7 +126,7 @@ escm_atom *
 escm_make_ustring(escm *e, escm_atom *args)
 {
     escm_atom *length, *c;
-    wchar_t *str;
+    wchar_t *wcs;
     size_t k;
 
     if (!escm_type_ison(ESCM_TYPE_UCHAR)) {
@@ -146,12 +147,12 @@ escm_make_ustring(escm *e, escm_atom *args)
     if (c)
 	escm_assert(ESCM_ISUCHAR(c), c, e);
 
-    str = xmalloc((k + 1) * sizeof *str);
-    wmemset(str, (c != NULL) ? escm_uchar_val(c) : 0, k + 1);
-    str[k] = '\0';
+    wcs = xmalloc((k + 1) * sizeof *wcs);
+    wmemset(wcs, (c != NULL) ? escm_uchar_val(c) : 0, k + 1);
+    wcs[k] = L'\0';
 
-    c = escm_ustring_make(e, str, k);
-    free(str);
+    c = escm_ustring_make(e, wcs, k);
+    free(wcs);
     return c;
 }
 #endif
@@ -162,7 +163,7 @@ escm_prim_ustring(escm *e, escm_atom *args)
 {
     escm_atom *c;
     escm_cons *cons;
-    wchar_t *str;
+    wchar_t *wcs;
     size_t len;
 
     if (!escm_type_ison(ESCM_TYPE_UCHAR)) {
@@ -176,15 +177,15 @@ escm_prim_ustring(escm *e, escm_atom *args)
 	len++;
     }
 
-    str = xmalloc((len + 1) * sizeof *str);
+    wcs = xmalloc((len + 1) * sizeof *wcs);
 
     len = 0;
     for (c = escm_cons_pop(e, &args); c; c = escm_cons_pop(e, &args))
-	str[len++] = escm_uchar_val(c);
-    str[len] = L'\0';
+	wcs[len++] = escm_uchar_val(c);
+    wcs[len] = L'\0';
 
-    c = escm_ustring_make(e, str, len);
-    free(str);
+    c = escm_ustring_make(e, wcs, len);
+    free(wcs);
     return c;
 }
 #endif

@@ -22,6 +22,7 @@
 #include <wctype.h>
 
 #include "escheme.h"
+#include "uchars.h"
 
 static unsigned long uchartype = 0;
 

@@ -52,6 +52,8 @@ escm_new(void)
     e->output = escm_output_fmng(stdout, "standard output");
     e->errp = escm_output_fmng(stderr, "standard error output");
 
+    e->brackets = 1;
+
     escm_environments_init(e);
     e->env = escm_env_new(e, NULL);
     e->env->ro = 1;
@@ -191,8 +193,10 @@ escm_parse(escm *e)
     int c;
 
     assert(e != NULL);
-    if (!e->input || e->input->end)
+    if (!e->input)
 	return NULL;
+    if (e->input->end)
+	return e->EOF_OBJ;
 
     e->err = 0;
 
@@ -323,8 +327,8 @@ escm_ctx_put(escm *e, escm_atom *atom)
     if (!e->ctx->first)
 	e->ctx->first = new;
     else {
-	if (!ESCM_ISCONS(e->ctx->last)) { /* it's a "foo . bar" */
-	    escm_input_print(e->input, "')' expected.\n");
+	if (!ESCM_ISCONS(e->ctx->last) || e->ctx->last == e->NIL) {
+	    escm_input_print(e->input, "illegal dotted form.");
 	    e->err = 1;
 	    return;
 	}
@@ -354,7 +358,7 @@ escm_ctx_put_splicing(escm *e, escm_atom *atom)
 	e->ctx->first = atom;
     else {
 	if (!ESCM_ISCONS(e->ctx->last)) { /* it's a "foo . bar" */
-	    escm_input_print(e->input, "')' expected.\n");
+	    escm_input_print(e->input, "')' expected.");
 	    e->err = 1;
 	    return;
 	}

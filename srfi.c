@@ -118,10 +118,12 @@ escm_get_output_string(escm *e, escm_atom *args)
 				 outp->d.str.cur - outp->d.str.str);
     else {
 	char *p;
+	escm_atom *a;
 
 	p = wcstostr(escm_output_getstr(outp));
-	return escm_astring_make(e, p, outp->d.str.cur - outp->d.str.str);
+	a = escm_astring_make(e, p, outp->d.str.cur - outp->d.str.str);
 	free(p);
+	return a;
     }
 # else
     return escm_astring_make(e, escm_output_getstr(outp),

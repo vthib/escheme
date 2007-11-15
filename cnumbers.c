@@ -451,7 +451,9 @@ harmonize(escm_number **destptr, escm_number **srcptr, int *freesrc)
 	    a->d.cpx.re = src;
 	    a->d.cpx.im = makeint(0);
 	    break;
-	default: break;
+	default:
+	    a = NULL;
+	    break;
 	}
 
 	*srcptr = a, *freesrc = 1;
@@ -474,7 +476,9 @@ harmonize(escm_number **destptr, escm_number **srcptr, int *freesrc)
 	    a->d.cpx.re = dest, *destptr = NULL;
 	    a->d.cpx.im = makeint(0);
 	    break;
-	default: break;
+	default:
+	    a = NULL;
+	    break;
 	}
 
 	free(dest), *destptr = a;
@@ -809,16 +813,14 @@ number_equal(escm *e, escm_number *n1, escm_number *n2, int lvl)
     switch (n1->type) {
     case ESCM_INTEGER: return n1->d.i == n2->d.i;
     case ESCM_REAL: return DBL_EQ(n1->d.real, n2->d.real);
-	/* XXX: ugly */
     case ESCM_RATIONAL: return DBL_EQ(n1->d.rat.n / n1->d.rat.d,
 				      n2->d.rat.n / n2->d.rat.d);
     case ESCM_COMPLEX:
 	return (number_equal(e, n1->d.cpx.re, n2->d.cpx.re, lvl) &&
 		number_equal(e, n1->d.cpx.im, n2->d.cpx.im, lvl));
+    default:
+	return 0;
     }
-
-    /* not supposed to happen but prevents a warning */
-    return 0;
 }
 
 static int
@@ -909,14 +911,14 @@ inputtonumber(escm_input *input, int radix)
 	    goto cpxbad;
 
 	if (*p != '-' && *p != '+') {	
-	    escm_input_print(input, "number parse error.\n");
+	    escm_input_print(input, "number parse error.");
 	    number_free(cpx->d.cpx.re);
 	    goto cpxbad;
 	}
 
 	cpx->d.cpx.im = getreal(input, &p, radix);
 	if (*p != 'i' || *(p + 1) != '\0') {
-	    escm_input_print(input, "complex number must end with a i.\n");
+	    escm_input_print(input, "complex number must end with a i.");
 	    number_free(cpx->d.cpx.re);
 	    goto cpxbad;
 	}
@@ -926,8 +928,6 @@ inputtonumber(escm_input *input, int radix)
 	     DBL_EQ(cpx->d.cpx.re->d.real, 0.)) ||
 	    (cpx->d.cpx.im->type == ESCM_RATIONAL &&
 	     cpx->d.cpx.im->d.rat.n == 0)) {
-		escm_number *a;
-
 		number_free(cpx->d.cpx.im);
 		a = cpx->d.cpx.re, free(cpx);
 		free(str);
@@ -1007,7 +1007,7 @@ getreal(escm_input *input, char **p, int radix)
 
 	n = strtol(*p, p, radix);
 	if (*(*p + 1) == '-') {
-	    escm_input_print(input, "the denominator must be positive.\n");
+	    escm_input_print(input, "the denominator must be positive.");
 	    return NULL;
 	}
 	(*p)++;
@@ -1092,8 +1092,9 @@ extoinex(escm_number *n)
 	new->d.cpx.re = extoinex(n->d.cpx.re);
 	new->d.cpx.im = extoinex(n->d.cpx.im);
 	return new;
+    default:
+	return n;
     }
-    return n;
 }
 
 static escm_number *
@@ -1114,8 +1115,9 @@ inextoex(escm_number *n)
 	new->d.cpx.re = inextoex(n->d.cpx.re);
 	new->d.cpx.im = inextoex(n->d.cpx.im);
 	return new;
+    default:
+	return n;
     }
-    return n;
 }
 
 static escm_number *

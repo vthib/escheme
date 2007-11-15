@@ -21,24 +21,22 @@
 #include "types.h"
 #include "cons.h"
 
-#define escm_assert(test, atom, e)				\
-    do {							\
-	if (!(test)) {						\
-	    escm_atom_printerr(e, atom);			\
-	    escm_printf(e->errp, ": wrong argument.\n");	\
-	    escm_abort(e);					\
-	}							\
+#define escm_assert(test, atom, e)					\
+    do {								\
+	if (!(test)) {							\
+	    escm_error((e), "~s: ~s: wrong argument.~%", (e)->curobj, (atom)); \
+	    escm_abort(e);						\
+	}								\
     } while(0)
 
 /* Okay, this is ugly, but there is no other solution */
-#define escm_assert1(test, atom, e, st)				\
-    do {							\
-	if (!(test)) {						\
-	    escm_atom_printerr(e, atom);			\
-	    escm_printf(e->errp, ": wrong argument.\n");	\
-	    st;							\
-	    escm_abort(e);					\
-	}							\
+#define escm_assert1(test, atom, e, st)					\
+    do {								\
+	if (!(test)) {							\
+	    escm_error((e), "~s: ~s: wrong argument.~%", (e)->curobj, (atom)); \
+	    st;								\
+	    escm_abort(e);						\
+	}								\
     } while(0)
 
 #define escm_abort(e) do { (e)->err = 1; return NULL; } while(0)
