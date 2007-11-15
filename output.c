@@ -82,12 +82,25 @@ escm_output_str(void)
     f->type = OUTPUT_STR;
 
     f->d.str.str = xcalloc(5, sizeof *f->d.str.str);
-    f->d.str.cur = (char *) f->d.str.str;
+    f->d.str.cur = f->d.str.str;
     f->d.str.maxlen = 5;
 
     return f;
 }
 
+#ifdef ESCM_USE_UNICODE
+wchar_t *
+escm_output_getstr(escm_output *o)
+{
+    assert(o != NULL);
+
+    if (o->type == OUTPUT_FILE)
+	return NULL;
+
+    *o->d.str.cur = L'\0';
+    return o->d.str.str;
+}
+#else
 char *
 escm_output_getstr(escm_output *o)
 {
@@ -99,6 +112,7 @@ escm_output_getstr(escm_output *o)
     *o->d.str.cur = '\0';
     return o->d.str.str;
 }
+#endif /* ESCM_USE_UNICODE */
 
 void
 escm_output_close(escm_output *f)
@@ -130,6 +144,11 @@ escm_printf(escm_output *f, const char *format, ...)
     else {
 	size_t offset;
 	int write;
+#ifdef ESCM_USE_UNICODE
+	wchar_t *fmt;
+
+	fmt = strtowcs(format);
+#endif
 
 	offset = f->d.str.cur - f->d.str.str;
 
@@ -138,10 +157,18 @@ escm_printf(escm_output *f, const char *format, ...)
 	    f->d.str.str = xrealloc(f->d.str.str, f->d.str.maxlen);
 	    f->d.str.cur = f->d.str.str + offset;
 
-	    write = vsnprintf(f->d.str.cur, offset - f->d.str.maxlen, format,
+#ifdef ESCM_USE_UNICODE
+	    write = vswprintf(f->d.str.cur, f->d.str.maxlen - offset, fmt,
 			      args);
-	    if ((size_t) write < offset - f->d.str.maxlen) {
+#else
+	    write = vsnprintf(f->d.str.cur, f->d.str.maxlen - offset, format,
+			      args);
+#endif
+	    if ((size_t) write < f->d.str.maxlen - offset) {
 		f->d.str.cur += write;
+#ifdef ESCM_USE_UNICODE
+		free(fmt);
+#endif
 		break;
 	    } else {
 		va_end(args);
@@ -167,31 +194,6 @@ escm_print_slashify(escm_output *stream, const char *str)
 }
 
 #ifdef ESCM_USE_UNICODE
-/*
-void
-escm_putwc(escm_output *f, wint_t c)
-{
-    assert(f != NULL);
-
-    if (f->type == OUTPUT_FILE) {
-	if (WEOF == fputwc(c, f->d.file.fp))
-	    fprintf(stderr, "fputwc('%lc') failed.\n", c);
-    } else {
-	size_t offset;
-
-	*f->d.str.cur++ = c;
-
-	offset = f->d.str.cur - f->d.str.str;
-
-	if (offset >= f->d.str.maxlen) {
-	    f->d.str.maxlen += 5;
-	    f->d.str.str = xrealloc(f->d.str.str, f->d.str.maxlen);
-	    f->d.str.cur = f->d.str.str + offset;
-	}
-    }
-}
-*/
-
 void
 escm_print_wslashify(escm_output *stream, const wchar_t *str)
 {

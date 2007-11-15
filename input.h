@@ -42,10 +42,10 @@ struct escm_input {
 	} file;
 	struct {
 #ifdef ESCM_USE_UNICODE
-	    const wchar_t *str;
+	    wchar_t *str;
 	    wchar_t *cur;
 #else
-	    const char *str;
+	    char *str;
 	    char *cur;
 #endif
 	} str;

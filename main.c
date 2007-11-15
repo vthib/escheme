@@ -105,7 +105,7 @@ main(int argc, char **argv)
 #ifdef ESCM_USE_STRINGS
     if (!noload[STRING]) {
 # ifdef ESCM_USE_UNICODE
-	if (useascii)
+	if (!useascii)
 	    escm_ustrings_init(e);
 	else
 # endif
@@ -119,7 +119,7 @@ main(int argc, char **argv)
 #ifdef ESCM_USE_CHARACTERS
     if (!noload[CHAR]) {
 # ifdef ESCM_USE_UNICODE
-	if (useascii)
+	if (!useascii)
 	    escm_uchars_init(e);
 	else
 # endif

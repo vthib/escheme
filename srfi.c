@@ -111,10 +111,22 @@ escm_get_output_string(escm *e, escm_atom *args)
     }
 
     outp = escm_port_val(port)->d.output;
-    /* XXX: fixme */
-    return NULL;
-    /*return escm_string_make(e, escm_output_getstr(outp),
-      outp->d.str.cur - outp->d.str.str);*/
+
+# ifdef ESCM_USE_UNICODE
+    if (escm_type_ison(ESCM_TYPE_USTRING))
+	return escm_ustring_make(e, escm_output_getstr(outp),
+				 outp->d.str.cur - outp->d.str.str);
+    else {
+	char *p;
+
+	p = wcstostr(escm_output_getstr(outp));
+	return escm_astring_make(e, p, outp->d.str.cur - outp->d.str.str);
+	free(p);
+    }
+# else
+    return escm_astring_make(e, escm_output_getstr(outp),
+			     outp->d.str.cur - outp->d.str.str);
+# endif /* ESCM_USE_UNICODE */
 }
 #endif
 

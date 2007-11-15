@@ -87,31 +87,15 @@ escm_input_fmng(FILE *fp, const char *name)
     return f;
 }
 
+/**
+ * @brief set the string as input
+ */
+escm_input *
 #ifdef ESCM_USE_UNICODE
-/**
- * @brief set the string as input
- */
-escm_input *
 escm_input_str(const wchar_t *str)
-{
-    escm_input *f;
-
-    assert(str != NULL);
-
-    f = xcalloc(1, sizeof *f);
-    f->type = INPUT_STR;
-
-    f->d.str.str = str;
-    f->d.str.cur = (wchar_t *) f->d.str.str;
-
-    return f;
-}
 #else
-/**
- * @brief set the string as input
- */
-escm_input *
 escm_input_str(const char *str)
+#endif
 {
     escm_input *f;
 
@@ -120,12 +104,15 @@ escm_input_str(const char *str)
     f = xcalloc(1, sizeof *f);
     f->type = INPUT_STR;
 
-    f->d.str.str = str;
-    f->d.str.cur = (char *) f->d.str.str;
+#ifdef ESCM_USE_UNICODE
+    f->d.str.str = xwcsdup(str);
+#else
+    f->d.str.str = xstrdup(str);
+#endif
+    f->d.str.cur = f->d.str.str;
 
     return f;
 }
-#endif /* ESCM_USE_UNICODE */
 
 /**
  * @brief close the input and free it
@@ -143,7 +130,8 @@ escm_input_close(escm_input *f)
 	}
 	free(f->d.file.name);
 	free(f->d.file.ub);
-    }
+    } else
+	free(f->d.str.str);
 
     free(f);
 }
@@ -229,11 +217,7 @@ escm_input_rewind(escm_input *f)
 	f->d.file.line = 0;
 	f->d.file.car = 0;
     } else
-#ifdef ESCM_USE_UNICODE
-	f->d.str.cur = (wchar_t *) f->d.str.str;
-#else
-	f->d.str.cur = (char *) f->d.str.str;
-#endif
+	f->d.str.cur = f->d.str.str;
 
     f->end = 0;
 }
@@ -296,7 +280,7 @@ escm_input_print(escm_input *f, const char *s, ...)
 	(void) vfprintf(stderr, s, va);
 	fprintf(stderr, "\n");
 
-	for (p = (char *) f->d.str.str; p < (f->d.str.cur - 1); p++)
+	for (p = f->d.str.str; p < (f->d.str.cur - 1); p++)
 	    fprintf(stderr, " ");
 	fprintf(stderr, "^\n");
 #endif
@@ -442,7 +426,7 @@ escm_input_getwc(escm_input *f)
 	    f->end = 1, c = WEOF;
 	else {
 	    c = *f->d.str.cur;
-	    f->d.str.cur += sizeof *f->d.str.cur;
+	    f->d.str.cur++;
 	    if (*f->d.str.cur == L'\0')
 		f->end = 1;
 	}
@@ -568,7 +552,7 @@ escm_input_ungetwc(escm_input *f, wint_t c)
 	f->d.file.ub[f->d.file.un++] = c;
     } else {
 	if (f->d.str.cur > f->d.str.str)
-	    f->d.str.cur -= sizeof *f->d.str.cur;
+	    f->d.str.cur--;
     }
 
     f->end = 0;

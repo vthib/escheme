@@ -29,8 +29,13 @@ struct escm_output {
 	    FILE *fp;
 	} file;
 	struct {
+#ifdef ESCM_USE_UNICODE
+	    wchar_t *str;
+	    wchar_t *cur;
+#else
 	    char *str;
 	    char *cur;
+#endif
 	    size_t maxlen;
 	} str;
     } d;
@@ -42,7 +47,11 @@ escm_output *escm_output_fopen(const char *);
 escm_output *escm_output_fmng(FILE *, const char *);
 
 escm_output *escm_output_str(void);
+#ifdef ESCM_USE_UNICODE
+wchar_t *escm_output_getstr(escm_output *);
+#else
 char *escm_output_getstr(escm_output *);
+#endif
 
 void escm_output_close(escm_output *);
 
@@ -51,10 +60,7 @@ void escm_printf(escm_output *, const char *, ...);
 void escm_print_slashify(escm_output *, const char *);
 
 #ifdef ESCM_USE_UNICODE
-/* void escm_putwc(escm_output *, wint_t); */
-
-/* XXX: wordaround */
-#define escm_putwc(o, c) escm_printf(o, "%lc", c)
+# define escm_putwc(o, c) escm_printf(o, "%lc", c)
 
 void escm_print_wslashify(escm_output *, const wchar_t *);
 
