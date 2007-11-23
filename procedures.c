@@ -20,6 +20,8 @@
 
 #include "escheme.h"
 
+static unsigned long proctype = 1; /* uh, small hack */
+
 static void procedure_free(escm_procedure *);
 static void procedure_mark(escm *, escm_procedure *);
 static void procedure_print(escm *, escm_procedure *, escm_output *, int);
@@ -37,11 +39,17 @@ escm_procedures_init(escm *e)
     t->ffree = (Escm_Fun_Free) procedure_free;
     t->d.c.fprint = (Escm_Fun_Print) procedure_print;
 
-    (void) escm_type_add(e, t);
+    proctype = escm_type_add(e, t);
 
     (void) escm_procedure_new(e, "apply", 2, -1, escm_apply, NULL);
     (void) escm_procedure_new(e, "map", 2, -1, escm_map, NULL);
     (void) escm_procedure_new(e, "for-each", 2, -1, escm_for_each, NULL);
+}
+
+unsigned long
+escm_proc_tget(void)
+{
+    return proctype;
 }
 
 escm_atom *
@@ -61,9 +69,9 @@ escm_procedure_new(escm *e, const char *name, unsigned int min, int max,
     procedure->d.c.data = data;
     procedure->name = xstrdup(name);
 
-    atom = escm_atom_new(e, ESCM_TYPE_PROC, procedure);
+    atom = escm_atom_new(e, proctype, procedure);
 
-    escm_env_set(e->env, name, atom);
+    escm_env_set(e, e->env, escm_symbol_make(e, name), atom);
 
     return atom;
 }
@@ -333,8 +341,7 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomcons, int eval)
 		escm_ctx_put(e, ret);
 	    }
 
-	    escm_env_set(env, escm_sym_val(fun->d.closure.args),
-			 escm_ctx_leave(e));
+	    escm_env_set(e, env, fun->d.closure.args, escm_ctx_leave(e));
 	} else {
 	    escm_cons *args;
 
@@ -356,7 +363,7 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomcons, int eval)
 		} else
 		    ret = cons->car;
 
-		escm_env_set(env, escm_sym_val(args->car), ret);
+		escm_env_set(e, env, args->car, ret);
 
 		if (ESCM_ISSYM(args->cdr)) { /* rest arguments */
 		    escm_atom *val;
@@ -377,8 +384,7 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomcons, int eval)
 			escm_ctx_put(e, val);
 		    }
 
-		    escm_env_set(env, escm_sym_val(args->cdr),
-				 escm_ctx_leave(e));
+		    escm_env_set(e, env, args->cdr, escm_ctx_leave(e));
 		    args = NULL;
 		    break;
 		}

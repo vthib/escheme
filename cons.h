@@ -19,13 +19,12 @@
 
 #include "types.h"
 
-#define ESCM_TYPE_CONS 1 /* XXX: ugly, hardcoded and not relevant if we change
-			    the order of the initialisation */
+#define ESCM_TYPE_CONS (escm_cons_tget())
+
+#define ESCM_ISCONS(x) ((x)->type == ESCM_TYPE_CONS)
 
 #define escm_cons_next(x) (ESCM_ISCONS((x)->cdr)) ? \
     escm_cons_val((x)->cdr) : NULL
-
-#define ESCM_ISCONS(x) ((x)->type == ESCM_TYPE_CONS)
 
 #define escm_cons_val(x) ((escm_cons *) (x)->ptr)
 #define escm_cons_car(x) (escm_cons_val(x)->car)
@@ -37,6 +36,7 @@ typedef struct escm_cons {
 } escm_cons;
 
 void escm_cons_init(escm *);
+unsigned long escm_cons_tget(void);
 
 escm_atom *escm_cons_make(escm *, escm_atom *, escm_atom *);
 

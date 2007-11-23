@@ -78,6 +78,12 @@ escm_cons_init(escm *e)
     (void) escm_procedure_new(e, "assoc", 2, 2, escm_assoc, NULL);
 }
 
+unsigned long
+escm_cons_tget(void)
+{
+    return constype;
+}
+
 escm_atom *
 escm_cons_make(escm *e, escm_atom *car, escm_atom *cdr)
 {
@@ -642,19 +648,21 @@ cons_parse(escm *e)
     escm_ctx_enter(e);
 
     for (;;) {
-	c = escm_input_getc(e->input);
-	if (e->brackets == 1 && (c == ')' || c == ']')) {
-	    if ((open == '(' && c == ']') || (open == '[' && c == ')')) {
-		escm_input_print(e->input, "expecting a '%c' to close a '%c'",
-				 (open == '(') ? ')' : ']', open);
-		escm_ctx_discard(e);
-		escm_abort(e);
-	    }
-	    break;
-	} else if (e->brackets == 0 && c == ')')
-	    break;
-	else
-	    escm_input_ungetc(e->input, c);
+	do {
+	    c = escm_input_getc(e->input);
+	    if (e->brackets == 1 && (c == ')' || c == ']')) {
+		if ((open == '(' && c == ']') || (open == '[' && c == ')')) {
+		    escm_input_print(e->input, "expecting a '%c' to close a "
+				     "'%c'", (open == '(') ? ')' : ']', open);
+		    escm_ctx_discard(e);
+		    escm_abort(e);
+		}
+		goto end;
+	    } else if (e->brackets == 0 && c == ')')
+		goto end;
+	    else if (!isspace(c))
+		escm_input_ungetc(e->input, c);
+	} while (isspace(c));
 
 	atom = escm_parse(e);
 	if (e->err != 0 || atom == e->EOF_OBJ) {
@@ -665,6 +673,7 @@ cons_parse(escm *e)
 	    escm_ctx_put(e, atom);
     }
 
+end:
     atom = escm_ctx_leave(e);
 
     return atom;
@@ -712,7 +721,6 @@ cons_eval(escm *e, escm_cons *cons)
     return ret;
 
 noexec:
-    escm_atom_printerr(e, atomfun);
     escm_error(e, "~s: object isn't applicable.~%", atomfun);
     escm_abort(e);
 }

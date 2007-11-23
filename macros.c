@@ -85,7 +85,6 @@ escm_macro_expand(escm *e, escm_atom *macro, escm_atom *cont)
     rules = m->rules;
     for (a = escm_cons_pop(e, &rules); a; a = escm_cons_pop(e, &rules)) {
 	if (match(e, m, escm_cons_car(a), cont)) {
-#if 1
 	    b = bind(e, m, escm_cons_car(a), cont, NULL);
 	    a = expand(e, m, escm_cons_car(escm_cons_val(a)->cdr), NULL, b, 0);
 	    while (b) {
@@ -94,19 +93,10 @@ escm_macro_expand(escm *e, escm_atom *macro, escm_atom *cont)
 		b = prev;
 	    }
 	    return a;
-#else
-	    escm_atom_print(e, escm_cons_car(a));
-	    printf(" match ");
-	    escm_atom_print(e, cont);
-	    printf(".\n");
-	    return NULL;
-#endif
 	}
     }
 
-    fprintf(stderr, "can't expand macro ");
-    escm_atom_printerr(e, cont);
-    fprintf(stderr, ".\n");
+    escm_error(e, "can't expand macro ~s.~%", cont);
     escm_abort(e);
 }
 
@@ -155,7 +145,7 @@ escm_define_syntax(escm *e, escm_atom *args)
     }
     escm_assert(ESCM_ISMACRO(val), val, e);
 
-    escm_env_set(e->env, escm_sym_val(name), val);
+    escm_symbol_set(name, val);
 
     return NULL;
 }
@@ -203,10 +193,10 @@ match(escm *e, escm_macro *m, escm_atom *m1, escm_atom *m2)
 	a2 = (cons) ? cons->car : NULL;
 
 	if (!a2) {
-	    if (ESCM_ISSYM(a1) && 0 == strcmp(escm_sym_val(a1), "..."))
+	    if (ESCM_ISSYM(a1) && 0 == strcmp(escm_sym_name(a1), "..."))
 		return 1;
 	    rule = escm_cons_next(rule);
-	    if (rule && 0 == strcmp(escm_sym_val(rule->car), "..."))
+	    if (rule && 0 == strcmp(escm_sym_name(rule->car), "..."))
 		return 1;
 	    return 0;
 	}
@@ -218,12 +208,15 @@ match(escm *e, escm_macro *m, escm_atom *m1, escm_atom *m2)
 		return 0;
 	} else if (ESCM_ISSYM(a1)) {
 	    if (escm_cons_isin(e, m->literals, a1)) {
-		if (escm_env_getlocal(e->env, escm_sym_val(a1)))
+		/* XXX: juste check sym_val()? */
+		/*if (escm_env_getlocal(e->env, escm_sym_name(a1)))
+		  return 0;*/
+		if (escm_sym_name(a1))
 		    return 0;
 		if (!escm_atom_equal(e, a1, a2, 2))
 		    return 0;
 	    }
-	    if (0 == strcmp(escm_sym_val(a1), "..."))
+	    if (0 == strcmp(escm_sym_name(a1), "..."))
 		return 1;
 	} else {
 	    if (!escm_atom_equal(e, a1, a2, 2))
@@ -259,7 +252,7 @@ bind(escm *e, escm_macro *m, escm_atom *m1, escm_atom *m2, escm_match *match)
 
 	rule = escm_cons_next(rule);
 	if (rule != NULL && ESCM_ISSYM(rule->car) &&
-	    0 == strcmp(escm_sym_val(rule->car), "...")) {
+	    0 == strcmp(escm_sym_name(rule->car), "...")) {
 	    do {
 		if (ESCM_ISCONS(a1))
 		    match = bind(e, m, a1, a2, match);
@@ -320,7 +313,7 @@ expand(escm *e, escm_macro *m, escm_atom *tpl, escm_atom *env,
 
 	for (a = escm_cons_pop(e, &tpl); a; a = escm_cons_pop(e, &tpl)) {
 	    if (ESCM_ISSYM(a)) {
-		if (0 == strcmp(escm_sym_val(a), "..."))
+		if (0 == strcmp(escm_sym_name(a), "..."))
 		    continue;
 
 		match = checkup(e, bind, a);
@@ -333,7 +326,7 @@ expand(escm *e, escm_macro *m, escm_atom *tpl, escm_atom *env,
 		    }
 
 		    if (tpl && ESCM_ISSYM(escm_cons_car(tpl)) &&
-			0 == strcmp(escm_sym_val(escm_cons_car(tpl)), "..."))
+			0 == strcmp(escm_sym_name(escm_cons_car(tpl)), "..."))
 			escm_ctx_put_splicing(e, match->val.fst);
 		    else {
 			escm_ctx_put(e, escm_cons_car(match->val.fst));
@@ -345,12 +338,12 @@ expand(escm *e, escm_macro *m, escm_atom *tpl, escm_atom *env,
 		    }
 		} else {
 		    if (!tpl || !ESCM_ISSYM(escm_cons_car(tpl)) ||
-			0 != strcmp(escm_sym_val(escm_cons_car(tpl)), "..."))
+			0 != strcmp(escm_sym_name(escm_cons_car(tpl)), "..."))
 			escm_ctx_put(e,	color(e, m, env, a));
 		}
 	    } else if (ESCM_ISCONS(a)) {
 		if (tpl && ESCM_ISSYM(escm_cons_car(tpl)) &&
-		    0 == strcmp(escm_sym_val(escm_cons_car(tpl)), "...")) {
+		    0 == strcmp(escm_sym_name(escm_cons_car(tpl)), "...")) {
 		    escm_atom *ret;
 
 		    ret = expand(e, m, a, env, bind, 1);
@@ -436,33 +429,17 @@ checksym(escm *e, escm_atom *cons)
 static escm_atom *
 color(escm *e, escm_macro *m, escm_atom *env, escm_atom *arg)
 {
-    unsigned int i;
     escm_atom *a;
     size_t len;
     char *buf;
 
-    len = strlen(escm_sym_val(arg)) + 4;
+    len = strlen(escm_sym_name(arg)) + 4;
     buf = xmalloc(sizeof *buf * len);
 
-    for (i = 0; i < 20; i++) {
-	/* try different styles */
-	(void) snprintf(buf, len, "%s~%u", escm_sym_val(arg), i);
-	if (!escm_env_get(e->env, buf))
-	    goto good;
-	(void) snprintf(buf, len, "%s!%u", escm_sym_val(arg), i);
-	if (!escm_env_get(e->env, buf))
-	    goto good;
-	(void) snprintf(buf, len, "%s%%%u", escm_sym_val(arg), i);
-	if (!escm_env_get(e->env, buf))
-	    goto good;
-    }
+    (void) snprintf(buf, len, "%s~0", escm_sym_name(arg));
 
-    fprintf(stderr, "You have too many macros imbricated (or you use very "
-	    "silly names)! The code may not be fully hygienic.\n");
-
-good:
-    escm_env_set(env, buf, escm_env_get(m->env, escm_sym_val(arg)));
     a = escm_symbol_make(e, buf);
+    escm_env_set(e, env, a, escm_sym_val(arg));
     free(buf);
     return a;
 }

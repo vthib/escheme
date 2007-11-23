@@ -19,12 +19,11 @@
 
 #include "types.h"
 
-#define ESCM_TYPE_PROC 2 /* XXX: ugly, hardcoded and not relevant if we change
-			    the order of the initialisation */
-
-#define escm_proc_val(x) ((escm_procedure *) (x)->ptr)
+#define ESCM_TYPE_PROC (escm_proc_tget())
 
 #define ESCM_ISPROC(x) ((x)->type == ESCM_TYPE_PROC)
+
+#define escm_proc_val(x) ((escm_procedure *) (x)->ptr)
 
 typedef struct escm_procedure {
     char *name;
@@ -51,6 +50,7 @@ typedef struct escm_procedure {
 } escm_procedure;
 
 void escm_procedures_init(escm *);
+unsigned long escm_proc_tget(void);
 
 escm_atom *escm_procedure_new(escm *, const char *, unsigned int, int,
 			      Escm_Fun_Prim, void *);

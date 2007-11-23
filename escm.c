@@ -22,11 +22,11 @@
 #include "escheme.h"
 
 #ifndef ESCM_NSEG
-# define ESCM_NSEG 20
+# define ESCM_NSEG 10
 #endif
 
 #ifndef ESCM_CPSEG
-# define ESCM_CPSEG 5000
+# define ESCM_CPSEG 2000
 #endif
 
 struct escm_slist {
@@ -54,13 +54,15 @@ escm_new(void)
 
     e->brackets = 1;
 
+    /* ! Do not change the order ! */
     escm_environments_init(e);
     e->env = escm_env_new(e, NULL);
     e->env->ro = 1;
     escm_env_addprimitives(e);
 
-    escm_cons_init(e);
     escm_procedures_init(e);
+    escm_symbols_init(e);
+    escm_cons_init(e);
 
     return e;
 }
@@ -208,7 +210,10 @@ escm_parse(escm *e)
 	    if (!e->ctx)
 		break;
 	    c2 = escm_input_getc(e->input);
-	    if (c2 != '.' && !isdigit(c2))
+	    if (c2 == '.') {
+		escm_input_ungetc(e->input, c2);
+		break;
+	    } else if (!isdigit(c2))
 		e->ctx->dotted = 1;
 	    c = c2;
 	} else if (c == ';') {

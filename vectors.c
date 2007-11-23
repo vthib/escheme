@@ -336,19 +336,21 @@ vector_parse(escm *e)
 
     len = 0;
     for (;;) {
-	c = escm_input_getc(e->input);
-	if (e->brackets == 1 && (c == ')' || c == ']')) {
-	    if ((open == '(' && c == ']') || (open == '[' && c == ')')) {
-		escm_input_print(e->input, "expecting a '%c' to close a '%c'",
-				 (open == '(') ? ')' : ']', open);
-		escm_ctx_discard(e);
-		escm_abort(e);
-	    }
-	    break;
-	} else if (e->brackets == 0 && c == ')')
-	    break;
-	else
-	    escm_input_ungetc(e->input, c);
+	do {
+	    c = escm_input_getc(e->input);
+	    if (e->brackets == 1 && (c == ')' || c == ']')) {
+		if ((open == '(' && c == ']') || (open == '[' && c == ')')) {
+		    escm_input_print(e->input, "expecting a '%c' to close a "
+				     "'%c'", (open == '(') ? ')' : ']', open);
+		    escm_ctx_discard(e);
+		    escm_abort(e);
+		}
+		goto end;
+	    } else if (e->brackets == 0 && c == ')')
+		goto end;
+	    else if (!isspace(c))
+		escm_input_ungetc(e->input, c);
+	} while (isspace(c));
 
 	atom = escm_parse(e);
 	if (e->ctx->dotted) {
@@ -368,6 +370,7 @@ vector_parse(escm *e)
 	}
     }
 
+end:
     atom = escm_ctx_leave(e);
 
     vec = xcalloc(len, sizeof *vec);

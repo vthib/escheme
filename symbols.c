@@ -24,13 +24,13 @@
 
 #include "escheme.h"
 
-static unsigned long symboltype = 0;
+static unsigned long symboltype = 2;
 
-static void symbol_print(escm *, char *, escm_output *, int);
-static int symbol_equal(escm *, char *, char *, int);
+static void symbol_print(escm *, escm_tst *, escm_output *, int);
+static int symbol_equal(escm *, escm_tst *, escm_tst *, int);
 static int symbol_parsetest(escm *, int);
 static escm_atom *symbol_parse(escm *);
-static escm_atom *symbol_eval(escm *, const char *);
+static escm_atom *symbol_eval(escm *, escm_tst *);
 
 static inline int issymbol(int);
 
@@ -41,7 +41,6 @@ escm_symbols_init(escm *e)
     escm_atom *a;
 
     t = xcalloc(1, sizeof *t);
-    t->ffree = (Escm_Fun_Free) free;
     t->d.c.fprint = (Escm_Fun_Print) symbol_print;
     t->d.c.fequal = (Escm_Fun_Equal) symbol_equal;
     t->d.c.fparsetest = symbol_parsetest;
@@ -59,7 +58,7 @@ escm_symbols_init(escm *e)
 			      NULL);
 #endif
 
-    a = escm_procedure_new(e, "lookup", 1, 2, escm_lookup, NULL);
+    a = escm_procedure_new(e, "lookup", 1, 1, escm_lookup, NULL);
     escm_proc_val(a)->d.c.quoted = 0x1;
 }
 
@@ -72,8 +71,23 @@ escm_symbol_tget(void)
 escm_atom *
 escm_symbol_make(escm *e, const char *str)
 {
-    return escm_atom_new(e, symboltype, xstrdup(str));
+    escm_env *env;
+
+    env = e->env->ptr;
+    return escm_atom_new(e, symboltype, escm_tst_gettree(&env->tree, str));
 }
+
+void
+escm_symbol_set(escm_atom *sym, escm_atom *atom)
+{
+    escm_tst *t;
+
+    t = sym->ptr;
+    if (!t->node)
+	t->node = xcalloc(1, sizeof *t->node);
+    t->node->atom = atom;
+}
+
 
 escm_atom *
 escm_symbol_p(escm *e, escm_atom *args)
@@ -103,14 +117,14 @@ escm_symbol_to_string(escm *e, escm_atom *args)
 	wchar_t *w;
 	escm_atom *a;
 
-	w = strtowcs(escm_sym_val(sym));
+	w = strtowcs(escm_sym_name(sym));
 	a = escm_ustring_make(e, w, wcslen(w));
 	free(w);
 	return a;
     } else
 #endif
-	return escm_astring_make(e, xstrdup(escm_sym_val(sym)),
-				 strlen(escm_sym_val(sym)));
+	return escm_astring_make(e, xstrdup(escm_sym_name(sym)),
+				 strlen(escm_sym_name(sym)));
 }
 
 escm_atom *
@@ -128,11 +142,11 @@ escm_string_to_symbol(escm *e, escm_atom *args)
 
 #ifdef ESCM_USE_UNICODE
     if (escm_type_ison(ESCM_TYPE_USTRING))
-	return escm_atom_new(e, ESCM_TYPE_SYMBOL, wcstostr(escm_ustr_val(str)));
+	return escm_symbol_make(e, wcstostr(escm_ustr_val(str)));
     else
-	return escm_atom_new(e, ESCM_TYPE_SYMBOL, xstrdup(escm_astr_val(str)));
+	return escm_symbol_make(e, xstrdup(escm_astr_val(str)));
 #else
-	return escm_atom_new(e, ESCM_TYPE_SYMBOL, xstrdup(escm_str_val(str)));
+	return escm_symbol_make(e, xstrdup(escm_str_val(str)));
 #endif
 }
 #endif
@@ -140,42 +154,34 @@ escm_string_to_symbol(escm *e, escm_atom *args)
 escm_atom *
 escm_lookup(escm *e, escm_atom *args)
 {
-    escm_atom *sym, *ret, *env;
+    escm_atom *sym;
 
     sym = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSYM(sym), sym, e);
 
-    env = escm_cons_pop(e, &args);
-    if (env) {
-	escm_assert(ESCM_ISENV(env), env, e);
-
-	ret = escm_env_get(env, escm_sym_val(sym));
-    } else
-	ret = escm_env_get(e->env, escm_sym_val(sym));
-
-    return (ret != NULL) ? ret : e->FALSE;
+    return (escm_sym_val(sym) != NULL) ? escm_sym_val(sym) : e->FALSE;
 }
 
 static void
-symbol_print(escm *e, char *symbol, escm_output *stream, int lvl)
+symbol_print(escm *e, escm_tst *symbol, escm_output *stream, int lvl)
 {
     (void) e;
 
     if (lvl == 0) {
-	escm_print_slashify(stream, symbol);
+	escm_print_slashify(stream, symbol->symname);
 	return;
     }
 
-    escm_printf(stream, "%s", symbol);
+    escm_printf(stream, "%s", symbol->symname);
 }
 
 static int
-symbol_equal(escm *e, char *s1, char *s2, int lvl)
+symbol_equal(escm *e, escm_tst *s1, escm_tst *s2, int lvl)
 {
     (void) e;
     (void) lvl;
 
-    return (s1 == s2 || !strcmp(s1, s2));
+    return (s1 == s2 || !strcmp(s1->symname, s2->symname));
 }
 
 static int
@@ -183,31 +189,50 @@ symbol_parsetest(escm *e, int c)
 {
     (void) e;
 
-    return issymbol(c);
+    if (c == '+' || c == '-') {
+	int c2;
+
+	c2 = escm_input_getc(e->input);
+	if (c2 == '.') {
+	    int ret;
+
+	    ret = !isdigit(escm_input_peek(e->input));
+	    escm_input_ungetc(e->input, c2);
+	    return ret;
+	}
+ 
+	escm_input_ungetc(e->input, c2);
+	return !(isdigit(c2) || c2 == 'i');
+    } else if (c == '.')
+	return !isdigit(escm_input_peek(e->input));
+    else if (isdigit(c))
+	return 0;
+    else
+	return issymbol(c);
 }
 
 static escm_atom *
 symbol_parse(escm *e)
 {
     char *str;
+    escm_atom *a;
 
     str = escm_input_getstr_fun(e->input, issymbol, e->casesensitive);
 
-    return escm_atom_new(e, symboltype, str);
+    a = escm_symbol_make(e, str);
+    free(str);
+    return a;
 }
 
 static escm_atom *
-symbol_eval(escm *e, const char *sym)
+symbol_eval(escm *e, escm_tst *sym)
 {
-    escm_atom *atom;
-
-    atom = escm_env_get(e->env, sym);
-    if (!atom) {
-	fprintf(stderr, "unknown symbol `%s'.\n", sym);
+    if (!sym->node || !sym->node->atom) {
+	fprintf(stderr, "unknown symbol `%s'.\n", sym->symname);
 	escm_abort(e);
     }
 
-    return atom;
+    return sym->node->atom;
 }
 
 static inline int

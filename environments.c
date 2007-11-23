@@ -20,12 +20,11 @@
 
 #include "escheme.h"
 
-typedef struct escm_tst escm_tst;
+struct envlist {
+    escm_tst *tree;
+    escm_tstnode *node;
 
-struct escm_tst {
-    escm_tst *lo, *hi, *down;
-    char cval;
-    escm_atom *atom;
+    struct envlist *next;
 };
 
 static unsigned long envtype;
@@ -33,12 +32,6 @@ static unsigned long envtype;
 static void env_free(escm_env *);
 static void env_mark(escm *, escm_env *);
 static void env_print(escm *, escm_env *, escm_output *, int);
-
-static void tst_set(escm_tst **, const char *, escm_atom *);
-static int tst_edit(escm_tst **, const char *, escm_atom *);
-static escm_atom *tst_get(escm_tst *, const char *);
-static void tst_foreach(escm_tst *, void (*)(escm *, escm_atom *), escm *);
-static void tst_free(escm_tst *);
 
 void
 escm_environments_init(escm *e)
@@ -89,91 +82,70 @@ escm_env_new(escm *e, escm_atom *prev)
     assert(e != NULL);
 
     env = xmalloc(sizeof *env);
-    env->tree = NULL;
+    env->list = NULL;
     env->prev = prev;
-
+    env->tree = (prev && ESCM_ISENV(prev)) ? ((escm_env *) prev->ptr)->tree :
+	NULL;
     return escm_atom_new(e, envtype, env);
 }
 
-escm_atom *
-escm_env_get(escm_atom *atom, const char *name)
-{
-    escm_env *env;
-    escm_atom *a;
-
-    assert(name != NULL);
-
-    if (!atom)
-	return NULL;
-
-    env = (escm_env *) atom->ptr;
-
-    a = tst_get(env->tree, name);
-    if (!a)
-	return escm_env_get(env->prev, name);
-    else
-	return a;
-}
-
-escm_atom *
-escm_env_getlocal(escm_atom *atom, const char *name)
-{
-    escm_env *env;
-    escm_atom *a;
-
-    assert(name != NULL);
-
-    if (!atom)
-	return NULL;
-
-    env = (escm_env *) atom->ptr;
-
-    if (!env->prev)
-	return NULL;
-
-    a = tst_get(env->tree, name);
-    if (!a)
-	return escm_env_get(env->prev, name);
-    else
-	return a;
-}
-
 void
-escm_env_set(escm_atom *atomenv, const char *name, escm_atom *atom)
+escm_env_set(escm *e, escm_atom *atomenv, escm_atom *sym, escm_atom *atom)
 {
     escm_env *env;
+    struct envlist *l;
 
     assert(atomenv != NULL);
-    assert(name != NULL);
+    assert(sym != NULL);
 
     env = (escm_env *) atomenv->ptr;
 
-    tst_set(&env->tree, name, atom);
-}
+    if (!env->prev) {
+	escm_symbol_set(sym, atom);
+	return;
+    }
 
-void
-escm_env_edit(escm_atom *atomenv, const char *name, escm_atom *atom)
-{
-    escm_env *env;
+    l = xmalloc(sizeof *l);
+    l->tree = escm_sym_node(sym);
+    l->node = xmalloc(sizeof *l->node);
+    l->node->atom = atom;
+    l->node->prev = l->tree->node;
+    l->next = env->list, env->list = l;
 
-    assert(atomenv != NULL);
-    assert(name != NULL);
+    if (e->env == atomenv) {
+	escm_tstnode *tmp;
 
-    env = (escm_env *) atomenv->ptr;
-
-    if (!tst_edit(&env->tree, name, atom))
-	escm_env_edit(env->prev, name, atom);
+	tmp = l->tree->node;
+	l->tree->node = l->node;
+	l->node = tmp;
+    }
 }
 
 escm_atom *
 escm_env_enter(escm *e, escm_atom *new)
 {
     escm_atom *ret;
+    escm_env *env;
+    escm_tstnode *tmp;
+    struct envlist *l;
 
     assert(e != NULL);
     assert(new != NULL);
 
     ret = e->env, e->env = new;
+
+    env = new->ptr;
+    do {
+	for (l = env->list; l; l = l->next) {
+	    if (!l->node)
+		continue;
+	    tmp = l->tree->node;
+	    l->tree->node = l->node;
+	    l->node = tmp;
+	}
+
+	env = env->prev->ptr;
+    } while (env->prev != NULL);
 
     escm_gc_gard(e, ret);
     return ret;
@@ -182,8 +154,23 @@ escm_env_enter(escm *e, escm_atom *new)
 void
 escm_env_leave(escm *e, escm_atom *prevenv)
 {
+    escm_env *env;
+    escm_tstnode *tmp;
+    struct envlist *l;
+
     assert(e != NULL);
     assert(prevenv != NULL);
+
+    env = e->env->ptr;
+    do {
+	for (l = env->list; l; l = l->next) {
+	    tmp = l->tree->node;
+	    l->tree->node = l->node;
+	    l->node = tmp;
+	}
+
+	env = env->prev->ptr;
+    } while (env->prev != NULL);
 
     escm_gc_ungard(e, prevenv);
     e->env = prevenv;
@@ -198,7 +185,7 @@ escm_eval(escm *e, escm_atom *args)
     expr = escm_cons_pop(e, &args);
     env = escm_cons_pop(e, &args);
     if (env) {
-	escm_assert(env->type == envtype, env, e);
+	escm_assert(ESCM_ISENV(env), env, e);
 	prev = e->env, e->env = env;
     }
 
@@ -311,7 +298,7 @@ env_mark(escm *e, escm_env *env)
     if (!env)
 	return;
 
-    tst_foreach(env->tree, escm_atom_mark, e);
+    escm_tst_foreach(env->tree, escm_atom_mark, e);
     escm_atom_mark(e, env->prev);
 }
 
@@ -328,105 +315,18 @@ env_print(escm *e, escm_env *env, escm_output *stream, int lvl)
 static void
 env_free(escm_env *env)
 {
+    struct envlist *list, *next;
+
     assert(env != NULL);
 
-    tst_free(env->tree);
+    if (!env->prev) /* only the toplevel can free the tree */
+	escm_tst_free(env->tree);
+
+    for (list = env->list; list; list = next) {
+	next = list->next;
+	free(list->node);
+	free(list);
+    }
+
     free(env);
-}
-
-/* Ternary search tree */
-
-static void
-tst_set(escm_tst **t, const char *s, escm_atom *atom)
-{
-    if (*s == '\0')
-        return;
-
-    if (!*t) {
-        *t = xcalloc(1, sizeof **t);
-        (*t)->cval = *s;
-    }
-
-    if (*s < (*t)->cval)
-        tst_set(&(*t)->lo, s, atom);
-    else if (*s > (*t)->cval)
-        tst_set(&(*t)->hi, s, atom);
-    else {
-        if (*(s + 1) == '\0')
-            (*t)->atom = atom;
-	else
-	    tst_set(&(*t)->down, s + 1, atom);
-    }
-}
-
-static int
-tst_edit(escm_tst **t, const char *s, escm_atom *atom)
-{
-    if (*s == '\0')
-        return 0;
-
-    if (!*t) {
-	if (*(s + 1) == '\0')
-	    return 0;
-        *t = xcalloc(1, sizeof **t);
-        (*t)->cval = *s;
-    }
-
-    if (*s < (*t)->cval)
-        return tst_edit(&(*t)->lo, s, atom);
-    else if (*s > (*t)->cval)
-        return tst_edit(&(*t)->hi, s, atom);
-    else {
-        if (*(s + 1) == '\0') {
-	    if ((*t)->atom == NULL)
-		return 0;
-	    (*t)->atom = atom;
-	    return 1;
-	} else
-	    return tst_edit(&(*t)->down, s + 1, atom);
-    }
-}
-
-static escm_atom *
-tst_get(escm_tst *t, const char *s)
-{
-    if (!t)
-        return NULL;
-
-    if (*s < t->cval)
-        return tst_get(t->lo, s);
-    else if (*s > t->cval)
-        return tst_get(t->hi, s);
-    else {
-        if (*(s + 1) == '\0')
-            return t->atom;
-        else
-	    return tst_get(t->down, s + 1);
-    }
-}
-
-static void
-tst_foreach(escm_tst *t, void (*f)(escm *, escm_atom *), escm *e)
-{
-    if (!t)
-        return;
-
-    (*f)(e, t->atom);
-
-    tst_foreach(t->lo, f, e);
-    tst_foreach(t->down, f, e);
-    tst_foreach(t->hi, f, e);
-}
-
-static void
-tst_free(escm_tst *t)
-{
-    if (!t)
-        return;
-
-    tst_free(t->lo);
-    tst_free(t->down);
-    tst_free(t->hi);
-
-    free(t);
 }

@@ -20,8 +20,8 @@
 #include "types.h"
 
 typedef struct escm_env {
-    struct escm_tst *tree;
-
+    struct envlist *list;
+    escm_tst *tree;
     escm_atom *prev;
 } escm_env;
 
@@ -34,10 +34,7 @@ size_t escm_env_tget(void);
 
 escm_atom *escm_env_new(escm *, escm_atom *);
 
-escm_atom *escm_env_get(escm_atom *, const char *);
-escm_atom *escm_env_getlocal(escm_atom *, const char *);
-void escm_env_set(escm_atom *, const char *, escm_atom *);
-void escm_env_edit(escm_atom *, const char *, escm_atom *);
+void escm_env_set(escm *, escm_atom *, escm_atom *, escm_atom *);
 
 escm_atom *escm_env_enter(escm *, escm_atom *);
 void escm_env_leave(escm *, escm_atom *);

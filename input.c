@@ -322,11 +322,8 @@ escm_input_getc(escm_input *f)
     } else {
 	if (*f->d.str.cur == '\0')
 	    f->end = 1, c = EOF;
-	else {
+	else
 	    c = *f->d.str.cur++;
-	    if (*f->d.str.cur == '\0')
-		f->end = 1;
-	}
     }
 
     return c;
@@ -424,12 +421,8 @@ escm_input_getwc(escm_input *f)
     } else {
 	if (*f->d.str.cur == L'\0')
 	    f->end = 1, c = WEOF;
-	else {
-	    c = *f->d.str.cur;
-	    f->d.str.cur++;
-	    if (*f->d.str.cur == L'\0')
-		f->end = 1;
-	}
+	else
+	    c = *f->d.str.cur++;
     }
 
     return c;

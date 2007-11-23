@@ -90,17 +90,15 @@ main(int argc, char **argv)
 #endif
 
 /* numbers needs to be declared before symbols */
-#ifdef ESCM_USE_COMPLETE_NUMBERS
-    if (!noload[CNUM])
-	escm_cnumbers_init(e);
-#endif
-
 #ifdef ESCM_USE_BASIC_NUMBERS
-    if (!noload[BNUM] && noload[CNUM])
+    if (!noload[BNUM])
 	escm_bnumbers_init(e);
 #endif
 
-    escm_symbols_init(e);
+#ifdef ESCM_USE_COMPLETE_NUMBERS
+    if (!noload[CNUM] && noload[BNUM])
+	escm_cnumbers_init(e);
+#endif
 
 #ifdef ESCM_USE_STRINGS
     if (!noload[STRING]) {
@@ -161,7 +159,7 @@ main(int argc, char **argv)
     if (i < argc) {
 	while (i < argc) {
 	    if (0 == strcmp(argv[i], "-e")) {
-		escm_sparse(e, argv[i]);
+		escm_sparse(e, argv[i + 1]);
 		i += 2;
 	    } else
 		escm_fparse(e, argv[i++]);

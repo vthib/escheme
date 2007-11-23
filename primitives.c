@@ -175,8 +175,7 @@ escm_define(escm *e, escm_atom *args)
 	while (args)
 	    escm_ctx_put(e, escm_cons_pop(e, &args)); /* body */
 
-	escm_env_set(e->env, escm_sym_val(a->car),
-		     escm_lambda(e, escm_ctx_first(e)));
+	escm_symbol_set(a->car, escm_lambda(e, escm_ctx_first(e)));
 	escm_ctx_discard(e);
     } else {
 	escm_atom *val;
@@ -192,7 +191,7 @@ escm_define(escm *e, escm_atom *args)
 	if (!val)
 	    return NULL;
 
-	escm_env_set(e->env, escm_sym_val(c), val);
+	escm_symbol_set(c, val);
     }
 
     return NULL;
@@ -207,12 +206,12 @@ escm_set_x(escm *e, escm_atom *args)
 
     escm_assert(ESCM_ISSYM(c), c, e);
 
-    if (!escm_env_get(e->env, escm_sym_val(c))) {
-	escm_error(e, "~s: unknown identifier.~n", c);
+    if (escm_sym_val(c) == NULL) {
+	escm_error(e, "~s: unknown identifier: ~s.~n", e->curobj, c);
 	return NULL;
     }
 
-    escm_env_edit(e->env, escm_sym_val(c), escm_cons_pop(e, &args));
+    escm_symbol_set(c, escm_cons_pop(e, &args));
 
     return NULL;
 }
@@ -256,7 +255,7 @@ escm_let(escm *e, escm_atom *args)
 	    return NULL;
 	}
 
-	escm_env_set(env, escm_sym_val(varname), varval);
+	escm_env_set(e, env, varname, varval);
     }
 
     /* we now enter in the new environment, eval the body and return the last
@@ -314,7 +313,7 @@ escm_let_star(escm *e, escm_atom *args)
 	    return NULL;
 	}
 
-	escm_env_set(e->env, escm_sym_val(varname), varval);
+	escm_env_set(e, e->env, varname, varval);
     }
 
     /* we now eval the body */
@@ -359,7 +358,7 @@ escm_letrec(escm *e, escm_atom *args)
 	escm_assert1(varcons != NULL && varcons->cdr == e->NIL, c->car, e,
 		     escm_env_leave(e, prevenv));
 
-	escm_env_set(e->env, escm_sym_val(varname), NULL);
+	escm_env_set(e, e->env, varname, NULL);
     }
 
     /* compute the values */
@@ -385,7 +384,7 @@ escm_letrec(escm *e, escm_atom *args)
 	varcons = escm_cons_val(c->car);
 	varname = varcons->car, varcons = escm_cons_next(varcons);
 
-	escm_env_set(e->env, escm_sym_val(varname), varcons->car);
+	escm_symbol_set(varname, varcons->car);
     }
 
     /* we now eval the body */
@@ -445,7 +444,7 @@ escm_cond(escm *e, escm_atom *args)
 	escm_assert(ESCM_ISCONS(clause) && clause != e->NIL, clause, e);
 	test = escm_cons_pop(e, &clause);
 
-	if (ESCM_ISSYM(test) && 0 == strcmp("else", escm_sym_val(test)))
+	if (ESCM_ISSYM(test) && 0 == strcmp("else", escm_sym_name(test)))
 	    return escm_begin(e, clause);
 
 	ret = escm_atom_eval(e, test);
@@ -460,7 +459,7 @@ escm_cond(escm *e, escm_atom *args)
 
 	if (ESCM_ISTRUE(ret)) {
 	    if (clause != NULL && ESCM_ISSYM(escm_cons_val(clause)->car) &&
-		0 == strcmp("=>", escm_sym_val(escm_cons_val(clause)->car))) {
+		0 == strcmp("=>", escm_sym_name(escm_cons_val(clause)->car))) {
 		escm_atom *proc;
 
 		(void) escm_cons_pop(e, &clause);
@@ -506,7 +505,7 @@ escm_case(escm *e, escm_atom *args)
 	d = escm_cons_pop(e, &clause);
 	escm_assert(ESCM_ISCONS(d) || ESCM_ISSYM(d), d, e);
 
-	if (ESCM_ISSYM(d) && 0 == strcmp("else", escm_sym_val(d)))
+	if (ESCM_ISSYM(d) && 0 == strcmp("else", escm_sym_name(d)))
 	    return escm_begin(e, clause);
 
 	for (list = escm_cons_val(d); list; list = escm_cons_next(list)) {
@@ -626,7 +625,7 @@ escm_do(escm *e, escm_atom *args)
 	    return NULL;
 	}
 
-	escm_env_set(env, escm_sym_val(var), varval);    
+	escm_symbol_set(var, varval);
     }
 
     escm_gc_ungard(e, env);
@@ -678,7 +677,7 @@ escm_do(escm *e, escm_atom *args)
 		atom = c->car;
 		var = escm_cons_pop(e, &atom);
 
-		escm_env_set(e->env, escm_sym_val(var), cval->car);
+		escm_symbol_set(var, cval->car);
 	    }
 	}
     }
@@ -930,7 +929,7 @@ static escm_atom *
 named_let(escm *e, escm_atom *name, escm_atom *args)
 {
     escm_atom *bindings, *val;
-    escm_atom *fun, *prevenv;
+    escm_atom *fun, *prevenv, *env;
     escm_cons *c, *cons;
 
     bindings = escm_cons_pop(e, &args);
@@ -965,15 +964,17 @@ named_let(escm *e, escm_atom *name, escm_atom *args)
     escm_ctx_put(e, escm_ctx_leave(e)); /* add the formals */
     escm_ctx_put(e, escm_cons_pop(e, &args)); /* the body */
 
-    prevenv = escm_env_enter(e, escm_env_new(e, e->env));
+    env = escm_env_new(e, e->env);
+    prevenv = escm_env_enter(e, env);
 
     fun = escm_lambda(e, escm_ctx_leave(e));
-    if (!fun) {
-	escm_env_leave(e, prevenv);
-	return NULL;
-    }
+    if (!fun)
+	escm_abort(e);
+
+    escm_env_leave(e, prevenv);
+
     /* bind the function to its name */
-    escm_env_set(e->env, escm_sym_val(name), fun);
+    escm_env_set(e, env, name, fun);
 
     escm_ctx_enter(e); /* now we create a list of the arguments */
 
@@ -983,10 +984,7 @@ named_let(escm *e, escm_atom *name, escm_atom *args)
 	escm_ctx_put(e, cons->car);
     }
 
-    val = escm_procedure_exec(e, fun, escm_ctx_leave(e), 1);
-    escm_env_leave(e, prevenv);
-
-    return val;
+    return escm_procedure_exec(e, fun, escm_ctx_leave(e), 1);
 }
 
 static escm_atom *
@@ -1015,7 +1013,7 @@ quasiquote(escm *e, escm_atom *atom, unsigned int lvl)
 	} else if (ESCM_ISSYM(c->car)) {
 	    /* this form can be found when adding a unquote after a dot
 	       (ie `(1 2 . ,a) -> `(1 2 unquote a) */
-	    if (0 == strcmp(escm_sym_val(c->car), "unquote")) {
+	    if (0 == strcmp(escm_sym_name(c->car), "unquote")) {
 		if (c->cdr == e->NIL) {
 		    fprintf(stderr, "unquote expect exactly one argument.\n");
 		    goto err;
@@ -1026,7 +1024,7 @@ quasiquote(escm *e, escm_atom *atom, unsigned int lvl)
 		e->ctx->dotted = 1;
 		escm_ctx_put(e, ret);
 		break;
-	    } else if (0 == strcmp(escm_sym_val(c->car), "unquote-splicing")) {
+	    } else if (0 == strcmp(escm_sym_name(c->car), "unquote-splicing")) {
 		fprintf(stderr, "unquote-splicing found after a dotted "
 			"notation.\n");
 		goto err;
@@ -1037,7 +1035,7 @@ quasiquote(escm *e, escm_atom *atom, unsigned int lvl)
 		escm_cons *cons;
 
 		cons = escm_cons_val(c->car);
-		if (0 == strcmp(escm_sym_val(cons->car), "unquote")) {
+		if (0 == strcmp(escm_sym_name(cons->car), "unquote")) {
 		    if (cons->cdr == e->NIL) {
 			fprintf(stderr, "unquote expect exactly one "
 				"argument.\n");
@@ -1053,7 +1051,7 @@ quasiquote(escm *e, escm_atom *atom, unsigned int lvl)
 		    escm_ctx_put(e, ret);
 		    if (lvl != 1)
 			escm_ctx_put(e, escm_ctx_leave(e));
-		} else if (0 == strcmp(escm_sym_val(cons->car),
+		} else if (0 == strcmp(escm_sym_name(cons->car),
 				       "unquote-splicing")) {
 		    if (cons->cdr == e->NIL) {
 			fprintf(stderr, "unquote-splicing expect exactly one "
@@ -1077,7 +1075,7 @@ quasiquote(escm *e, escm_atom *atom, unsigned int lvl)
 			escm_ctx_put(e, escm_ctx_leave(e));
 		    } else
 			escm_ctx_put_splicing(e, ret);
-		} else if (0 == strcmp(escm_sym_val(cons->car), "quasiquote")
+		} else if (0 == strcmp(escm_sym_name(cons->car), "quasiquote")
 		    && cons->cdr != e->NIL) {
 		    escm_ctx_enter(e);
 		    escm_ctx_put(e, cons->car);
@@ -1126,7 +1124,7 @@ quasiquote_vector(escm *e, escm_atom *atom, unsigned int lvl)
 		escm_cons *cons;
 
 		cons = escm_cons_val(v->vec[i]);
-		if (0 == strcmp(escm_sym_val(cons->car), "unquote")) {
+		if (0 == strcmp(escm_sym_name(cons->car), "unquote")) {
 		    if (cons->cdr == e->NIL) {
 			fprintf(stderr, "unquote expect exactly one "
 				"argument.\n");
@@ -1142,7 +1140,7 @@ quasiquote_vector(escm *e, escm_atom *atom, unsigned int lvl)
 		    escm_ctx_put(e, ret);
 		    if (lvl != 1)
 			escm_ctx_put(e, escm_ctx_leave(e));
-		} else if (0 == strcmp(escm_sym_val(cons->car),
+		} else if (0 == strcmp(escm_sym_name(cons->car),
 				       "unquote-splicing")) {
 		    if (cons->cdr == e->NIL) {
 			fprintf(stderr, "unquote-splicing expect exactly one "
@@ -1166,7 +1164,7 @@ quasiquote_vector(escm *e, escm_atom *atom, unsigned int lvl)
 			escm_ctx_put(e, escm_ctx_leave(e));
 		    } else
 			escm_ctx_put_splicing(e, ret);
-		} else if (0 == strcmp(escm_sym_val(cons->car), "quasiquote")
+		} else if (0 == strcmp(escm_sym_name(cons->car), "quasiquote")
 		    && cons->cdr != e->NIL) {
 		    escm_ctx_enter(e);
 		    escm_ctx_put(e, cons->car);

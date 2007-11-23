@@ -14,31 +14,32 @@
  * You should have received a copy of the GNU General Public License
  * along with Escheme; If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef ESCHEME_ESCHEME_H
-# define ESCHEME_ESCHEME_H
+#ifndef ESCHEME_TST_H
+# define ESCHEME_TST_H
 
 #include "types.h"
-#include "utils.h"
-#include "input.h"
-#include "output.h"
-#include "escm.h"
-#include "atom.h"
-#include "tst.h"
-#include "type.h"
-#include "environments.h"
-#include "cons.h"
-#include "procedures.h"
-#include "symbols.h"
-#include "booleans.h"
-#include "numbers.h"
-#include "primitives.h"
-#include "chars.h"
-#include "strings.h"
-#include "promises.h"
-#include "vectors.h"
-#include "macros.h"
-#include "ports.h"
-#include "continuations.h"
-#include "srfi.h"
 
-#endif /* ESCHEME_ESCHEME_H */
+typedef struct escm_tst escm_tst;
+typedef struct escm_tstnode escm_tstnode;
+
+struct escm_tstnode {
+    escm_atom *atom;
+    escm_tstnode *prev;
+};
+
+struct escm_tst {
+    escm_tst *lo, *hi, *down;
+    char cval;
+    escm_tstnode *node;
+    char *symname;
+};
+
+escm_tst *escm_tst_gettree(escm_tst **, const char *);
+escm_atom *escm_tst_get(escm_tst *, const char *);
+void escm_tst_add(escm_tst *, escm_atom *);
+
+void escm_tst_free(escm_tst *);
+
+void escm_tst_foreach(escm_tst *, void (*)(escm *, escm_atom *), escm *);
+
+#endif /* ESCHEME_TST_H */
