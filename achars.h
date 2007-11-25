@@ -27,7 +27,7 @@
 
 void escm_achars_init(escm *);
 size_t escm_achar_tget(void);
-escm_atom *escm_achar_make(escm *, char);
+escm_atom *escm_achar_make(escm *, int);
 
 escm_atom *escm_achar_p(escm *, escm_atom *);
 

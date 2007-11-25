@@ -8,6 +8,7 @@ DEP = $(SRC:.c=.d)
 CC ?= gcc
 CFLAGS ?= -g
 FLAGS = -Wall -W -Wmissing-prototypes -std=c99 -pedantic-errors -fPIC $(CFLAGS)
+#FLAGS = -Wall -restrict -fast $(CFLAGS)
 CPPFLAGS = -DESCM_USE_UNICODE -D_ISOC99_SOURCE -I. -DESCM_R5RS \
 	-Dinline="__inline__"
 LDFLAGS = -lm

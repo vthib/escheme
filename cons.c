@@ -699,14 +699,15 @@ cons_eval(escm *e, escm_cons *cons)
     }
 
 #ifdef ESCM_USE_MACROS
-    if (ESCM_ISMACRO(atomfun)) {
+    if (escm_type_ison(ESCM_TYPE_MACRO) && ESCM_ISMACRO(atomfun)) {
 	ret = escm_macro_expand(e, atomfun, e->curobj);
 	if (ret)
 	    return escm_atom_eval(e, ret);
     }
 #endif
 #ifdef ESCM_USE_CONTINUATIONS
-    if (ESCM_ISCONTINUATION(atomfun)) {
+    if (escm_type_ison(ESCM_TYPE_CONTINUATION) &&
+	ESCM_ISCONTINUATION(atomfun)) {
 	escm_continuation_exec(e, atomfun, cons->cdr);
 	return NULL; /* the longjmp has failed */
     }

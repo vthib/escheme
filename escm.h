@@ -118,8 +118,8 @@ struct escm {
 escm *escm_new(void);
 void escm_free(escm *);
 
-void escm_fparse(escm *, const char *);
-void escm_sparse(escm *, const char *);
+int escm_fparse(escm *, const char *);
+int escm_sparse(escm *, const char *);
 escm_atom *escm_parse(escm *);
 
 void escm_shell(escm *);

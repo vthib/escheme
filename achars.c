@@ -42,7 +42,7 @@ escm_achars_init(escm *e)
 
     achartype = escm_type_add(e, t);
 
-    e->EOF_OBJ = escm_achar_make(e, (char) EOF);
+    e->EOF_OBJ = escm_achar_make(e, EOF);
 
     (void) escm_procedure_new(e, "char?", 1, 1, escm_achar_p, NULL);
 
@@ -89,7 +89,7 @@ escm_achar_tget(void)
 }
 
 escm_atom *
-escm_achar_make(escm *e, char c)
+escm_achar_make(escm *e, int c)
 {
     return escm_atom_new(e, achartype, (void *) (escm_intptr) c);
 }

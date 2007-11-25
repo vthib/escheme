@@ -744,12 +744,15 @@ escm_load(escm *e, escm_atom *args)
 	char *s;
 
 	s = wcstostr(escm_ustr_val(str));
-	escm_fparse(e, s);
+	if (!escm_fparse(e, s))
+	    escm_abort(e);
 	free(s);
     }
 #else
-    escm_fparse(e, escm_str_val(str));
+    if (!escm_fparse(e, escm_str_val(str)))
+	escm_abort(e);
 #endif
+    e->ctx = ctx;
 
     return NULL;
 }

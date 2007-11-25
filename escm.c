@@ -100,7 +100,7 @@ escm_free(escm *e)
     free(e);
 }
 
-void
+int
 escm_fparse(escm *e, const char *filename)
 {
     escm_atom *atom;
@@ -111,7 +111,7 @@ escm_fparse(escm *e, const char *filename)
     save = e->input, e->input = escm_input_fopen(filename);
     if (!e->input) {
 	e->input = save;
-	return;
+	return 0;
     }
     while ((atom = escm_parse(e)) != e->EOF_OBJ) {
 	if (atom) {
@@ -121,9 +121,10 @@ escm_fparse(escm *e, const char *filename)
     }
 
     escm_input_close(e->input), e->input = save;
+    return 1;
 }
 
-void
+int
 escm_sparse(escm *e, const char *str)
 {
     escm_atom *atom;
@@ -146,7 +147,7 @@ escm_sparse(escm *e, const char *str)
 
     if (!e->input) {
 	e->input = save;
-	return;
+	return 0;
     }
     while ((atom = escm_parse(e)) != e->EOF_OBJ) {
 	if (atom) {
@@ -156,6 +157,7 @@ escm_sparse(escm *e, const char *str)
     }
 
     escm_input_close(e->input), e->input = save;
+    return 1;
 }
 
 void
