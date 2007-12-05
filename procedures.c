@@ -20,6 +20,11 @@
 
 #include "escheme.h"
 
+struct slist {
+    escm_atom *atom;
+    struct slist *next;
+};
+
 static unsigned long proctype = 1; /* uh, small hack */
 
 static void procedure_free(escm_procedure *);
@@ -250,6 +255,8 @@ runprimitive(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
 	return NULL;
     args = escm_cons_val(atomargs);
 
+//    escm_notice(e, "eval ~s with args ~s.~%", atomfun, atomargs);
+
     fun = escm_proc_val(atomfun);
 
     escm_ctx_enter(e);
@@ -305,34 +312,50 @@ err:
 static escm_atom *
 runlambda(escm *e, escm_atom *atomfun, escm_atom *atomcons, int eval)
 {
-    escm_procedure *fun;
+    struct slist *lfirst, *llast;
+    escm_procedure *volatile fun;
     escm_atom *ret;
-    escm_atom *prevenv;
+    escm_atom *volatile prevenv;
     escm_atom *env;
     escm_cons *cons;
+    int tailrec;
 
     if (!ESCM_ISCONS(atomcons))
 	return NULL;
-    cons = escm_cons_val(atomcons);
 
+    env = NULL;
+    tailrec = 0;
+    cons = escm_cons_val(atomcons);
     fun = escm_proc_val(atomfun);
+
+    escm_ctx_enter(e);
+    e->ctx->fun = atomfun;
+    if (setjmp(e->ctx->jbuf) != 0) {
+	escm_notice(e, "receive local jump with args ~s.~%", e->ctx->first);
+	atomcons = e->ctx->first, e->ctx->first = NULL;
+	cons = escm_cons_val(atomcons);
+	env = e->ctx->last;
+	tailrec = 1;
+    }
 
     if (fun->d.closure.args == e->NIL) /* no arguments, no need to create a
 					  new environment */
 	prevenv = escm_env_enter(e, fun->d.closure.env);
     else {
-	env = escm_env_new(e, fun->d.closure.env);
-	escm_gc_gard(e, env);
+	if (!env) {
+	    env = escm_env_new(e, fun->d.closure.env);
+	    e->ctx->last = env;
+	    /* XXX: mark context */
+	}
 
 	if (!ESCM_ISCONS(fun->d.closure.args)) { /* there is one identifier
 						    bound on all the args */
-	    escm_ctx_enter(e);
-
 	    for (; cons; cons = escm_cons_next(cons)) {
 		if (eval) {
 		    ret = escm_atom_eval(e, cons->car);
 		    if (!ret || e->err == 1) {
-			escm_ctx_discard(e);
+			if (tailrec)
+			    escm_env_leave(e, prevenv);
 			goto err;
 		    }
 		} else
@@ -341,29 +364,43 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomcons, int eval)
 		escm_ctx_put(e, ret);
 	    }
 
-	    escm_env_set(e, env, fun->d.closure.args, escm_ctx_leave(e));
+	    if (!tailrec)
+		escm_env_set(e, env, fun->d.closure.args, escm_ctx_first(e));
+	    else
+		escm_env_modify(e, env, fun->d.closure.args, escm_ctx_first(e));
 	} else {
 	    escm_cons *args;
+
+	    /* create a list of computed values */
+	    lfirst = xcalloc(1, sizeof *lfirst);
+	    llast = lfirst;
 
 	    for (args = escm_cons_val(fun->d.closure.args); cons;
 		 cons = escm_cons_next(cons), args = escm_cons_next(args)) {
 		if (!args) {
 		    escm_atom_printerr(e, atomfun);
 		    fprintf(stderr, ": too much arguments.\n");
-		    escm_gc_ungard(e, env);
+		    if (tailrec)
+			escm_env_leave(e, prevenv);
 		    goto err;
 		}
 
 		if (eval) {
 		    ret = escm_atom_eval(e, cons->car);
 		    if (!ret || e->err == 1) {
-			escm_ctx_discard(e);
+			if (tailrec)
+			    escm_env_leave(e, prevenv);
 			goto err;
 		    }
 		} else
 		    ret = cons->car;
 
-		escm_env_set(e, env, args->car, ret);
+		if (llast->atom) {
+		    llast->next = xcalloc(1, sizeof *llast->next);
+		    llast = llast->next;
+		}
+		escm_gc_gard(e, ret);
+		llast->atom = ret;
 
 		if (ESCM_ISSYM(args->cdr)) { /* rest arguments */
 		    escm_atom *val;
@@ -377,30 +414,51 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomcons, int eval)
 			else
 			    val = escm_atom_eval(e, cons->car);
 			if (!val || e->err == 1) {
-			    escm_ctx_discard(e);
-			    escm_gc_ungard(e, env);
+			    if (tailrec)
+				escm_env_leave(e, prevenv);
 			    goto err;
 			}
 			escm_ctx_put(e, val);
 		    }
 
-		    escm_env_set(e, env, args->cdr, escm_ctx_leave(e));
+		    if (!tailrec)
+			escm_env_set(e, env, args->cdr, escm_ctx_first(e));
+		    else
+			escm_env_modify(e, env, args->cdr, escm_ctx_first(e));
+
 		    args = NULL;
 		    break;
 		}
 	    }
 
+
+	    llast = lfirst;
+	    for (args = escm_cons_val(fun->d.closure.args); args;
+		 args = escm_cons_next(args)) {
+		escm_gc_ungard(e, llast->atom);
+		if (!tailrec)
+		    escm_env_set(e, env, args->car, llast->atom);
+		else
+		    escm_env_modify(e, env, args->car, llast->atom);
+		lfirst = llast;
+		llast = llast->next, free(lfirst);
+	    }
+
 	    if (args) {
 		escm_atom_printerr(e, atomfun);
 		fprintf(stderr, ": too few arguments.\n");
-		escm_gc_ungard(e, env);
+		if (tailrec)
+		    escm_env_leave(e, prevenv);
 		goto err;
 	    }
 	}
 
-	escm_gc_ungard(e, env);
-	prevenv = escm_env_enter(e, env);
+	if (!tailrec)
+	    prevenv = escm_env_enter(e, env);
     }
+
+    if (!tailrec)
+	e->ctx->last = env;
 
     /* now execute */
     ret = NULL;
@@ -413,10 +471,12 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomcons, int eval)
 	}
     }
 
+    escm_ctx_discard(e);
     escm_env_leave(e, prevenv);
 
     return ret;
 
 err:
+    escm_ctx_discard(e);
     escm_abort(e);
 }

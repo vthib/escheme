@@ -510,40 +510,37 @@ escm_gc_ungard(escm *e, escm_atom *a)
 }
 
 void
-escm_error(escm *e, const char *format, ...)
+escm_tailrec(escm *e, escm_atom *cons)
 {
-    va_list va;
-    char *p;
+    escm_context *ctx, *c, *prev;
+    escm_atom *fun;
 
-    va_start(va, format);
+    if (!ESCM_ISCONS(cons))
+	return;
 
-    for (p = (char *) format; *p != '\0'; p++) {
-	if (*p == '~') {
-	    p++;
-	    switch (*p) {
-	    case '~':
-		escm_putc(e->errp, '~');
-		break;
-	    case 'a':
-		escm_atom_print4(e, va_arg(va, escm_atom *), e->errp, 1);
-		break;
-	    case 's':
-		escm_atom_print4(e, va_arg(va, escm_atom *), e->errp, 0);
-		break;
-	    case 'n': case '%':
-		escm_putc(e->errp, '\n');
-		break;
-	    default:
-		escm_putc(e->errp, '~');
-		escm_putc(e->errp, *p);
-		break;
-	    }
-	} else
-	    escm_putc(e->errp, *p);
+//    escm_notice(e, "try to tailrec on ~s.~%", cons);
+
+    fun = escm_cons_car(cons);
+
+    fun = escm_atom_eval(e, fun);
+    if (!fun || e->err == 1)
+	return;
+
+    for (ctx = e->ctx; ctx && ctx->fun != fun; ctx = ctx->prev)
+	;
+    if (!ctx)
+	return;
+
+    /* we got a match, now we clean the contexts and jump */
+    for (c = e->ctx; c != ctx; c = prev) {
+	prev = c->prev;
+	free(c);
     }
+//    escm_notice(e, "jump on ~s.~%", fun);
 
-    va_end(va);
-    e->err = 1;
+    e->ctx = ctx;
+    ctx->first = escm_cons_cdr(cons);
+    longjmp(ctx->jbuf, 1);
 }
 
 /* privates functions */

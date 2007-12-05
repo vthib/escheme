@@ -425,8 +425,10 @@ escm_if(escm *e, escm_atom *args)
     else {
 	(void) escm_cons_pop(e, &args); /* skip the 'true' statement */
 	a = escm_cons_pop(e, &args);
-	if (a)
+	if (a) {
+//	    escm_tailrec(e, a);
 	    return escm_atom_eval(e, a);
+	}
     }
 
     return NULL;
@@ -932,7 +934,7 @@ static escm_atom *
 named_let(escm *e, escm_atom *name, escm_atom *args)
 {
     escm_atom *bindings, *val;
-    escm_atom *fun, *prevenv, *env;
+    escm_atom *fun, *env;
     escm_cons *c, *cons;
 
     bindings = escm_cons_pop(e, &args);
@@ -967,16 +969,14 @@ named_let(escm *e, escm_atom *name, escm_atom *args)
     escm_ctx_put(e, escm_ctx_leave(e)); /* add the formals */
     escm_ctx_put(e, escm_cons_pop(e, &args)); /* the body */
 
-    env = escm_env_new(e, e->env);
-    prevenv = escm_env_enter(e, env);
-
     fun = escm_lambda(e, escm_ctx_leave(e));
     if (!fun)
 	escm_abort(e);
 
-    escm_env_leave(e, prevenv);
+    /* build the new environment */
+    env = escm_env_new(e, e->env);
+    escm_proc_val(fun)->d.closure.env = env;
 
-    /* bind the function to its name */
     escm_env_set(e, env, name, fun);
 
     escm_ctx_enter(e); /* now we create a list of the arguments */

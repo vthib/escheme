@@ -33,6 +33,8 @@ static void env_free(escm_env *);
 static void env_mark(escm *, escm_env *);
 static void env_print(escm *, escm_env *, escm_output *, int);
 
+static void enter(escm_atom *);
+
 void
 escm_environments_init(escm *e)
 {
@@ -81,7 +83,7 @@ escm_env_new(escm *e, escm_atom *prev)
 
     assert(e != NULL);
 
-    env = xmalloc(sizeof *env);
+    env = xcalloc(1, sizeof *env);
     env->list = NULL;
     env->prev = prev;
     env->tree = (prev && ESCM_ISENV(prev)) ? ((escm_env *) prev->ptr)->tree :
@@ -109,71 +111,79 @@ escm_env_set(escm *e, escm_atom *atomenv, escm_atom *sym, escm_atom *atom)
     l->tree = escm_sym_node(sym);
     l->node = xmalloc(sizeof *l->node);
     l->node->atom = atom;
-    l->node->prev = l->tree->node;
+    l->node->prev = NULL;
     l->next = env->list, env->list = l;
 
     if (e->env == atomenv) {
-	escm_tstnode *tmp;
-
-	tmp = l->tree->node;
+	l->node->prev = l->tree->node;
 	l->tree->node = l->node;
-	l->node = tmp;
+    }
+}
+
+void
+escm_env_modify(escm *e, escm_atom *atomenv, escm_atom *sym, escm_atom *atom)
+{
+    escm_env *env;
+    struct envlist *l;
+
+    assert(atomenv != NULL);
+    assert(sym != NULL);
+
+    (void) e;
+
+    env = (escm_env *) atomenv->ptr;
+
+    if (!env->prev) {
+	escm_symbol_set(sym, atom);
+	return;
+    }
+
+    for (l = env->list; l; l = l->next) {
+	if (l->tree == escm_sym_node(sym)) {
+	    l->node->atom = atom;
+	    break;
+	}
     }
 }
 
 escm_atom *
 escm_env_enter(escm *e, escm_atom *new)
 {
-    escm_atom *ret;
-    escm_env *env;
-    escm_tstnode *tmp;
     struct envlist *l;
+    escm_atom *a;
+    escm_env *env;
 
     assert(e != NULL);
     assert(new != NULL);
 
-    ret = e->env, e->env = new;
+    /* first we mark all the env we want to enter in */
+    for (a = new; a; a = escm_env_val(a)->prev)
+	a->marked = 1;
 
     env = new->ptr;
-    do {
-	for (l = env->list; l; l = l->next) {
-	    if (!l->node)
-		continue;
-	    tmp = l->tree->node;
-	    l->tree->node = l->node;
-	    l->node = tmp;
-	}
 
-	env = env->prev->ptr;
-    } while (env->prev != NULL);
+    /* then we leave the non-marked environments */
+    for (a = e->env; a && !a->marked; a = escm_env_val(a)->prev) {
+	for (l = escm_env_val(a)->list; l; l = l->next)
+	    l->tree->node = l->tree->node->prev;
+    }
+    if (a)
+	a->marked = 0;
 
-    escm_gc_gard(e, ret);
-    return ret;
+    /* finally we enter in the new envs */
+    enter(new);
+
+    a = e->env;
+    e->env = new;
+    escm_gc_gard(e, a);
+    return a;
 }
 
 void
 escm_env_leave(escm *e, escm_atom *prevenv)
 {
-    escm_env *env;
-    escm_tstnode *tmp;
-    struct envlist *l;
-
-    assert(e != NULL);
-    assert(prevenv != NULL);
-
-    env = e->env->ptr;
-    do {
-	for (l = env->list; l; l = l->next) {
-	    tmp = l->tree->node;
-	    l->tree->node = l->node;
-	    l->node = tmp;
-	}
-
-	env = env->prev->ptr;
-    } while (env->prev != NULL);
-
     escm_gc_ungard(e, prevenv);
-    e->env = prevenv;
+    escm_gc_ungard(e, escm_env_enter(e, prevenv));
 }
 
 /*@-usedef@*/
@@ -298,7 +308,17 @@ env_mark(escm *e, escm_env *env)
     if (!env)
 	return;
 
-    escm_tst_foreach(env->tree, escm_atom_mark, e);
+    if (!env->prev)
+	escm_tst_foreach(env->tree, escm_atom_mark, e);
+    else {
+	struct envlist *l;
+
+	for (l = env->list; l; l = l->next) {
+	    if (l->node)
+		escm_atom_mark(e, l->node->atom);
+	}
+    }
+
     escm_atom_mark(e, env->prev);
 }
 
@@ -319,14 +339,35 @@ env_free(escm_env *env)
 
     assert(env != NULL);
 
-    if (!env->prev) /* only the toplevel can free the tree */
-	escm_tst_free(env->tree);
-
     for (list = env->list; list; list = next) {
 	next = list->next;
 	free(list->node);
 	free(list);
     }
 
+    if (!env->prev) /* only the toplevel can free the tree */
+	escm_tst_free(env->tree);
+
     free(env);
 }
+
+static void
+enter(escm_atom *atom)
+{
+    struct envlist *l;
+    escm_env *env;
+
+    if (!atom || !atom->marked)
+	return;
+
+    env = atom->ptr;
+
+    enter(env->prev);
+
+    for (l = env->list; l; l = l->next) {
+	l->node->prev = l->tree->node;
+	l->tree->node = l->node;
+    }
+    atom->marked = 0;
+}
+

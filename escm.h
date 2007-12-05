@@ -18,6 +18,7 @@
 # define ESCHEME_ESCM_H
 
 #include <stdio.h>
+#include <setjmp.h>
 #include "types.h"
 #include "cons.h"
 
@@ -77,6 +78,9 @@ struct escm_type {
 };
 
 struct escm_context {
+    jmp_buf jbuf;
+    escm_atom *fun;
+
     escm_atom *first;
     escm_atom *last;
 
@@ -138,6 +142,6 @@ void escm_gc_collect(escm *);
 void escm_gc_gard(escm *, escm_atom *);
 void escm_gc_ungard(escm *, escm_atom *);
 
-void escm_error(escm *, const char *, ...);
+void escm_tailrec(escm *, escm_atom *);
 
 #endif /* ESCHEME_ESCM_H */

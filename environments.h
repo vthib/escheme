@@ -23,10 +23,13 @@ typedef struct escm_env {
     struct envlist *list;
     escm_tst *tree;
     escm_atom *prev;
+
+    unsigned int in : 1;
 } escm_env;
 
 #define ESCM_TYPE_ENV (escm_env_tget())
 #define ESCM_ISENV(x) ((x)->type == ESCM_TYPE_ENV)
+#define escm_env_val(x) ((escm_env *) (x)->ptr)
 
 void escm_environments_init(escm *);
 void escm_env_addprimitives(escm *);
@@ -35,6 +38,7 @@ size_t escm_env_tget(void);
 escm_atom *escm_env_new(escm *, escm_atom *);
 
 void escm_env_set(escm *, escm_atom *, escm_atom *, escm_atom *);
+void escm_env_modify(escm *, escm_atom *, escm_atom *, escm_atom *);
 
 escm_atom *escm_env_enter(escm *, escm_atom *);
 void escm_env_leave(escm *, escm_atom *);

@@ -57,6 +57,10 @@ void escm_output_close(escm_output *);
 
 void escm_printf(escm_output *, const char *, ...);
 
+void escm_scmpf(escm *, escm_output *, const char *, ...);
+void escm_notice(escm *, const char *, ...);
+void escm_error(escm *, const char *, ...);
+
 void escm_print_slashify(escm_output *, const char *);
 
 #ifdef ESCM_USE_UNICODE

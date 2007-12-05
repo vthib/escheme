@@ -164,7 +164,7 @@ escm_car(escm *e, escm_atom *args)
     o = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCONS(o) && escm_cons_val(o) != NULL, o, e);
 
-    return escm_cons_val(o)->car;
+    return escm_cons_car(o);
 }
 
 escm_atom *
@@ -192,7 +192,7 @@ escm_cdr(escm *e, escm_atom *args)
     o = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCONS(o) && escm_cons_val(o) != NULL, o, e);
 
-    return escm_cons_val(o)->cdr;
+    return escm_cons_cdr(o);
 }
 
 escm_atom *

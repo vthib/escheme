@@ -22,10 +22,14 @@
 
 #include "utils.h"
 #include "output.h"
+#include "escm.h"
+#include "atom.h"
 
 #ifdef ESCM_USE_UNICODE
 # include <wchar.h>
 #endif
+
+static inline void vscmpf(escm *, escm_output *, const char *, va_list *);
 
 /**
  * @brief open `name' with the read rights
@@ -181,6 +185,43 @@ escm_printf(escm_output *f, const char *format, ...)
 }
 
 void
+escm_scmpf(escm *e, escm_output *stream, const char *format, ...)
+{
+    va_list va;
+
+    va_start(va, format);
+
+    vscmpf(e, stream, format, &va);
+
+    va_end(va);
+}
+
+void
+escm_notice(escm *e, const char *format, ...)
+{
+    va_list va;
+
+    va_start(va, format);
+
+    vscmpf(e, e->output, format, &va);
+
+    va_end(va);
+}
+
+void
+escm_error(escm *e, const char *format, ...)
+{
+    va_list va;
+
+    va_start(va, format);
+
+    vscmpf(e, e->errp, format, &va);
+
+    va_end(va);
+    e->err = 1;
+}
+
+void
 escm_print_slashify(escm_output *stream, const char *str)
 {
     char *p;
@@ -257,5 +298,35 @@ escm_putc(escm_output *f, int c)
 	}
     }
 }
-
 #endif /* ESCM_USE_UNICODE */
+
+static inline void
+vscmpf(escm *e, escm_output *stream, const char *format, va_list *va)
+{
+    char *p;
+
+    for (p = (char *) format; *p != '\0'; p++) {
+	if (*p == '~') {
+	    p++;
+	    switch (*p) {
+	    case '~':
+		escm_putc(stream, '~');
+		break;
+	    case 'a':
+		escm_atom_print4(e, va_arg(*va, escm_atom *), stream, 1);
+		break;
+	    case 's':
+		escm_atom_print4(e, va_arg(*va, escm_atom *), stream, 0);
+		break;
+	    case 'n': case '%':
+		escm_putc(stream, '\n');
+		break;
+	    default:
+		escm_putc(stream, '~');
+		escm_putc(stream, *p);
+		break;
+	    }
+	} else
+	    escm_putc(stream, *p);
+    }
+}
