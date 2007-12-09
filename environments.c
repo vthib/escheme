@@ -33,7 +33,7 @@ static void env_free(escm_env *);
 static void env_mark(escm *, escm_env *);
 static void env_print(escm *, escm_env *, escm_output *, int);
 
-static void enter(escm_atom *);
+static void enter(escm_atom *, int);
 
 void
 escm_environments_init(escm *e)
@@ -171,7 +171,7 @@ escm_env_enter(escm *e, escm_atom *new)
 	a->marked = 0;
 
     /* finally we enter in the new envs */
-    enter(new);
+    enter(new, 0);
 
     a = e->env;
     e->env = new;
@@ -352,22 +352,27 @@ env_free(escm_env *env)
 }
 
 static void
-enter(escm_atom *atom)
+enter(escm_atom *atom, int onlyclean)
 {
     struct envlist *l;
     escm_env *env;
 
-    if (!atom || !atom->marked)
+    if (!atom)
 	return;
+    if (!atom->marked)
+	onlyclean = 1;
+
+    atom->marked = 0;
 
     env = atom->ptr;
 
-    enter(env->prev);
+    enter(env->prev, onlyclean);
 
-    for (l = env->list; l; l = l->next) {
-	l->node->prev = l->tree->node;
-	l->tree->node = l->node;
+    if (!onlyclean) {
+	for (l = env->list; l; l = l->next) {
+	    l->node->prev = l->tree->node;
+	    l->tree->node = l->node;
+	}
     }
-    atom->marked = 0;
 }
 

@@ -62,10 +62,13 @@ escm_tst_add(escm_tst *t, escm_atom *atom)
 void
 escm_tst_foreach(escm_tst *t, void (*f)(escm *, escm_atom *), escm *e)
 {
+    struct escm_tstnode *node;
+
     if (!t)
         return;
 
-    (*f)(e, (t->node) ? t->node->atom : NULL);
+    for (node = t->node; node; node = node->prev)
+	f(e, node->atom);
 
     escm_tst_foreach(t->lo, f, e);
     escm_tst_foreach(t->down, f, e);

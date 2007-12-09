@@ -114,9 +114,10 @@ struct escm {
     escm_type **types;
     unsigned long ntypes;
 
-    unsigned int err : 1;
-    unsigned int brackets : 1;
     unsigned int casesensitive : 1;
+    unsigned int brackets : 1;
+    unsigned int tailrec : 1;
+    unsigned int err : 1;
 };
 
 escm *escm_new(void);
@@ -142,6 +143,7 @@ void escm_gc_collect(escm *);
 void escm_gc_gard(escm *, escm_atom *);
 void escm_gc_ungard(escm *, escm_atom *);
 
-void escm_tailrec(escm *, escm_atom *);
+void escm_tailrec(escm *, escm_atom *, int);
+void escm_tailrec3(escm *, escm_atom *, escm_atom *, int);
 
 #endif /* ESCHEME_ESCM_H */

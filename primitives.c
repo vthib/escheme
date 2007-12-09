@@ -262,14 +262,7 @@ escm_let(escm *e, escm_atom *args)
        result */
     escm_gc_ungard(e, env);
     prevenv = escm_env_enter(e, env);
-    ret = NULL;
-    for (arg = escm_cons_pop(e, &args); arg; arg = escm_cons_pop(e, &args)) {
-	ret = escm_atom_eval(e, arg);
-	if (!ret && e->err == 1) {
-	    escm_env_leave(e, prevenv);
-	    return NULL;
-	}
-    }
+    ret = escm_begin(e, args);
 
     escm_env_leave(e, prevenv);
 
@@ -317,14 +310,7 @@ escm_let_star(escm *e, escm_atom *args)
     }
 
     /* we now eval the body */
-    ret = NULL;
-    for (arg = escm_cons_pop(e, &args); arg; arg = escm_cons_pop(e, &args)) {
-	ret = escm_atom_eval(e, arg);
-	if (!ret && e->err == 1) {
-	    escm_env_leave(e, prevenv);
-	    return NULL;
-	}
-    }
+    ret = escm_begin(e, args);
 
     escm_env_leave(e, prevenv);
 
@@ -388,14 +374,7 @@ escm_letrec(escm *e, escm_atom *args)
     }
 
     /* we now eval the body */
-    ret = NULL;
-    for (arg = escm_cons_pop(e, &args); arg; arg = escm_cons_pop(e, &args)) {
-	ret = escm_atom_eval(e, arg);
-	if (!ret && e->err == 1) {
-	    escm_env_leave(e, prevenv);
-	    return NULL;
-	}
-    }
+    ret = escm_begin(e, args);
 
     escm_env_leave(e, prevenv);
 
@@ -420,13 +399,14 @@ escm_if(escm *e, escm_atom *args)
 	return NULL;
     }
 
-    if (ESCM_ISTRUE(test))
+    if (ESCM_ISTRUE(test)) {
+	escm_tailrec(e, a, 1);
 	return escm_atom_eval(e, escm_cons_pop(e, &args));
-    else {
+    } else {
 	(void) escm_cons_pop(e, &args); /* skip the 'true' statement */
 	a = escm_cons_pop(e, &args);
 	if (a) {
-//	    escm_tailrec(e, a);
+	    escm_tailrec(e, a, 1);
 	    return escm_atom_eval(e, a);
 	}
     }
@@ -530,6 +510,8 @@ escm_and(escm *e, escm_atom *args)
 
     ret = NULL; /* make splint happy */
     while (c) {
+	if (!args)
+	    escm_tailrec(e, c, 1);
 	ret = escm_atom_eval(e, c);
 	if (!ret || !ESCM_ISTRUE(ret))
 	    return ret;
@@ -551,6 +533,8 @@ escm_or(escm *e, escm_atom *args)
 
     ret = NULL; /* make splint happy */
     while (c) {
+	if (!args)
+	    escm_tailrec(e, c, 1);
 	ret = escm_atom_eval(e, c);
 	if (!ret || ESCM_ISTRUE(ret))
 	    return ret; /* true value (or null) */
@@ -572,6 +556,8 @@ escm_begin(escm *e, escm_atom *args)
 
     ret = NULL;
     for (a = escm_cons_pop(e, &args); a; a = escm_cons_pop(e, &args)) {
+	if (!args)
+	    escm_tailrec(e, a, 1);
 	ret = escm_atom_eval(e, a);
 	if (!ret && e->err == 1)
 	    return ret;

@@ -881,7 +881,7 @@ escm_bsub(escm *e, escm_atom *params)
 
 		tmp = a->d.ival;
 		a->d.rval = (double) tmp;
-		if (DBL_LT((DBL_MIN + b->d.rval), a->d.rval)) {
+		if (DBL_GT((DBL_MIN + b->d.rval), a->d.rval)) {
 		    escm_error(e, "~s: number underflow.~%", e->curobj);
 		    free(a);
 		    escm_abort(e);
@@ -891,14 +891,14 @@ escm_bsub(escm *e, escm_atom *params)
 	    }
 	} else {
 	    if (b->fixnum) {
-		if (DBL_LT((DBL_MIN + b->d.ival), a->d.rval)) {
+		if (DBL_GT((DBL_MIN + b->d.ival), a->d.rval)) {
 		    escm_error(e, "~s: number underflow.~%", e->curobj);
 		    free(a);
 		    escm_abort(e);
 		}
 		a->d.rval -= b->d.ival;
 	    } else {
-		if (DBL_LT((DBL_MIN + b->d.rval), a->d.rval)) {
+		if (DBL_GT((DBL_MIN + b->d.rval), a->d.rval)) {
 		    escm_error(e, "~s: number underflow.~%", e->curobj);
 		    free(a);
 		    escm_abort(e);
@@ -927,6 +927,13 @@ escm_bmul(escm *e, escm_atom *params)
     while (c) {
 	escm_assert1(ESCM_ISNUMBER(c), c, e, free(a));
 	b = ((escm_bnumber *) c->ptr);
+
+	if ((b->fixnum && b->d.ival == 0) ||
+	    (!b->fixnum && DBL_EQ(b->d.ival, 0.))) {
+	    a->fixnum = b->fixnum;
+	    memcpy(&a->d, &b->d, sizeof b->d);
+	    break;
+	}
 
 	if (a->fixnum) {
 	    if (b->fixnum) {

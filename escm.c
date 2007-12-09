@@ -510,17 +510,22 @@ escm_gc_ungard(escm *e, escm_atom *a)
 }
 
 void
-escm_tailrec(escm *e, escm_atom *cons)
+escm_tailrec(escm *e, escm_atom *cons, int eval)
 {
-    escm_context *ctx, *c, *prev;
-    escm_atom *fun;
-
-    if (!ESCM_ISCONS(cons))
+    if (!e->tailrec || !ESCM_ISCONS(cons))
 	return;
 
-//    escm_notice(e, "try to tailrec on ~s.~%", cons);
+    escm_tailrec3(e, escm_cons_car(cons), escm_cons_cdr(cons), eval);
+}
 
-    fun = escm_cons_car(cons);
+void
+escm_tailrec3(escm *e, escm_atom *fun, escm_atom *args, int eval)
+{
+    escm_context *ctx, *c, *prev;
+    escm_atom *a;
+
+    if (!e->tailrec || !ESCM_ISCONS(args))
+	return;
 
     fun = escm_atom_eval(e, fun);
     if (!fun || e->err == 1)
@@ -531,15 +536,29 @@ escm_tailrec(escm *e, escm_atom *cons)
     if (!ctx)
 	return;
 
-    /* we got a match, now we clean the contexts and jump */
+    /* we have a match, now we eval the new args */
+    escm_ctx_enter(e);
+    for (a = escm_cons_pop(e, &args); a; a = escm_cons_pop(e, &args)) {
+	if (eval) {
+	    a = escm_atom_eval(e, a);
+	    if (!a || e->err == 1) {
+		escm_ctx_discard(e);
+		return;
+	    }
+	}
+	escm_ctx_put(e, a);
+    }
+    ctx->first = escm_ctx_leave(e);
+
+    /* clean the contexts */
     for (c = e->ctx; c != ctx; c = prev) {
 	prev = c->prev;
 	free(c);
     }
-//    escm_notice(e, "jump on ~s.~%", fun);
 
+    /* and jump */
+    e->tailrec = 0;
     e->ctx = ctx;
-    ctx->first = escm_cons_cdr(cons);
     longjmp(ctx->jbuf, 1);
 }
 
