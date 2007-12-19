@@ -19,6 +19,8 @@
 
 #include <stdio.h>
 
+#include "config.h"
+
 #ifdef ESCM_R5RS
 # define ESCM_USE_BOOLEANS
 # define ESCM_USE_CHARACTERS
@@ -38,8 +40,6 @@
 # define ESCM_CIRCULAR_LIST 1 /* 0: no handle, 1: just in list? and length
 				 2: check also when printing */
 #endif
-
-#define ESCM_USE_C99
 
 #if defined ESCM_USE_UNICODE && !defined ESCM_USE_C99
 # error "unicode needs c99"
