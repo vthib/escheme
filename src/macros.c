@@ -433,6 +433,8 @@ color(escm *e, escm_macro *m, escm_atom *env, escm_atom *arg)
     size_t len;
     char *buf;
 
+    (void) m;
+
     len = strlen(escm_sym_name(arg)) + 4;
     buf = xmalloc(sizeof *buf * len);
 

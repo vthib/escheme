@@ -19,5 +19,5 @@
   1 },
 { "promises", "ESCM_USE_PROMISES", " promises.c",
   "build the promise implementation", 1 },
-{ "dyntype", "ESCM_USE_DYNTYPE", " type.c",
+{ "dyntypes", "ESCM_USE_DYNTYPES", " dyntypes.c",
   "build support for dynamic types", 1 }

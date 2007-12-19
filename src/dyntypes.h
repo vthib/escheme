@@ -14,12 +14,12 @@
  * You should have received a copy of the GNU General Public License
  * along with Escheme; If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef ESCHEME_TYPE_H
-# define ESCHEME_TYPE_H
+#ifndef ESCHEME_DYNTYPES_H
+# define ESCHEME_DYNTYPES_H
 
 #include "types.h"
 
-void escm_type_init(escm *);
+void escm_dyntypes_init(escm *);
 
 escm_atom *escm_get_type(escm *, escm_atom *);
 escm_atom *escm_create_type(escm *, escm_atom *);
@@ -33,4 +33,4 @@ escm_atom *escm_set_equal(escm *, escm_atom *);
 escm_atom *escm_set_parse_p(escm *, escm_atom *);
 escm_atom *escm_set_parse(escm *, escm_atom *);
 
-#endif /* ESCHEME_TYPE_H */
+#endif /* ESCHEME_DYNTYPES_H */

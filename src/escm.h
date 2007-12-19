@@ -22,10 +22,14 @@
 #include "types.h"
 #include "cons.h"
 
+#define escm_fun(e) escm_cons_car((e)->curobj)
+
+#define escm_abort(e) do { (e)->err = 1; return NULL; } while(0)
+
 #define escm_assert(test, atom, e)					\
     do {								\
 	if (!(test)) {							\
-	    escm_error((e), "~s: ~s: wrong argument.~%", (e)->curobj, (atom)); \
+	    escm_error((e), "~s: ~s: wrong argument.~%", escm_fun(e), (atom)); \
 	    escm_abort(e);						\
 	}								\
     } while(0)
@@ -34,13 +38,11 @@
 #define escm_assert1(test, atom, e, st)					\
     do {								\
 	if (!(test)) {							\
-	    escm_error((e), "~s: ~s: wrong argument.~%", (e)->curobj, (atom)); \
+	    escm_error((e), "~s: ~s: wrong argument.~%", escm_fun(e), (atom)); \
 	    st;								\
 	    escm_abort(e);						\
 	}								\
     } while(0)
-
-#define escm_abort(e) do { (e)->err = 1; return NULL; } while(0)
 
 enum { TYPE_BUILT, TYPE_DYN };
 

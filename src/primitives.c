@@ -74,7 +74,9 @@ escm_primitives_load(escm *e)
 
     (void) escm_procedure_new(e, "eof-object?", 1, 1, escm_eof_object_p, NULL);
 
+#ifdef ESCM_USE_STRINGS
     (void) escm_procedure_new(e, "load", 1, 1, escm_load, NULL);
+#endif
 
 #ifndef ESCM_USE_PORTS
     (void) escm_procedure_new(e, "read", 0, 1, escm_read, NULL);
@@ -717,17 +719,23 @@ escm_eof_object_p(escm *e, escm_atom *args)
     return (a == e->EOF_OBJ) ? e->TRUE : e->FALSE;
 }
 
+#ifdef ESCM_USE_STRINGS
 escm_atom *
 escm_load(escm *e, escm_atom *args)
 {
     escm_atom *str;
     escm_context *ctx;
 
+    if (!escm_type_ison(ESCM_TYPE_STRING)) {
+	escm_error(e, "~s: string type is off.~%", e->curobj);
+	escm_abort(e);
+    }
+
     str = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(str), str, e);
 
     ctx = e->ctx, e->ctx = NULL;
-#ifdef ESCM_USE_UNICODE
+# ifdef ESCM_USE_UNICODE
     if (escm_type_ison(ESCM_TYPE_USTRING)) {
 	char *s;
 
@@ -736,14 +744,15 @@ escm_load(escm *e, escm_atom *args)
 	    escm_abort(e);
 	free(s);
     }
-#else
+# else
     if (!escm_fparse(e, escm_str_val(str)))
 	escm_abort(e);
-#endif
+# endif
     e->ctx = ctx;
 
     return NULL;
 }
+#endif
 
 /* if we don't use ports, we implement those functions to work only with
    stdin and stdout */
@@ -814,7 +823,7 @@ escm_peek_char(escm *e, escm_atom *args)
     if (c == EOF)
 	return e->EOF_OBJ;
 
-    escm_input_ungetwc(e->input, c);
+    escm_input_ungetc(e->input, c);
     return escm_achar_make(e, c);
 #endif
 }
@@ -832,7 +841,7 @@ escm_write_char(escm *e, escm_atom *args)
     c = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCHAR(c), c, e);
 
-    escm_output_putc(e->output, escm_char_val(c));
+    escm_putc(e->output, escm_char_val(c));
 
     return NULL;
 }

@@ -19,7 +19,7 @@
 
 #include "types.h"
 
-#ifndef ESCM_USE_COMPLETE_NUMBERS
+#ifndef ESCM_USE_CNUMBERS
 
 # include "bnumbers.h"
 
@@ -37,7 +37,7 @@
 
 # define ESCM_NUMBER_EXACTP ESCM_BNUMBER_EXACTP
 
-#elif !defined ESCM_USE_BASIC_NUMBERS
+#elif !defined ESCM_USE_BNUMBERS
 
 # include "cnumbers.h"
 

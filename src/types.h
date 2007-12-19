@@ -26,8 +26,7 @@
 # define ESCM_USE_CHARACTERS
 # define ESCM_USE_VECTORS
 # define ESCM_USE_STRINGS
-# define ESCM_USE_BASIC_NUMBERS
-# define ESCM_USE_COMPLETE_NUMBERS
+# define ESCM_USE_CNUMBERS
 # define ESCM_USE_PROMISES
 # define ESCM_USE_MACROS
 # define ESCM_USE_PORTS
@@ -49,7 +48,7 @@
 # define ESCM_CIRCULAR_LIST 0 /* default */
 #endif
 
-#if defined ESCM_USE_BASIC_NUMBERS || defined ESCM_USE_COMPLETE_NUMBERS
+#if defined ESCM_USE_BNUMBERS || defined ESCM_USE_CNUMBERS
 # define ESCM_USE_NUMBERS
 #endif
 

@@ -24,21 +24,51 @@
 #include "escm.h"
 #include "atom.h"
 #include "tst.h"
-#include "type.h"
 #include "environments.h"
 #include "cons.h"
 #include "procedures.h"
-#include "symbols.h"
-#include "booleans.h"
-#include "numbers.h"
 #include "primitives.h"
-#include "chars.h"
-#include "strings.h"
-#include "promises.h"
-#include "vectors.h"
-#include "macros.h"
-#include "ports.h"
-#include "continuations.h"
+#include "symbols.h"
 #include "srfi.h"
+
+#ifdef ESCM_USE_DYNTYPES
+# include "dyntypes.h"
+#endif
+
+#ifdef ESCM_USE_BOOLEANS
+# include "booleans.h"
+#endif
+
+#ifdef ESCM_USE_NUMBERS
+# include "numbers.h"
+#endif
+
+#ifdef ESCM_USE_CHARACTERS
+# include "chars.h"
+#endif
+
+#ifdef ESCM_USE_STRINGS
+# include "strings.h"
+#endif
+
+#ifdef ESCM_USE_PROMISES
+# include "promises.h"
+#endif
+
+#ifdef ESCM_USE_VECTORS
+# include "vectors.h"
+#endif
+
+#ifdef ESCM_USE_MACROS
+# include "macros.h"
+#endif
+
+#ifdef ESCM_USE_PORTS
+# include "ports.h"
+#endif
+
+#ifdef ESCM_USE_CONTINUATIONS
+# include "continuations.h"
+#endif
 
 #endif /* ESCHEME_ESCHEME_H */

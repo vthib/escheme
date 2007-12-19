@@ -7,7 +7,7 @@ CC ?= gcc
 .PHONY: clean mrproper
 
 all:
-	if [ ! -e $(CONFIGURE) ]; then \
+	if [ ! -e config.h ]; then \
 		$(MAKE) config; \
 	else \
 		$(MAKE) $(EXEC); \

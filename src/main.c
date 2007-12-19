@@ -30,7 +30,9 @@ enum {
     PROMISE,
     PORT,
     MACRO,
-    CONT
+    CONT,
+    DYNTYPE,
+    MAXTYPE
 };
 
 static void usage(char *);
@@ -40,7 +42,7 @@ main(int argc, char **argv)
 {
     escm *e;
     int i;
-    unsigned int noload[10];
+    unsigned int noload[MAXTYPE];
     unsigned int loadinit = 1;
     unsigned int casesens = 1;
     unsigned int useascii = 0;
@@ -71,6 +73,7 @@ main(int argc, char **argv)
 		case 'p': noload[PORT] = 1; break;
 		case 'm': noload[MACRO] = 1; break;
 		case 'C': noload[CONT] = 1; break;
+		case 'd': noload[DYNTYPE] = 1; break;
 		case 'q': loadinit = 0; break;
 		case 'g': casesens = 1; break;
 		case 'G': casesens = 0; break;
@@ -90,12 +93,12 @@ main(int argc, char **argv)
 #endif
 
 /* numbers needs to be declared before symbols */
-#ifdef ESCM_USE_BASIC_NUMBERS
+#ifdef ESCM_USE_BNUMBERS
     if (!noload[BNUM])
 	escm_bnumbers_init(e);
 #endif
 
-#ifdef ESCM_USE_COMPLETE_NUMBERS
+#ifdef ESCM_USE_CNUMBERS
     if (!noload[CNUM] && noload[BNUM])
 	escm_cnumbers_init(e);
 #endif
@@ -142,6 +145,11 @@ main(int argc, char **argv)
 	escm_continuations_init(e);
 #endif
 
+#ifdef ESCM_USE_DYNTYPES
+    if (!noload[DYNTYPE])
+	escm_dyntypes_init(e);
+#endif
+
 #ifndef ESCM_USE_CHARACTERS
     e->EOF_OBJ = e->FALSE;
 #endif
@@ -150,7 +158,6 @@ main(int argc, char **argv)
 
     e->casesensitive = casesens;
 
-    escm_type_init(e);
     escm_srfi_init(e);
 
     if (loadinit)
@@ -192,6 +199,7 @@ usage(char *name)
 	   "-p\tdo not load the port type.\n", name);
     printf("-m\tdo not load the macro type.\n"
 	   "-C\tdo not load the continuation type.\n"
+	   "-d\tdo not load dynamic types primitives.\n"
 	   "\n"
 	   "-q\tdo not load the init file.\n"
 	   "-g\tSymbols are treated case-insensitively (default).\n"

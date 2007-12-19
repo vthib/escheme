@@ -326,7 +326,7 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomcons, int eval)
 	escm_notice(e, "receive local jump with args ~s.~%", e->ctx->first);
 	atomcons = e->ctx->first, e->ctx->first = NULL;
 	cons = escm_cons_val(atomcons);
-//	escm_gc_gard(e, atomcons);
+/*	escm_gc_gard(e, atomcons);*/
 	env = e->ctx->last;
 	tailrec = 1;
     }
@@ -457,14 +457,14 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomcons, int eval)
     escm_ctx_discard(e);
     escm_env_leave(e, prevenv);
 
-//    escm_gc_ungard(e, atomcons);
+/*    escm_gc_ungard(e, atomcons);*/
 
     return ret;
 
 errarg:
     if (tailrec)
 	escm_env_leave(e, prevenv);
-//    escm_gc_ungard(e, atomcons);
+/*    escm_gc_ungard(e, atomcons);*/
 erreval:
     escm_ctx_discard(e);
     escm_abort(e);

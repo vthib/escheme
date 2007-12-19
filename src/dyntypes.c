@@ -17,7 +17,7 @@
 #include "escheme.h"
 
 void
-escm_type_init(escm *e)
+escm_dyntypes_init(escm *e)
 {
     (void) escm_procedure_new(e, "get-type", 1, 1, escm_get_type, NULL);
     (void) escm_procedure_new(e, "create-type", 1, 1, escm_create_type, NULL);
@@ -49,7 +49,7 @@ escm_create_type(escm *e, escm_atom *args)
     basetype = escm_cons_pop(e, &args);
     if (escm_number_ival(basetype) < 0 ||
 	(unsigned long) escm_number_ival(basetype) >= e->ntypes) {
-	escm_error(e, "create-type: ~s is not a type.~%", basetype);
+	escm_error(e, "~s: ~s is not a type.~%", escm_fun(e), basetype);
 	escm_abort(e);
     }
 
@@ -74,18 +74,18 @@ escm_set_type_x(escm *e, escm_atom *args)
     escm_assert(ESCM_ISINT(type), type, e);
     t = escm_number_ival(type);
     if (t < 0 || (unsigned long) t >= e->ntypes) {
-	escm_error(e, "set-type!: ~s is not a type.~%", type);
+	escm_error(e, "~s: ~s is not a type.~%", escm_fun(e), type);
 	escm_abort(e);
     }
 
     if (e->types[t]->type != TYPE_DYN) {
-	fprintf(stderr, "set-type!: can only set to a dynamic type.\n");
+	escm_error(e, "~s: can only set to a dynamic type.~%", escm_fun(e));
 	escm_abort(e);
     }
 
     if (atom->type != e->types[t]->d.dyn.basetype) {
-	fprintf(stderr, "Trying to create differents atoms with same type. "
-		"Aborting.\n");
+	escm_error(e, "~s: can't create differents atoms with same type.~%",
+		   escm_fun(e));
 	escm_abort(e);
     }
 
@@ -103,7 +103,7 @@ escm_type_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISINT(type), type, e);
     if (escm_number_ival(type) < 0 ||
 	(unsigned long) escm_number_ival(type) >= e->ntypes) {
-	escm_error(e, "type?: ~s is not a type.~%", type);
+	escm_error(e, "~s: ~s is not a type.~%", escm_fun(e), type);
 	escm_abort(e);
     }
 
@@ -118,8 +118,8 @@ escm_rep(escm *e, escm_atom *args)
 
     atom = escm_cons_pop(e, &args);
     if (e->types[atom->type]->type != TYPE_DYN) {
-	escm_error(e, "rep: expect an argument of dynamic type, not ~s.~%",
-		   atom);
+	escm_error(e, "~s: expect an argument of dynamic type, not ~s.~%",
+		   escm_fun(e), atom);
 	escm_abort(e);
     }
 
@@ -137,11 +137,11 @@ escm_set_print(escm *e, escm_atom *args)
     escm_assert(ESCM_ISINT(type), type, e);
     if (escm_number_ival(type) < 0 ||
 	(unsigned long) escm_number_ival(type) >= e->ntypes) {
-	escm_error(e, "set-print: ~s is not a type.~%", type);
+	escm_error(e, "~s: ~s is not a type.~%", escm_fun(e), type);
 	escm_abort(e);
     }
     if (e->types[escm_number_ival(type)]->type != TYPE_DYN) {
-	fprintf(stderr, "set-print: given type must be a dynamic type.\n");
+	escm_error(e, "~s: given type must be a dynamic type.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -159,11 +159,11 @@ escm_set_eval(escm *e, escm_atom *args)
     escm_assert(ESCM_ISINT(type), type, e);
     if (escm_number_ival(type) < 0 ||
 	(unsigned long) escm_number_ival(type) >= e->ntypes) {
-	escm_error(e, "set-eval: ~s is not a type.~%", type);
+	escm_error(e, "~s: ~s is not a type.~%", escm_fun(e), type);
 	escm_abort(e);
     }
     if (e->types[escm_number_ival(type)]->type != TYPE_DYN) {
-	fprintf(stderr, "set-eval: given type must be a dynamic type.\n");
+	escm_error(e, "~s: given type must be a dynamic type.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -181,11 +181,11 @@ escm_set_equal(escm *e, escm_atom *args)
     escm_assert(ESCM_ISINT(type), type, e);
     if (escm_number_ival(type) < 0 ||
 	(unsigned long) escm_number_ival(type) >= e->ntypes) {
-	escm_error(e, "set-equal: ~s is not a type.~%", type);
+	escm_error(e, "~s: ~s is not a type.~%", escm_fun(e), type);
 	escm_abort(e);
     }
     if (e->types[escm_number_ival(type)]->type != TYPE_DYN) {
-	fprintf(stderr, "set-equal: given type must be a dynamic type.\n");
+	escm_error(e, "~s: given type must be a dynamic type.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -203,11 +203,11 @@ escm_set_parse_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISINT(type), type, e);
     if (escm_number_ival(type) < 0 ||
 	(unsigned long) escm_number_ival(type) >= e->ntypes) {
-	escm_error(e, "set-parse?: ~s is not a type.~%", type);
+	escm_error(e, "~s: ~s is not a type.~%", escm_fun(e), type);
 	escm_abort(e);
     }
     if (e->types[escm_number_ival(type)]->type != TYPE_DYN) {
-	fprintf(stderr, "set-parse?: given type must be a dynamic type.\n");
+	escm_error(e, "~s: given type must be a dynamic type.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -225,11 +225,11 @@ escm_set_parse(escm *e, escm_atom *args)
     escm_assert(ESCM_ISINT(type), type, e);
     if (escm_number_ival(type) < 0 ||
 	(unsigned long) escm_number_ival(type) >= e->ntypes) {
-	escm_error(e, "set-parse: ~s is not a type.~%", type);
+	escm_error(e, "~s: ~s is not a type.~%", escm_fun(e), type);
 	escm_abort(e);
     }
     if (e->types[escm_number_ival(type)]->type != TYPE_DYN) {
-	fprintf(stderr, "set-parse: given type must be a dynamic type.\n");
+	escm_error(e, "~s: given type must be a dynamic type.~%", escm_fun(e));
 	escm_abort(e);
     }
 

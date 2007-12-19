@@ -4,7 +4,6 @@
    - Allow to override built type functions with closures
    - Macros don't work anymore
    - Recode "do" (don't create a context when rebinding vars (see runlambda)
-   - Rename type.[ch] to dyntype.[ch] and add compile-time checks.
 
  - Features
    - Unicode support (both characters and strings, see r6rs for possible impl)
