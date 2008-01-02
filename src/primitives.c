@@ -572,7 +572,7 @@ escm_begin(escm *e, escm_atom *args)
 escm_atom *
 escm_do(escm *e, escm_atom *args)
 {
-    escm_cons *c, *cval;
+    escm_cons *c;
     escm_atom *env, *prevenv, *test, *ret;
     escm_atom *clauses, *atom, *var, *varval;
 
@@ -615,7 +615,7 @@ escm_do(escm *e, escm_atom *args)
 	    return NULL;
 	}
 
-	escm_symbol_set(var, varval);
+	escm_env_set(e, env, var, varval);
     }
 
     escm_gc_ungard(e, env);
@@ -637,7 +637,9 @@ escm_do(escm *e, escm_atom *args)
 		(void) escm_begin(e, args);
 
 	    /* run steps and rebound vars */
-	    escm_ctx_enter(e);
+
+	    env = escm_env_new(e, prevenv);
+	    escm_gc_gard(e, env);
 
 	    for (c = escm_cons_val(clauses); c; c = escm_cons_next(c)) {
 		atom = c->car;
@@ -652,23 +654,18 @@ escm_do(escm *e, escm_atom *args)
 				    "context.\n");
 			    e->err = 1;
 			}
-			escm_ctx_discard(e);
+			escm_gc_ungard(e, env);
 			ret = NULL;
 			goto end;
 		    }
 		} else
 		    varval = escm_atom_eval(e, var);
-		escm_ctx_put(e, varval);
+
+		escm_env_set(e, env, var, varval);
 	    }
 
-	    cval = escm_cons_val(escm_ctx_leave(e));
-	    for (c = escm_cons_val(clauses); c;
-		 c = escm_cons_next(c), cval = escm_cons_next(cval)) {
-		atom = c->car;
-		var = escm_cons_pop(e, &atom);
-
-		escm_symbol_set(var, cval->car);
-	    }
+	    escm_env_leave(e, prevenv);
+	    prevenv = escm_env_enter(e, env);
 	}
     }
 

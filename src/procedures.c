@@ -142,14 +142,15 @@ escm_map(escm *e, escm_atom *args)
 	    escm_ctx_put(e, escm_cons_pop(e, &c->car));
 	}
 	atom = escm_procedure_exec(e, proc, escm_ctx_leave(e), 0);
-	if (!atom) {
+	if (atom)
+	    escm_ctx_put(e, atom);
+	else {
 	    if (e->err == 1) {
 		escm_ctx_discard(e);
 		return NULL;
 	    }
 	    fprintf(stderr, "map: the procedure must yeild a value.\n");
 	}
-	escm_ctx_put(e, atom);
     }
 
 err_length:
