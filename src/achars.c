@@ -422,7 +422,7 @@ input_getchar(escm *e, escm_input *input)
     char c;
     size_t len;
 
-    str = escm_input_getstr_fun(input, isalnum, 0);
+    str = escm_input_getstr_fun(input, isalnum, 1);
     len = strlen(str);
 
     c = '\0';

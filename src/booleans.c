@@ -115,6 +115,5 @@ boolean_parse(escm *e)
 {
     (void) escm_input_getc(e->input); /* skip '#' */
 
-    return escm_atom_new(e, booleantype, (escm_input_getc(e->input) == 't') ?
-			ESCM_BOOL_T : ESCM_BOOL_F);
+    return (escm_input_getc(e->input) == 't') ? e->TRUE : e->FALSE;
 }

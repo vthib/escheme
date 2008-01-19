@@ -247,11 +247,17 @@ escm_ustring_set_x(escm *e, escm_atom *args)
     long i;
 
     if (!escm_type_ison(ESCM_TYPE_UCHAR)) {
-	escm_error(e, "~s: character type is off.~%", e->curobj);
+	escm_error(e, "~s: character type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-	escm_error(e, "~s: number type is off.~%", e->curobj);
+	escm_error(e, "~s: number type is off.~%", escm_fun(e));
+	escm_abort(e);
+    }
+
+    if (str->ro == 1) {
+	escm_error(e, "~s: Can't modify ~s: immutable string.~%", escm_fun(e),
+		   str);
 	escm_abort(e);
     }
 
@@ -267,13 +273,7 @@ escm_ustring_set_x(escm *e, escm_atom *args)
     escm_assert(ESCM_ISUCHAR(c), c, e);
 
     if ((size_t) i >= escm_ustr_len(str)) {
-	fprintf(stderr, "index %ld is out of range.\n", i);
-	escm_abort(e);
-    }
-
-    if (str->ro == 1) {
-	escm_error(e, "~s: Can't modify ~s: immutable string.~%", e->curobj,
-		   str);
+	escm_error(e, "~s: index ~s is out of range.~%", escm_fun(e), k);
 	escm_abort(e);
     }
 
@@ -561,7 +561,7 @@ escm_ustring_fill_x(escm *e, escm_atom *args)
     escm_assert(ESCM_ISUCHAR(c), c, e);
 
     if (str->ro == 1) {
-	escm_error(e, "~s: Can't modify ~s: immutable string.~%", e->curobj,
+	escm_error(e, "~s: Can't modify ~s: immutable string.~%", escm_fun(e),
 		   str);
 	escm_abort(e);
     }
@@ -665,5 +665,6 @@ ustring_parse(escm *e)
 
     ret = escm_ustring_make(e, str, wcslen(str));
     free(str);
+    ret->ro = 1;
     return ret;
 }

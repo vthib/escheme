@@ -4,6 +4,8 @@
    - Allow to override built type functions with closures
    - Macros don't work anymore
    - Recode "do" (don't create a context when rebinding vars (see runlambda)
+   - Do not add or set a new variable in a real only env
+   - Add the ability to add (& remove?) new rules in macros
 
  - Features
    - Unicode support (both characters and strings, see r6rs for possible impl)

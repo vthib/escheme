@@ -269,7 +269,8 @@ escm_astring_set_x(escm *e, escm_atom *args)
     }
 
     if (str->ro == 1) {
-	fprintf(stderr, "astring-set!: Can't modify an immutable astring.\n");
+	escm_error(e, "~s: Can't modify ~s: immutable string.~%", escm_fun(e),
+		   str);
 	escm_abort(e);
     }
 
@@ -556,7 +557,7 @@ escm_astring_fill_x(escm *e, escm_atom *args)
     escm_assert(ESCM_ISCHAR(c), c, e);
 
     if (str->ro == 1) {
-	escm_error(e, "~s: Can't modify ~s: immutable string.~%", e->curobj,
+	escm_error(e, "~s: Can't modify ~s: immutable string.~%", escm_fun(e),
 		   str);
 	escm_abort(e);
     }
@@ -655,5 +656,6 @@ astring_parse(escm *e)
 
     ret = escm_astring_make(e, str, strlen(str));
     free(str);
+    ret->ro = 1;
     return ret;
 }
