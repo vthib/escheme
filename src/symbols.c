@@ -27,10 +27,11 @@
 static unsigned long symboltype = 2;
 
 static void symbol_print(escm *, escm_tst *, escm_output *, int);
-static int symbol_equal(escm *, escm_tst *, escm_tst *, int);
 static int symbol_parsetest(escm *, int);
 static escm_atom *symbol_parse(escm *);
 static escm_atom *symbol_eval(escm *, escm_tst *);
+static int symbol_equal(escm *, escm_tst *, escm_tst *, int);
+static int symbol_eq_colorless(char *, char *);
 
 static inline int issymbol(int);
 
@@ -42,10 +43,10 @@ escm_symbols_init(escm *e)
 
     t = xcalloc(1, sizeof *t);
     t->d.c.fprint = (Escm_Fun_Print) symbol_print;
-    t->d.c.fequal = (Escm_Fun_Equal) symbol_equal;
     t->d.c.fparsetest = symbol_parsetest;
     t->d.c.fparse = symbol_parse;
     t->d.c.feval = (Escm_Fun_Eval) symbol_eval;
+    t->d.c.fequal = (Escm_Fun_Equal) symbol_equal;
 
     symboltype = escm_type_add(e, t);
 
@@ -176,15 +177,6 @@ symbol_print(escm *e, escm_tst *symbol, escm_output *stream, int lvl)
 }
 
 static int
-symbol_equal(escm *e, escm_tst *s1, escm_tst *s2, int lvl)
-{
-    (void) e;
-    (void) lvl;
-
-    return (s1 == s2 || !strcmp(s1->symname, s2->symname));
-}
-
-static int
 symbol_parsetest(escm *e, int c)
 {
     (void) e;
@@ -233,6 +225,34 @@ symbol_eval(escm *e, escm_tst *sym)
     }
 
     return sym->node->atom;
+}
+
+static int
+symbol_equal(escm *e, escm_tst *t1, escm_tst *t2, int lvl)
+{
+    (void) e;
+
+    if (lvl == 3)
+	return symbol_eq_colorless(t1->symname, t2->symname);
+    return t1 == t2;
+}
+
+/* XXX: checks for symbol_type, ...? */
+static int
+symbol_eq_colorless(char *s1, char *s2)
+{
+    char *t1, *t2;
+
+    t1 = strrchr(s1, '~');
+    if (t1 && *(t1 + 1) != '0')
+	t1 = NULL;
+    t2 = strrchr(s2, '~');
+    if (t2 && *(t2 + 1) != '0')
+	t2 = NULL;
+    if (!t1 && !t2)
+	return !strcmp(s1, s2);
+    else
+	return !strncmp(s1, s2, t1 - s1);
 }
 
 static inline int

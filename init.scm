@@ -90,3 +90,6 @@
 		     (else (error 'printf "unknown escape code ~"
 				  (string-ref format i))))))
 	(write-char (string-ref format i)))))
+
+(define let-syntax let)
+(define letrec-syntax letrec)

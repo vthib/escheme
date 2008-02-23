@@ -40,4 +40,6 @@ escm_atom *escm_string_to_symbol(escm *, escm_atom *);
 
 escm_atom *escm_lookup(escm *, escm_atom *);
 
+int escm_symbol_eq_colorless(escm_atom *, escm_atom *);
+
 #endif /* ESCHEME_SYMBOLS_H */

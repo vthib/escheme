@@ -78,7 +78,7 @@ escm_atom *
 escm_macro_expand(escm *e, escm_atom *macro, escm_atom *cont)
 {
     escm_macro *m;
-    escm_atom *rules, *a;
+    escm_atom *rules, *a, *prevenv;
     escm_match *b, *prev;
 
     m = macro->ptr;
@@ -86,12 +86,19 @@ escm_macro_expand(escm *e, escm_atom *macro, escm_atom *cont)
     for (a = escm_cons_pop(e, &rules); a; a = escm_cons_pop(e, &rules)) {
 	if (match(e, m, escm_cons_car(a), cont)) {
 	    b = bind(e, m, escm_cons_car(a), cont, NULL);
+
+	    prevenv = escm_env_enter(e, m->env);
+	    /* little hack to build the new env over the current env, not
+	       over the env in which the macro has been build */
+	    e->env = prevenv;
 	    a = expand(e, m, escm_cons_car(escm_cons_val(a)->cdr), NULL, b, 0);
+	    e->env = m->env;
 	    while (b) {
 		prev = b->prev;
 		free(b);
 		b = prev;
 	    }
+	    escm_env_leave(e, prevenv);
 	    return a;
 	}
     }
@@ -207,15 +214,6 @@ match(escm *e, escm_macro *m, escm_atom *m1, escm_atom *m2)
 	    if (!match(e, m, a1, a2))
 		return 0;
 	} else if (ESCM_ISSYM(a1)) {
-	    if (escm_cons_isin(e, m->literals, a1)) {
-		/* XXX: juste check sym_val()? */
-		/*if (escm_env_getlocal(e->env, escm_sym_name(a1)))
-		  return 0;*/
-		if (escm_sym_name(a1))
-		    return 0;
-		if (!escm_atom_equal(e, a1, a2, 2))
-		    return 0;
-	    }
 	    if (0 == strcmp(escm_sym_name(a1), "..."))
 		return 1;
 	} else {
@@ -267,7 +265,7 @@ bind(escm *e, escm_macro *m, escm_atom *m1, escm_atom *m2, escm_match *match)
 
 	if (ESCM_ISCONS(a1))
 	    match = bind(e, m, a1, a2, match);
-	else if (ESCM_ISSYM(a1) && !escm_cons_isin(e, m->literals, a1))
+	else if (ESCM_ISSYM(a1) && !escm_cons_isin(e, m->literals, a1, 3))
 	    match = add(e, match, a1, a2);
 
 	if (cons)

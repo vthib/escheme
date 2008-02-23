@@ -123,7 +123,7 @@ escm_cons_pop(escm *e, escm_atom **cons)
 }
 
 int
-escm_cons_isin(escm *e, escm_atom *cons, escm_atom *elem)
+escm_cons_isin(escm *e, escm_atom *cons, escm_atom *elem, int lvl)
 {
     escm_atom *a;
 
@@ -131,7 +131,7 @@ escm_cons_isin(escm *e, escm_atom *cons, escm_atom *elem)
 	return 0;
 
     for (a = escm_cons_pop(e, &cons); a; a = escm_cons_pop(e, &cons)) {
-	if (escm_atom_equal(e, a, elem, 2))
+	if (escm_atom_equal(e, a, elem, lvl))
 	    return 1;
     }
 

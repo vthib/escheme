@@ -179,7 +179,7 @@ escm_shell(escm *e)
 	    escm_atom_print(e, atom);
 	    printf("\n");
 	}
-	printf("escheme> ");
+	printf("> ");
 	if (EOF == fflush(stdout))
 	    perror("fflush");
 	atom = escm_parse(e);

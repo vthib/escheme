@@ -183,7 +183,7 @@ escm_define(escm *e, escm_atom *args)
 	escm_atom *val;
 
 	if (escm_cons_cdr(args) != e->NIL) {
-	    fprintf(stderr, "define: error: multiples expressions.\n");
+	    escm_error(e, "~s: error: multiples expressions.~%", escm_fun(e));
 	    escm_abort(e);
 	}
 
@@ -248,13 +248,11 @@ escm_let(escm *e, escm_atom *args)
 
 	varval = escm_atom_eval(e, varcons->car);
 	if (!varval) {
-	    if (e->err != 1) {
-		escm_atom_printerr(e, varcons->car);
-		fprintf(stderr, ": expression not allowed in this context.\n");
-		e->err = 1;
-	    }
+	    if (e->err != 1)
+		escm_error(e, "~s: ~s: expression not allowed in this "
+			   "context.~%", escm_fun(e), varcons->car);
 	    escm_gc_ungard(e, env);
-	    return NULL;
+	    escm_abort(e);
 	}
 
 	escm_env_set(e, env, varname, varval);
@@ -299,13 +297,11 @@ escm_let_star(escm *e, escm_atom *args)
 
 	varval = escm_atom_eval(e, varcons->car);
 	if (!varval) {
-	    if (e->err != 1) {
-		escm_atom_printerr(e, varcons->car);
-		fprintf(stderr, ": expression not allowed in this context.\n");
-		e->err = 1;
-	    }
+	    if (e->err != 1)
+		escm_error(e, "~s: ~s: expression not allowed in this "
+			   "context.~%", escm_fun(e), varcons->car);
 	    escm_env_leave(e, prevenv);
-	    return NULL;
+	    escm_abort(e);
 	}
 
 	escm_env_set(e, e->env, varname, varval);
@@ -356,13 +352,11 @@ escm_letrec(escm *e, escm_atom *args)
 
 	ret = escm_atom_eval(e, varcons->car);
 	if (!ret) {
-	    if (e->err != 1) {
-		escm_atom_printerr(e, varcons->car);
-		fprintf(stderr, ": expression not allowed in this context.\n");
-		e->err = 1;
-	    }
+	    if (e->err != 1)
+		escm_error(e, "~s: ~s: expression not allowed in this "
+			   "context.~%", escm_fun(e), varcons->car);
 	    escm_env_leave(e, prevenv);
-	    return NULL;
+	    escm_abort(e);
 	}
 	varcons->car = ret;
     }
@@ -393,12 +387,10 @@ escm_if(escm *e, escm_atom *args)
 
     test = escm_atom_eval(e, a);
     if (!test) {
-	if (e->err != 1) {
-	    escm_atom_printerr(e, a);
-	    fprintf(stderr, ": expression not allowed in this context.\n");
-	    e->err = 1;
-	}
-	return NULL;
+	if (e->err != 1)
+	    escm_error(e, "~s: ~s: expression not allowed in this "
+		       "context.~%", escm_fun(e), a);
+	escm_abort(e);
     }
 
     if (ESCM_ISTRUE(test)) {
@@ -433,12 +425,10 @@ escm_cond(escm *e, escm_atom *args)
 
 	ret = escm_atom_eval(e, test);
 	if (!ret) {
-	    if (e->err != 1) {
-		escm_atom_printerr(e, test);
-		fprintf(stderr, ": expression not allowed in this context.\n");
-		e->err = 1;
-	    }
-	    return NULL;
+	    if (e->err != 1)
+		escm_error(e, "~s: ~s: expression not allowed in this "
+			   "context.~%", escm_fun(e), test);
+	    escm_abort(e);
 	}
 
 	if (ESCM_ISTRUE(ret)) {
@@ -452,8 +442,8 @@ escm_cond(escm *e, escm_atom *args)
 		if (!proc)
 		    return NULL;
 		if (!ESCM_ISPROC(proc)) {
-		    escm_atom_printerr(e, proc);
-		    fprintf(stderr, ": procedure expected.\n");
+		    escm_error(e, "~s: ~s: procedure expected.~%", escm_fun(e),
+			       proc);
 		    escm_abort(e);
 		}
 		return escm_procedure_exec(e, proc,
@@ -475,10 +465,9 @@ escm_case(escm *e, escm_atom *args)
     d = escm_cons_pop(e, &args);
     expr = escm_atom_eval(e, d);
     if (!expr) {
-	if (e->err != 1) {
-	    escm_atom_printerr(e, d);
-	    fprintf(stderr, ": expression not allowed in this context.\n");
-	}
+	if (e->err != 1)
+	    escm_error(e, "~s: ~s: expression not allowed in this "
+		       "context.~%", escm_fun(e), d);
 	escm_abort(e);
     }
 
@@ -552,7 +541,7 @@ escm_begin(escm *e, escm_atom *args)
 {
     escm_atom *a, *ret;
     if (!args) {
-	fprintf(stderr, "begin: no arguments given.\n");
+	escm_error(e, "~s: no arguments given.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -606,13 +595,11 @@ escm_do(escm *e, escm_atom *args)
 	atom = varval;
 	varval = escm_atom_eval(e, varval);
 	if (!varval) {
-	    if (e->err != 1) {
-		escm_atom_printerr(e, atom);
-		fprintf(stderr, ": expression not allowed in this context.\n");
-		e->err = 1;
-	    }
+	    if (e->err != 1)
+		escm_error(e, "~s: ~s: expression not allowed in this "
+			   "context.~%", escm_fun(e), atom);
 	    escm_gc_ungard(e, env);
-	    return NULL;
+	    escm_abort(e);
 	}
 
 	escm_env_set(e, env, var, varval);
@@ -649,9 +636,8 @@ escm_do(escm *e, escm_atom *args)
 		    varval = escm_atom_eval(e, escm_cons_pop(e, &atom));
 		    if (!varval) {
 			if (e->err != 1) {
-			    escm_atom_printerr(e, atom);
-			    fprintf(stderr, ": expression not allowed in this "
-				    "context.\n");
+			    escm_error(e, "~s: ~s: expression not allowed in "
+				       "this context.~%", escm_fun(e), atom);
 			    e->err = 1;
 			}
 			escm_gc_ungard(e, env);
@@ -724,7 +710,7 @@ escm_load(escm *e, escm_atom *args)
     escm_context *ctx;
 
     if (!escm_type_ison(ESCM_TYPE_STRING)) {
-	escm_error(e, "~s: string type is off.~%", e->curobj);
+	escm_error(e, "~s: string type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -767,7 +753,7 @@ escm_read_char(escm *e, escm_atom *args)
     (void) args;
 
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
-	escm_error(e, "~s: character type is off.~%", e->curobj);
+	escm_error(e, "~s: character type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -801,7 +787,7 @@ escm_peek_char(escm *e, escm_atom *args)
     (void) args;
 
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
-	escm_error(e, "~s: character type is off.~%", e->curobj);
+	escm_error(e, "~s: character type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -831,7 +817,7 @@ escm_write_char(escm *e, escm_atom *args)
     escm_atom *c;
 
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
-	escm_error(e, "~s: character type is off.~%", e->curobj);
+	escm_error(e, "~s: character type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -932,7 +918,7 @@ named_let(escm *e, escm_atom *name, escm_atom *args)
     bindings = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCONS(bindings), bindings, e);
     if (!args) {
-	fprintf(stderr, "missing body.\n");
+	escm_error(e, "~s: missing body.~%", escm_fun(e));
 	escm_abort(e);
     }
     
@@ -1010,7 +996,8 @@ quasiquote(escm *e, escm_atom *atom, unsigned int lvl)
 	       (ie `(1 2 . ,a) -> `(1 2 unquote a) */
 	    if (0 == strcmp(escm_sym_name(c->car), "unquote")) {
 		if (c->cdr == e->NIL) {
-		    fprintf(stderr, "unquote expect exactly one argument.\n");
+		    escm_error(e, "~s: unquote expect exactly one argument.~%",
+			       escm_fun(e));
 		    goto err;
 		}
 		ret = quasiquote(e, escm_cons_val(c->cdr)->car, lvl - 1);
@@ -1020,8 +1007,8 @@ quasiquote(escm *e, escm_atom *atom, unsigned int lvl)
 		escm_ctx_put(e, ret);
 		break;
 	    } else if (0 == strcmp(escm_sym_name(c->car), "unquote-splicing")) {
-		fprintf(stderr, "unquote-splicing found after a dotted "
-			"notation.\n");
+		escm_error(e, "~s: unquote-splicing found after a dotted "
+			   "notation.~%", escm_fun(e));
 		goto err;
 	    } else
 		escm_ctx_put(e, c->car);
@@ -1032,8 +1019,8 @@ quasiquote(escm *e, escm_atom *atom, unsigned int lvl)
 		cons = escm_cons_val(c->car);
 		if (0 == strcmp(escm_sym_name(cons->car), "unquote")) {
 		    if (cons->cdr == e->NIL) {
-			fprintf(stderr, "unquote expect exactly one "
-				"argument.\n");
+			escm_error(e, "~s: unquote expect exactly one "
+				   "argument.~%", escm_fun(e));
 			goto err;
 		    }
 		    if (lvl != 1) {
@@ -1049,8 +1036,8 @@ quasiquote(escm *e, escm_atom *atom, unsigned int lvl)
 		} else if (0 == strcmp(escm_sym_name(cons->car),
 				       "unquote-splicing")) {
 		    if (cons->cdr == e->NIL) {
-			fprintf(stderr, "unquote-splicing expect exactly one "
-				"argument.\n");
+			escm_error(e, "~s: unquote-splicing expect exactly one "
+				   "argument.~%", escm_fun(e));
 			goto err;
 		    }
 		    if (lvl != 1) {
@@ -1061,8 +1048,8 @@ quasiquote(escm *e, escm_atom *atom, unsigned int lvl)
 		    if (!ret)
 			goto err;
 		    else if (!ESCM_ISCONS(ret)) {
-			fprintf(stderr, "unquote-splicing expect a argument of "
-				"type <list>.\n");
+			escm_error(e, "~s: unquote-splicing expect a argument "
+				   "of type <list>.~%", escm_fun(e));
 			goto err;
 		    }
 		    if (lvl != 1) {
@@ -1106,7 +1093,7 @@ quasiquote_vector(escm *e, escm_atom *atom, unsigned int lvl)
     size_t i;
 
     if (!escm_type_ison(ESCM_TYPE_VECTOR)) {
-	escm_error(e, "~s: vector type is off.~%", e->curobj);
+	escm_error(e, "~s: vector type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -1121,8 +1108,8 @@ quasiquote_vector(escm *e, escm_atom *atom, unsigned int lvl)
 		cons = escm_cons_val(v->vec[i]);
 		if (0 == strcmp(escm_sym_name(cons->car), "unquote")) {
 		    if (cons->cdr == e->NIL) {
-			fprintf(stderr, "unquote expect exactly one "
-				"argument.\n");
+			escm_error(e, "~s: unquote expect exactly one "
+				   "argument.~%", escm_fun(e));
 			goto err;
 		    }
 		    if (lvl != 1) {
@@ -1138,8 +1125,8 @@ quasiquote_vector(escm *e, escm_atom *atom, unsigned int lvl)
 		} else if (0 == strcmp(escm_sym_name(cons->car),
 				       "unquote-splicing")) {
 		    if (cons->cdr == e->NIL) {
-			fprintf(stderr, "unquote-splicing expect exactly one "
-				"argument.\n");
+			escm_error(e, "~s: unquote expect exactly one "
+				   "argument.~%", escm_fun(e));
 			goto err;
 		    }
 		    if (lvl != 1) {
@@ -1150,8 +1137,8 @@ quasiquote_vector(escm *e, escm_atom *atom, unsigned int lvl)
 		    if (!ret)
 			goto err;
 		    else if (!ESCM_ISCONS(ret)) {
-			fprintf(stderr, "unquote-splicing expect a argument of "
-				"type <list>.\n");
+			escm_error(e, "~s: unquote-splicing expect a argument "
+				   "of type <list>.~%", escm_fun(e));
 			goto err;
 		    }
 		    if (lvl != 1) {
