@@ -325,11 +325,19 @@ env_mark(escm *e, escm_env *env)
 static void
 env_print(escm *e, escm_env *env, escm_output *stream, int lvl)
 {
+    struct envlist *list;
+
     (void) e;
-    (void) env;
     (void) lvl;
 
-    escm_printf(stream, "#<Alpha>");
+    escm_printf(stream, "#<Alpha {");
+    for (list = env->list; list; list = list->next) {
+	escm_printf(stream, "\"%s\": ", list->tree->symname);
+	escm_atom_print3(e, list->node->atom, stream);
+	if (list->next)
+	    escm_printf(stream, ", ");
+    }
+    escm_printf(stream, "}>");
 }
 
 static void

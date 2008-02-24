@@ -18,7 +18,9 @@
 #include <string.h>
 #include <ctype.h>
 #include <limits.h>
-#include <math.h>
+#ifdef ESCM_USE_MATH
+# include <math.h>
+#endif
 
 #include "escheme.h"
 #include "bnumbers.h"

@@ -2,8 +2,7 @@
    - Verify compatibility with various scheme libraries
    - Try to implement some SRFIs
    - Allow to override built type functions with closures
-   - Macros don't work anymore
-   - Recode "do" (don't create a context when rebinding vars (see runlambda)
+   - Macros don't support multiples ...
    - Do not add or set a new variable in a read only env
    - Add the ability to add (& remove?) new rules in macros
 

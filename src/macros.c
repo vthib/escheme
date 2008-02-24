@@ -203,7 +203,8 @@ match(escm *e, escm_macro *m, escm_atom *m1, escm_atom *m2)
 	    if (ESCM_ISSYM(a1) && 0 == strcmp(escm_sym_name(a1), "..."))
 		return 1;
 	    rule = escm_cons_next(rule);
-	    if (rule && 0 == strcmp(escm_sym_name(rule->car), "..."))
+	    if (rule && ESCM_ISSYM(rule->car) &&
+		0 == strcmp(escm_sym_name(rule->car), "..."))
 		return 1;
 	    return 0;
 	}
@@ -245,28 +246,32 @@ bind(escm *e, escm_macro *m, escm_atom *m1, escm_atom *m2, escm_match *match)
 	if (!a1)
 	    return match;
 
-	if (!ESCM_ISCONS(rule->cdr)) /* rest arguments */
-	    return add(e, match, rule->cdr, (cons) ? cons->cdr : e->NIL);
-
-	rule = escm_cons_next(rule);
-	if (rule != NULL && ESCM_ISSYM(rule->car) &&
-	    0 == strcmp(escm_sym_name(rule->car), "...")) {
-	    do {
-		if (ESCM_ISCONS(a1))
-		    match = bind(e, m, a1, a2, match);
-		else
-		    match = add(e, match, a1, a2);
-		if (cons)
-		    cons = escm_cons_next(cons), a2 = (cons) ? cons->car : NULL;
-	    } while (a2);
-
-	    return match;
-	}
-
 	if (ESCM_ISCONS(a1))
 	    match = bind(e, m, a1, a2, match);
 	else if (ESCM_ISSYM(a1) && !escm_cons_isin(e, m->literals, a1, 3))
 	    match = add(e, match, a1, a2);
+
+	if (!ESCM_ISCONS(rule->cdr)) /* rest arguments */
+	    return add(e, match, rule->cdr, (cons) ? cons->cdr : e->NIL);
+	else {
+	    rule = escm_cons_next(rule);
+	    if (rule != NULL && ESCM_ISSYM(rule->car) &&
+		0 == strcmp(escm_sym_name(rule->car), "...")) {
+		if (cons)
+		    cons = escm_cons_next(cons), a2 = (cons) ? cons->car :
+			NULL;
+		while (a2) {
+		    if (ESCM_ISCONS(a1))
+			match = bind(e, m, a1, a2, match);
+		    else
+			match = add(e, match, a1, a2);
+		    if (cons)
+			cons = escm_cons_next(cons), a2 = (cons) ? cons->car :
+			    NULL;
+		}
+		return match;
+	    }
+	}
 
 	if (cons)
 	    cons = escm_cons_next(cons);

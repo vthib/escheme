@@ -19,8 +19,6 @@
 
 #include <stdio.h>
 
-#include "config.h"
-
 #ifdef ESCM_R5RS
 # define ESCM_USE_BOOLEANS
 # define ESCM_USE_CHARACTERS
