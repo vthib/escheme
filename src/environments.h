@@ -23,8 +23,6 @@ typedef struct escm_env {
     struct envlist *list;
     escm_tst *tree;
     escm_atom *prev;
-
-    unsigned int in : 1;
 } escm_env;
 
 #define ESCM_TYPE_ENV (escm_env_tget())

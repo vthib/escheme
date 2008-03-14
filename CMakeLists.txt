@@ -13,6 +13,7 @@ macro(append_define)
   set(DEFINES ${DEFINES} ${ARGN})
 endmacro(append_define)
 
+add_definitions(-g)
 add_definitions($ENV{CFLAGS})
 
 option(unicode "build the unicode version of strings and characters" 0)

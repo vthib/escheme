@@ -86,8 +86,7 @@ escm_env_new(escm *e, escm_atom *prev)
     env = xcalloc(1, sizeof *env);
     env->list = NULL;
     env->prev = prev;
-    env->tree = (prev && ESCM_ISENV(prev)) ? ((escm_env *) prev->ptr)->tree :
-	NULL;
+    env->tree = (prev && ESCM_ISENV(prev)) ? escm_env_val(prev)->tree : NULL;
     return escm_atom_new(e, envtype, env);
 }
 
@@ -99,6 +98,16 @@ escm_env_set(escm *e, escm_atom *atomenv, escm_atom *sym, escm_atom *atom)
 
     assert(atomenv != NULL);
     assert(sym != NULL);
+
+    if (atomenv->ro == 1) {
+	escm_error(e, "trying to modify a read-only environment.~%");
+	return;
+    }
+
+    if (!ESCM_ISENV(atomenv)) {
+	escm_error(e, "~s in not an environment.~%", atomenv);
+	return;
+    }
 
     env = (escm_env *) atomenv->ptr;
 
@@ -233,6 +242,7 @@ escm_with(escm *e, escm_atom *args)
     env = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISENV(env), env, e);
 
+    escm_env_val(env)->prev = e->env;
     prev = escm_env_enter(e, env);
 
     ret = escm_begin(e, args);
@@ -262,7 +272,7 @@ escm_scheme_report_environment(escm *e, escm_atom *args)
     while (((escm_env *) env->ptr)->prev)
 	env = ((escm_env *) env->ptr)->prev;
 
-    return env; /* return toplvl */
+    return env; /* return toplevel */
 }
 
 escm_atom *

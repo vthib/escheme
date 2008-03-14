@@ -177,7 +177,7 @@ escm_define(escm *e, escm_atom *args)
 	while (args)
 	    escm_ctx_put(e, escm_cons_pop(e, &args)); /* body */
 
-	escm_symbol_set(a->car, escm_lambda(e, escm_ctx_first(e)));
+	escm_env_set(e, e->env, a->car, escm_lambda(e, escm_ctx_first(e)));
 	escm_ctx_discard(e);
     } else {
 	escm_atom *val;
@@ -193,7 +193,7 @@ escm_define(escm *e, escm_atom *args)
 	if (!val)
 	    return NULL;
 
-	escm_symbol_set(c, val);
+	escm_env_set(e, e->env, c, val);
     }
 
     return NULL;

@@ -316,13 +316,12 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomcons, int eval)
     if (!ESCM_ISCONS(atomcons))
 	return NULL;
 
-    env = NULL;
+    env = NULL, prevenv = NULL;
     tailrec = 0;
     cons = escm_cons_val(atomcons);
     fun = escm_proc_val(atomfun);
 
     escm_ctx_enter(e);
-    e->ctx->fun = atomfun;
     if (setjmp(e->ctx->jbuf) != 0) {
 	escm_notice(e, "receive local jump with args ~s.~%", e->ctx->first);
 	atomcons = e->ctx->first, e->ctx->first = NULL;
@@ -392,6 +391,7 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomcons, int eval)
 			    else
 				val = escm_atom_eval(e, cons->car);
 			    if (!val || e->err == 1) {
+				escm_ctx_discard(e);
 				goto errarg;
 			    }
 			    escm_ctx_put(e, val);
@@ -431,9 +431,10 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomcons, int eval)
 	    prevenv = escm_env_enter(e, env);
     }
 
-    if (!tailrec)
+    if (!tailrec) {
 	e->ctx->last = env;
-    else {
+	e->ctx->fun = atomfun;
+    } else {
 	if (e->env != env)
 	    (void) escm_env_enter(e, env);
     }
@@ -443,9 +444,12 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomcons, int eval)
     for (cons = escm_cons_val(fun->d.closure.code); cons;
 	 cons = escm_cons_next(cons)) {
 	if (cons->cdr == e->NIL) {
+	    int tmp;
+
+	    tmp = e->tailrec;
 	    e->tailrec = 1;
 	    ret = escm_atom_eval(e, cons->car);
-	    e->tailrec = 0;
+	    e->tailrec = tmp;
 	} else
 	    ret = escm_atom_eval(e, cons->car);
 
@@ -456,7 +460,8 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomcons, int eval)
     }
 
     escm_ctx_discard(e);
-    escm_env_leave(e, prevenv);
+    if (prevenv)
+	escm_env_leave(e, prevenv);
 
 /*    escm_gc_ungard(e, atomcons);*/
 
