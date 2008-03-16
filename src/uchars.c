@@ -303,7 +303,7 @@ escm_uchar_to_integer(escm *e, escm_atom *args)
     escm_atom *c;
 
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-	escm_error(e, "~s: number type is off.~%", e->curobj);
+	escm_error(e, "~s: number type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -319,7 +319,7 @@ escm_integer_to_uchar(escm *e, escm_atom *args)
     escm_atom *n;
 
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-	escm_error(e, "~s: number type is off.~%", e->curobj);
+	escm_error(e, "~s: number type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -437,7 +437,8 @@ input_getuchar(escm *e, escm_input *input)
 	if (*str == 'x') {
 	    for (p = str + 1; *p != '\0'; p++) {
 		if (*p < '0' || *p > 'f') {
-		    fprintf(stderr, "invalid character: #\\%ls.\n", str);
+		    escm_input_error(input, e->errp, "parse error: invalid "
+				     "character: #\\%ls.\n", str);
 		    goto err;
 		}
 		if (*p <= '9')
@@ -468,7 +469,7 @@ input_getuchar(escm *e, escm_input *input)
 	else if (wcscmp(str, L"delete") == 0)
 	    c = L'\x7F';
 	else {
-	    escm_input_print(input, "unknown character #\\%s.", str);
+	    escm_input_error(input, e->errp, "unknown character #\\%s.", str);
 	    goto err;
 	}
     }

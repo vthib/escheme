@@ -114,7 +114,7 @@ escm_make_vector(escm *e, escm_atom *args)
     escm_atom **vec;
 
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-	escm_error(e, "~s: number type is off.~%", e->curobj);
+	escm_error(e, "~s: number type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -139,7 +139,7 @@ escm_vector_length(escm *e, escm_atom *args)
     escm_atom *v;
 
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-	escm_error(e, "~s: number type is off.~%", e->curobj);
+	escm_error(e, "~s: number type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -155,7 +155,7 @@ escm_vector_ref(escm *e, escm_atom *args)
     escm_atom *v, *k;
 
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-	escm_error(e, "~s: number type is off.~%", e->curobj);
+	escm_error(e, "~s: number type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -165,7 +165,7 @@ escm_vector_ref(escm *e, escm_atom *args)
     escm_assert(ESCM_ISINT(k) && escm_number_ival(k) >= 0, k, e);
 
     if ((size_t) escm_number_ival(k) >= escm_vector_len(v)) {
-	fprintf(stderr, "index %ld out of range.\n", escm_number_ival(k));
+	escm_error(e, "~s: index ~s out of range.~%", escm_fun(e), k);
 	escm_abort(e);
     }
 
@@ -178,7 +178,7 @@ escm_vector_set_x(escm *e, escm_atom *args)
     escm_atom *v, *k;
 
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-	escm_error(e, "~s: number type is off.~%", e->curobj);
+	escm_error(e, "~s: number type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -188,12 +188,12 @@ escm_vector_set_x(escm *e, escm_atom *args)
     escm_assert(ESCM_ISINT(k) && escm_number_ival(k) >= 0, k, e);
 
     if ((size_t) escm_number_ival(k) >= escm_vector_len(v)) {
-	fprintf(stderr, "index %ld out of range.\n", escm_number_ival(k));
+	escm_error(e, "~s: index ~s out of range.~%", escm_fun(e), k);
 	escm_abort(e);
     }
 
     if (v->ro == 1) {
-	fprintf(stderr, "vector-set!: Can't modify an immutable vector.\n");
+	escm_error(e, "~s: Can't modify an immutable vector.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -213,7 +213,7 @@ escm_vector_fill_x(escm *e, escm_atom *args)
     fill = escm_cons_pop(e, &args);
 
     if (v->ro == 1) {
-	fprintf(stderr, "vector-fill!: Can't modify an immutable vector.\n");
+	escm_error(e, "~s: Can't modify an immutable vector.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -340,8 +340,9 @@ vector_parse(escm *e)
 	    c = escm_input_getc(e->input);
 	    if (e->brackets == 1 && (c == ')' || c == ']')) {
 		if ((open == '(' && c == ']') || (open == '[' && c == ')')) {
-		    escm_input_print(e->input, "expecting a '%c' to close a "
-				     "'%c'", (open == '(') ? ')' : ']', open);
+		    escm_input_error(e->input, e->errp, "expecting a '%c' to "
+				     "close a '%c'.",
+				     (open == '(') ? ')' : ']', open);
 		    escm_ctx_discard(e);
 		    escm_abort(e);
 		}
@@ -354,9 +355,8 @@ vector_parse(escm *e)
 
 	atom = escm_parse(e);
 	if (e->ctx->dotted) {
-	    fprintf(stderr, "dotted notation is forbidden in a vector "
-		    "context.\n");
-	    e->err = 1;
+	    escm_error(e, "parse error: dotted notation is forbidden in a "
+		       "vector context.~%");
 	    escm_ctx_discard(e);
 	    return NULL;
 	}

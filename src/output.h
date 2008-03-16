@@ -18,6 +18,8 @@
 # define ESCHEME_OUTPUT_H
 
 #include <stdio.h>
+#include <stdarg.h>
+
 #include "types.h"
 
 enum { OUTPUT_FILE, OUTPUT_STR };
@@ -55,10 +57,12 @@ char *escm_output_getstr(escm_output *);
 
 void escm_output_close(escm_output *);
 
+void escm_vprintf(escm_output *, const char *, va_list);
 void escm_printf(escm_output *, const char *, ...);
 
 void escm_scmpf(escm *, escm_output *, const char *, ...);
 void escm_notice(escm *, const char *, ...);
+void escm_warning(escm *, const char *, ...);
 void escm_error(escm *, const char *, ...);
 
 void escm_print_slashify(escm_output *, const char *);

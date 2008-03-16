@@ -106,7 +106,7 @@ escm_symbol_to_string(escm *e, escm_atom *args)
     escm_atom *sym;
 
     if (!escm_type_ison(ESCM_TYPE_STRING)) {
-	escm_error(e, "~s: string type is off.~%", e->curobj);
+	escm_error(e, "~s: string type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -134,7 +134,7 @@ escm_string_to_symbol(escm *e, escm_atom *args)
     escm_atom *str;
 
     if (!escm_type_ison(ESCM_TYPE_STRING)) {
-	escm_error(e, "~s: string type is off.~%", e->curobj);
+	escm_error(e, "~s: string type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -220,7 +220,7 @@ static escm_atom *
 symbol_eval(escm *e, escm_tst *sym)
 {
     if (!sym->node || !sym->node->atom) {
-	fprintf(stderr, "unknown symbol `%s'.\n", sym->symname);
+	escm_error(e, "unknown symbol `~s'.~%", e->curobj);
 	escm_abort(e);
     }
 

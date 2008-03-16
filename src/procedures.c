@@ -29,6 +29,8 @@ static void procedure_print(escm *, escm_procedure *, escm_output *, int);
 static escm_atom *runprimitive(escm *, escm_atom *, escm_atom *, int);
 static escm_atom *runlambda(escm *, escm_atom *, escm_atom *, int);
 
+static escm_atom *foreach(escm *, escm_atom *, int);
+
 void
 escm_procedures_init(escm *e)
 {
@@ -111,96 +113,13 @@ escm_apply(escm *e, escm_atom *args)
 escm_atom *
 escm_map(escm *e, escm_atom *args)
 {
-    escm_atom *proc, *atom;
-    escm_cons *c;
-
-    proc = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISPROC(proc), proc, e);
-
-    for (c = escm_cons_val(args); c; c = escm_cons_next(c))
-	escm_assert(ESCM_ISCONS(c->car), c->car, e);
-
-    escm_ctx_enter(e);
-
-    for (;;) {
-	escm_ctx_enter(e);
-
-	for (c = escm_cons_val(args); c; c = escm_cons_next(c)) {
-	    if (!c->car) {
-		escm_cons *c2;
-
-		if (c != escm_cons_val(args)) /* not the first list, so they
-						 dont have same length */
-		    goto err_length;
-		for (c2 = escm_cons_next(c); c2; c2 = escm_cons_next(c2)) {
-		    if (c2->car != NULL)
-			goto err_length;
-		}
-		escm_ctx_discard(e);
-		return escm_ctx_leave(e);
-	    }
-	    escm_ctx_put(e, escm_cons_pop(e, &c->car));
-	}
-	atom = escm_procedure_exec(e, proc, escm_ctx_leave(e), 0);
-	if (atom)
-	    escm_ctx_put(e, atom);
-	else {
-	    if (e->err == 1) {
-		escm_ctx_discard(e);
-		return NULL;
-	    }
-	    fprintf(stderr, "map: the procedure must yeild a value.\n");
-	}
-    }
-
-err_length:
-    fprintf(stderr, "map: all lists must have the same length.\n");
-    escm_ctx_discard(e), escm_ctx_discard(e);
-    escm_abort(e);
+    return foreach(e, args, 1);
 }
 
 escm_atom *
 escm_for_each(escm *e, escm_atom *args)
 {
-    escm_atom *proc;
-    escm_cons *c;
-    int loop;
-
-    proc = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISPROC(proc), proc, e);
-
-    for (c = escm_cons_val(args); c; c = escm_cons_next(c))
-	escm_assert(ESCM_ISCONS(c->car), c->car, e);
-
-    escm_ctx_enter(e);
-
-    loop = 1;
-    while (loop) {
-	escm_ctx_enter(e);
-
-	for (c = escm_cons_val(args); c; c = escm_cons_next(c)) {
-	    if (!c->car) {
-		escm_cons *c2;
-
-		if (c != escm_cons_val(args)) /* not the first list, so they
-						 dont have same length */
-		    goto err_length;
-		for (c2 = escm_cons_next(c); c2; c2 = escm_cons_next(c2)) {
-		    if (c2->car != NULL)
-			goto err_length;
-		}
-		escm_ctx_discard(e);
-		return escm_ctx_leave(e);
-	    }
-	    escm_ctx_put(e, escm_cons_pop(e, &c->car));
-	}
-	(void) escm_procedure_exec(e, proc, escm_ctx_leave(e), 0);
-    }
-
-err_length:
-    fprintf(stderr, "for-each: all lists must have the same length.\n");
-    escm_ctx_discard(e), escm_ctx_discard(e);
-    escm_abort(e);
+    return foreach(e, args, 0);
 }
 
 static void
@@ -233,9 +152,12 @@ procedure_print(escm *e, escm_procedure *procedure, escm_output *stream,
 
     assert(procedure != NULL);
 
-    if (procedure->type == ESCM_CLOSURE)
-	escm_printf(stream, "#<closure>");
-    else
+    if (procedure->type == ESCM_CLOSURE) {
+	if (procedure->name)
+	    escm_printf(stream, "#<closure %s>", procedure->name);
+	else
+	    escm_printf(stream, "#<closure>", procedure->name);
+    } else
 	escm_printf(stream, "#<primitive %s>", procedure->name);
 }
 
@@ -254,12 +176,12 @@ runprimitive(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
     fun = escm_proc_val(atomfun);
 
     escm_ctx_enter(e);
+    e->ctx->fun = atomfun;
 
     for (param = 0; args; args = escm_cons_next(args), param++) {
 	/* check parameter's number */
 	if (fun->d.c.max != -1 && param >= (unsigned int) fun->d.c.max) {
-	    escm_atom_printerr(e, atomfun);
-	    fprintf(stderr, ": too much arguments.\n");
+	    escm_error(e, "~s: too much arguments.~%", atomfun);
 	    goto err;
 	}
 
@@ -272,8 +194,13 @@ runprimitive(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
 		atom = args->car;
 	    else {
 		atom = escm_atom_eval(e, args->car);
-		if (!atom || e->err == 1)
+		if (e->err == 1)
 		    goto err;
+		if (!atom) {
+		    escm_error(e, "~s: ~s must return a real value.~%", atomfun,
+			       args->car);
+		    goto err;
+		}
 	    }
 	}
 
@@ -281,10 +208,12 @@ runprimitive(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
     }
 
     if (param < fun->d.c.min) {
-	escm_atom_printerr(e, atomfun);
-	fprintf(stderr, ": too few arguments.\n");
+	escm_error(e, "~s: too few arguments.~%", atomfun);
 	goto err;
     }
+
+    e->ctx->last = e->env; /* just a hack to indicate to the backtrace printer
+			      that the primitive is running */
 
     if (fun->d.c.data) {
 	escm_atom *(*f)(escm *, escm_atom *, void *);
@@ -304,31 +233,46 @@ err:
 }
 
 static escm_atom *
-runlambda(escm *e, escm_atom *atomfun, escm_atom *atomcons, int eval)
+runlambda(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
 {
     escm_procedure *volatile fun;
     escm_atom *ret;
     escm_atom *volatile prevenv;
-    escm_atom *env;
+    escm_atom *env, *args;
     escm_cons *cons;
     int tailrec;
 
-    if (!ESCM_ISCONS(atomcons))
+    if (!ESCM_ISCONS(atomargs))
 	return NULL;
 
     env = NULL, prevenv = NULL;
     tailrec = 0;
-    cons = escm_cons_val(atomcons);
     fun = escm_proc_val(atomfun);
 
     escm_ctx_enter(e);
     if (setjmp(e->ctx->jbuf) != 0) {
 	escm_notice(e, "receive local jump with args ~s.~%", e->ctx->first);
-	atomcons = e->ctx->first, e->ctx->first = NULL;
-	cons = escm_cons_val(atomcons);
 /*	escm_gc_gard(e, atomcons);*/
 	env = e->ctx->last;
 	tailrec = 1;
+    }
+
+    if (!tailrec) {
+	escm_atom *atom;
+
+	if (atomargs == e->NIL)
+	    atomargs = NULL;
+	while (atomargs) {
+	    if (!eval)
+		atom = escm_cons_pop(e, &atomargs);
+	    else {
+		atom = escm_atom_eval(e, escm_cons_pop(e, &atomargs));
+		if (!atom || e->err == 1)
+		    goto erreval;
+	    }
+
+	    escm_ctx_put(e, atom);
+	}
     }
 
     if (fun->d.closure.args == e->NIL) /* no arguments, no need to create a
@@ -343,86 +287,38 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomcons, int eval)
 
 	if (!ESCM_ISCONS(fun->d.closure.args)) { /* there is one identifier
 						    bound on all the args */
-	    if (!tailrec) {
-		for (; cons; cons = escm_cons_next(cons)) {
-		    if (eval) {
-			ret = escm_atom_eval(e, cons->car);
-			if (!ret || e->err == 1)
-			    goto errarg;
-		    } else
-			ret = cons->car;
-
-		    escm_ctx_put(e, ret);
-		}
-
+	    if (!tailrec)
 		escm_env_set(e, env, fun->d.closure.args, escm_ctx_first(e));
-	    } else
-		escm_env_modify(e, env, fun->d.closure.args, atomcons);
+	    else
+		escm_env_modify(e, env, fun->d.closure.args, escm_ctx_first(e));
 	} else {
-	    escm_cons *args;
+	    escm_cons *funargs;
 
-	    if (!tailrec) {
-		for (args = escm_cons_val(fun->d.closure.args); cons;
-		     cons = escm_cons_next(cons), args = escm_cons_next(args)) {
-		    if (!args) {
-			escm_atom_printerr(e, atomfun);
-			fprintf(stderr, ": too much arguments.\n");
-			goto errarg;
-		    }
-
-		    if (eval) {
-			ret = escm_atom_eval(e, cons->car);
-			if (!ret || e->err == 1)
-			    goto errarg;
-		    } else
-			ret = cons->car;
-
-		    escm_env_set(e, env, args->car, ret);
-
-		    if (ESCM_ISSYM(args->cdr)) { /* rest arguments */
-			escm_atom *val;
-
-			escm_ctx_enter(e);
-
-			for (cons = escm_cons_next(cons); cons;
-			     cons = escm_cons_next(cons)) {
-			    if (!eval)
-				val = cons->car;
-			    else
-				val = escm_atom_eval(e, cons->car);
-			    if (!val || e->err == 1) {
-				escm_ctx_discard(e);
-				goto errarg;
-			    }
-			    escm_ctx_put(e, val);
-			}
-
-			escm_env_set(e, env, args->cdr, escm_ctx_leave(e));
-			args = NULL;
-			break;
-		    }
+	    for (funargs = escm_cons_val(fun->d.closure.args),
+		     args = e->ctx->first; args;
+		 funargs = escm_cons_next(funargs)) {
+		if (!funargs) {
+		    escm_error(e, "~s: too much arguments.~%", atomfun);
+		    goto errarg;
 		}
-	    } else {
-		for (args = escm_cons_val(fun->d.closure.args); cons;
-		     cons = escm_cons_next(cons), args = escm_cons_next(args)) {
-		    if (!args) {
-			escm_atom_printerr(e, atomfun);
-			fprintf(stderr, ": too much arguments.\n");
-			goto errarg;
-		    }
 
-		    escm_env_modify(e, env, args->car, cons->car);
-		    if (ESCM_ISSYM(args->cdr)) {
-			escm_env_modify(e, env, args->cdr, cons->cdr);
-			args = NULL;
-			break;
-		    }
+		if (!tailrec)
+		    escm_env_set(e, env, funargs->car, escm_cons_pop(e, &args));
+		else
+		    escm_env_modify(e, env, funargs->car,
+				    escm_cons_pop(e, &args));
+
+		if (ESCM_ISSYM(funargs->cdr)) { /* rest arguments */
+		    if (!tailrec)
+			escm_env_set(e, env, funargs->cdr, args);
+		    else
+			escm_env_modify(e, env, funargs->cdr, args);
+		    funargs = NULL;
+		    break;
 		}
 	    }
-
-	    if (args) {
-		escm_atom_printerr(e, atomfun);
-		fprintf(stderr, ": too few arguments.\n");
+	    if (funargs) {
+		escm_error(e, "~s: too few arguments.~%", atomfun);
 		goto errarg;
 	    }
 	}
@@ -473,5 +369,60 @@ errarg:
 /*    escm_gc_ungard(e, atomcons);*/
 erreval:
     escm_ctx_discard(e);
+    escm_abort(e);
+}
+
+static escm_atom *
+foreach(escm *e, escm_atom *args, int map)
+{
+    escm_atom *proc, *atom;
+    escm_cons *c;
+
+    proc = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISPROC(proc), proc, e);
+
+    for (c = escm_cons_val(args); c; c = escm_cons_next(c))
+	escm_assert(ESCM_ISCONS(c->car), c->car, e);
+
+    escm_ctx_enter(e);
+
+    for (;;) {
+	escm_ctx_enter(e);
+
+	for (c = escm_cons_val(args); c; c = escm_cons_next(c)) {
+	    if (!c->car) {
+		escm_cons *c2;
+
+		if (c != escm_cons_val(args)) /* not the first list, so they
+						 dont have same length */
+		    goto err_length;
+		for (c2 = escm_cons_next(c); c2; c2 = escm_cons_next(c2)) {
+		    if (c2->car != NULL)
+			goto err_length;
+		}
+		escm_ctx_discard(e);
+		return escm_ctx_leave(e);
+	    }
+	    escm_ctx_put(e, escm_cons_pop(e, &c->car));
+	}
+	if (map) { /* map version: build a list of the results */
+	    atom = escm_procedure_exec(e, proc, escm_ctx_leave(e), 0);
+	    if (atom)
+		escm_ctx_put(e, atom);
+	    else {
+		if (e->err == 1) {
+		    escm_ctx_discard(e);
+		    return NULL;
+		}
+		escm_error(e, "~s: the procedure must yeild a value.~%",
+			   escm_fun(e));
+	    }
+	} else /* for-each version */
+	    (void) escm_procedure_exec(e, proc, escm_ctx_leave(e), 0);
+    }
+
+err_length:
+    escm_error(e, "~s: all lists must have the same length.~%", escm_fun(e));
+    escm_ctx_discard(e), escm_ctx_discard(e);
     escm_abort(e);
 }

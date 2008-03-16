@@ -329,7 +329,7 @@ escm_read_char(escm *e, escm_atom *args, escm_curports *cp)
 #endif
 
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
-	escm_error(e, "~s: character type is off.~%", e->curobj);
+	escm_error(e, "~s: character type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -339,11 +339,11 @@ escm_read_char(escm *e, escm_atom *args, escm_curports *cp)
     port = (a) ? escm_port_val(a) : escm_port_val(cp->input);
 
     if (!port->input) {
-	fprintf(stderr, "read-char: given port is not an input port.\n");
+	escm_error(e, "~s: given port is not an input port.~%", escm_fun(e));
 	escm_abort(e);
     }
     if (port->closed) {
-	fprintf(stderr, "read-char: port is closed.\n");
+	escm_error(e, "~s: port is closed.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -377,7 +377,7 @@ escm_peek_char(escm *e, escm_atom *args, escm_curports *cp)
 #endif
 
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
-	escm_error(e, "~s: character type is off.~%", e->curobj);
+	escm_error(e, "~s: character type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -387,11 +387,11 @@ escm_peek_char(escm *e, escm_atom *args, escm_curports *cp)
     port = (a) ? escm_port_val(a) : escm_port_val(cp->input);
 
     if (!port->input) {
-	fprintf(stderr, "peak-char: given port is not an input port.\n");
+	escm_error(e, "~s: given port is not an input port.~%", escm_fun(e));
 	escm_abort(e);
     }
     if (port->closed) {
-	fprintf(stderr, "peak-char: port is closed.\n");
+	escm_error(e, "~s: port is closed.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -422,7 +422,7 @@ escm_write_char(escm *e, escm_atom *args, escm_curports *cp)
     escm_port *port;
 
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
-	escm_error(e, "~s: character type is off.~%", e->curobj);
+	escm_error(e, "~s: character type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -435,11 +435,11 @@ escm_write_char(escm *e, escm_atom *args, escm_curports *cp)
     port = (p) ? escm_port_val(p) : escm_port_val(cp->output);
 
     if (port->input) {
-	fprintf(stderr, "write-char: given port is not an output port.\n");
+	escm_error(e, "~s: given port is not an output port.~%", escm_fun(e));
 	escm_abort(e);
     }
     if (port->closed) {
-	fprintf(stderr, "write-char: port is closed.\n");
+	escm_error(e, "~s: port is closed.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -462,11 +462,11 @@ escm_read(escm *e, escm_atom *args, escm_curports *cp)
     port = (a) ? escm_port_val(a) : escm_port_val(cp->input);
 
     if (!port->input) {
-	fprintf(stderr, "read: given port is not an input port.\n");
+	escm_error(e, "~s: given port is not an input port.~%", escm_fun(e));
 	escm_abort(e);
     }
     if (port->closed) {
-	fprintf(stderr, "read: port is closed.\n");
+	escm_error(e, "~s: port is closed.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -492,11 +492,11 @@ escm_write(escm *e, escm_atom *args, escm_curports *cp)
     port = (p) ? escm_port_val(p) : escm_port_val(cp->output);
 
     if (port->input) {
-	fprintf(stderr, "write: given port is not an output port.\n");
+	escm_error(e, "~s: given port is not an output port.~%", escm_fun(e));
 	escm_abort(e);
     }
     if (port->closed) {
-	fprintf(stderr, "write: port is closed.\n");
+	escm_error(e, "~s: port is closed.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -519,11 +519,11 @@ escm_display(escm *e, escm_atom *args, escm_curports *cp)
     port = (p) ? escm_port_val(p) : escm_port_val(cp->output);
 
     if (port->input) {
-	fprintf(stderr, "write: given port is not an output port.\n");
+	escm_error(e, "~s: given port is not an output port.~%", escm_fun(e));
 	escm_abort(e);
     }
     if (port->closed) {
-	fprintf(stderr, "write: port is closed.\n");
+	escm_error(e, "~s: port is closed.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -544,11 +544,11 @@ escm_newline(escm *e, escm_atom *args, escm_curports *cp)
     port = (p) ? escm_port_val(p) : escm_port_val(cp->output);
 
     if (port->input) {
-	fprintf(stderr, "newline: given port is not an output port.\n");
+	escm_error(e, "~s: given port is not an output port.~%", escm_fun(e));
 	escm_abort(e);
     }
     if (port->closed) {
-	fprintf(stderr, "newline: port is closed.\n");
+	escm_error(e, "~s: port is closed.~%", escm_fun(e));
 	escm_abort(e);
     }
 

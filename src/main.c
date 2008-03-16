@@ -157,6 +157,7 @@ main(int argc, char **argv)
     escm_primitives_load(e);
 
     e->casesensitive = casesens;
+    e->backtrace = 1;
 
     escm_srfi_init(e);
 

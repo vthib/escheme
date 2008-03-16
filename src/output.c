@@ -20,10 +20,7 @@
 #include <stdarg.h>
 #include <assert.h>
 
-#include "utils.h"
-#include "output.h"
-#include "escm.h"
-#include "atom.h"
+#include "escheme.h"
 
 #ifdef ESCM_USE_UNICODE
 # include <wchar.h>
@@ -135,13 +132,15 @@ escm_output_close(escm_output *f)
 }
 
 void
-escm_printf(escm_output *f, const char *format, ...)
+escm_vprintf(escm_output *f, const char *format, va_list args)
 {
-    va_list args;
+    va_list va;
 
     assert(f != NULL);
 
-    va_start(args, format);
+#ifdef ESCM_USE_C99
+    va_copy(va, args);
+#endif
 
     if (f->type == OUTPUT_FILE)
 	(void) vfprintf(f->d.file.fp, format, args);
@@ -157,29 +156,63 @@ escm_printf(escm_output *f, const char *format, ...)
 	offset = f->d.str.cur - f->d.str.str;
 
 	for (;;) {
+	    /* XXX: va_copy doesn't exist in C89, so we have only one chance
+	       to print the format in the string and we can't grow the string
+	       each time it failed. */
+#ifndef ESCM_USE_C99
 	    f->d.str.maxlen += 30;
+#else
+	    f->d.str.maxlen += 80;
+#endif
+
 	    f->d.str.str = xrealloc(f->d.str.str, f->d.str.maxlen);
 	    f->d.str.cur = f->d.str.str + offset;
 
 #ifdef ESCM_USE_UNICODE
 	    write = vswprintf(f->d.str.cur, f->d.str.maxlen - offset, fmt,
-			      args);
+# ifdef ESCM_USE_C99
+			      va
+# else
+			      args
+# endif
+		);
 #else
 	    write = vsnprintf(f->d.str.cur, f->d.str.maxlen - offset, format,
-			      args);
+# ifdef ESCM_USE_C99
+			      va
+# else
+			      args
+# endif
+		);
 #endif
 	    if ((size_t) write < f->d.str.maxlen - offset) {
 		f->d.str.cur += write;
 #ifdef ESCM_USE_UNICODE
 		free(fmt);
 #endif
-		break;
+		return;
 	    } else {
 		va_end(args);
-		va_start(args, format);
+#ifdef ESCM_USE_C99
+		va_copy(va, args);
+#else
+		return;
+#endif
 	    }
 	}
     }
+}
+
+void
+escm_printf(escm_output *f, const char *format, ...)
+{
+    va_list args;
+
+    assert(f != NULL);
+
+    va_start(args, format);
+
+    escm_vprintf(f, format, args);
 
     va_end(args);
 }
@@ -209,6 +242,18 @@ escm_notice(escm *e, const char *format, ...)
 }
 
 void
+escm_warning(escm *e, const char *format, ...)
+{
+    va_list va;
+
+    va_start(va, format);
+
+    vscmpf(e, e->errp, format, &va);
+
+    va_end(va);
+}
+
+void
 escm_error(escm *e, const char *format, ...)
 {
     va_list va;
@@ -216,6 +261,8 @@ escm_error(escm *e, const char *format, ...)
     va_start(va, format);
 
     vscmpf(e, e->errp, format, &va);
+
+    escm_print_backtrace(e, e->errp);
 
     va_end(va);
     e->err = 1;

@@ -21,15 +21,12 @@
 #include <assert.h>
 #include <ctype.h>
 
-#include "types.h"
-
 #ifdef ESCM_USE_UNICODE
 # include <wchar.h>
 # include <wctype.h>
 #endif
 
-#include "utils.h"
-#include "input.h"
+#include "escheme.h"
 
 #define MAX_BUFFSIZE 2048
 
@@ -223,24 +220,12 @@ escm_input_rewind(escm_input *f)
 }
 
 /**
- * @brief just print a warning
- */
-void
-escm_input_badend(escm_input *f)
-{
-    assert(f != NULL);
-
-    f->end = 1;
-    escm_input_print(f, "unexpected EOF.");
-}
-
-/**
- * @brief print a message on standard output in the form
+ * @brief print a error message in the form
  * "filename:line:car: message\n" or "str: message"
  *                                     ^
  */
 void
-escm_input_print(escm_input *f, const char *s, ...)
+escm_input_error(escm_input *f, escm_output *outp, const char *s, ...)
 {
     va_list va;
 
@@ -250,35 +235,35 @@ escm_input_print(escm_input *f, const char *s, ...)
     va_start(va, s);
 
     if (f->type == INPUT_FILE) {
-	fprintf(stderr, "%s:", f->d.file.name);
+	escm_printf(outp, "%s:", f->d.file.name);
 	if (f->d.file.line == -1)
-	    fprintf(stderr, ":");
+	    escm_putc(outp, ':');
 	else
-	    fprintf(stderr, "%ld:", f->d.file.line);
+	    escm_printf(outp, "%ld:", f->d.file.line);
 	if (f->d.file.car == -1)
-	    fprintf(stderr, ": ");
+	    escm_printf(outp, ": ");
 	else
-	    fprintf(stderr, "%ld: ", f->d.file.car);
+	    escm_printf(outp, "%ld: ", f->d.file.car);
 
-	(void) vfprintf(stderr, s, va);
-	fprintf(stderr, "\n");
+	escm_vprintf(outp, s, va);
+	escm_putc(outp, '\n');
     } else {
 #ifdef ESCM_USE_UNICODE
 	size_t i;
 
-	fprintf(stderr, "%ls: ", f->d.str.str);
-	(void) vfprintf(stderr, s, va);
-	fprintf(stderr, "\n");
+	escm_printf(outp, "%ls: ", f->d.str.str);
+	escm_vprintf(outp, s, va);
+	escm_putc(outp, '\n');
 
 	for (i = 0; &(f->d.str.str[i]) < f->d.str.cur; i++)
-	    fprintf(stderr, " ");
-	fprintf(stderr, "^\n");
+	    escm_putc(outp, ' ');
+	escm_printf(outp, "^\n");
 #else
 	char *p;
 
-	fprintf(stderr, "%s: ", f->d.str.str);
-	(void) vfprintf(stderr, s, va);
-	fprintf(stderr, "\n");
+	escm_printf(outp, "%s: ", f->d.str.str);
+	escm_vprintf(outp, s, va);
+	escm_putc(outp, '\n');
 
 	for (p = f->d.str.str; p < (f->d.str.cur - 1); p++)
 	    fprintf(stderr, " ");

@@ -57,8 +57,8 @@ static int number_equal(escm *, escm_number *, escm_number *, int);
 static int number_parsetest(escm *, int);
 static escm_atom *number_parse(escm *);
 
-static escm_number *inputtonumber(escm_input *, int);
-static escm_number *getreal(escm_input *, char **, int);
+static escm_number *inputtonumber(escm *, escm_input *, int);
+static escm_number *getreal(escm *, escm_input *, char **, int);
 #if 0
 static long pgcd(long, long);
 # ifdef ESCM_USE_STRINGS
@@ -850,14 +850,14 @@ number_parse(escm *e)
 {
     escm_number *n;
 
-    n = inputtonumber(e->input, 10);
+    n = inputtonumber(e, e->input, 10);
     if (!n)
 	return NULL;
     return escm_atom_new(e, numbertype, n);
 }
 
 static escm_number *
-inputtonumber(escm_input *input, int radix)
+inputtonumber(escm *e, escm_input *input, int radix)
 {
     escm_number *a;
     char *str;
@@ -875,7 +875,7 @@ inputtonumber(escm_input *input, int radix)
 	case 'i': exact = 0; break;
 	case 'e': exact = 1; break;
 	default:
-	    escm_input_print(input, "unknown character #%c.", c);
+	    escm_input_error(input, e->errp, "unknown character #%c.", c);
 	    return NULL;
 	}
     }
@@ -890,7 +890,8 @@ inputtonumber(escm_input *input, int radix)
 	cpx->type = ESCM_COMPLEX;
 	if (*(str + 1) == 'i') {
 	    if (*(str + 2) != '\0') {
-		escm_input_print(input, "complex number must end with a i.\n");
+		escm_input_error(input, e->errp, "complex number must end with "
+				 "a i.\n");
 		goto cpxbad;
 	    }
 	    cpx->d.cpx.re = xmalloc(sizeof *cpx->d.cpx.re);
@@ -906,19 +907,23 @@ inputtonumber(escm_input *input, int radix)
 	    free(str);
 	    return cpx;
 	}
-	cpx->d.cpx.re = getreal(input, &p, radix);
+	cpx->d.cpx.re = getreal(e, input, &p, radix);
 	if (!cpx->d.cpx.re)
 	    goto cpxbad;
 
 	if (*p != '-' && *p != '+') {	
-	    escm_input_print(input, "number parse error.");
+	    escm_input_error(input, e->errp, "expecting a '+' or a '-' before "
+			     "the imaginary part.");
 	    number_free(cpx->d.cpx.re);
 	    goto cpxbad;
 	}
 
-	cpx->d.cpx.im = getreal(input, &p, radix);
+	cpx->d.cpx.im = getreal(e, input, &p, radix);
+	if (!cpx->d.cpx.im)
+	    goto cpxbad;
 	if (*p != 'i' || *(p + 1) != '\0') {
-	    escm_input_print(input, "complex number must end with a i.");
+	    escm_input_error(input, e->errp, "complex number must end with a "
+			     "i.");
 	    number_free(cpx->d.cpx.re);
 	    goto cpxbad;
 	}
@@ -959,7 +964,7 @@ inputtonumber(escm_input *input, int radix)
 	return NULL;
     }
 
-    a = getreal(input, &p, radix);
+    a = getreal(e, input, &p, radix);
     free(str);
     if (exact == 1 && a->exact != 1) {
 	escm_number *tmp;
@@ -976,7 +981,7 @@ inputtonumber(escm_input *input, int radix)
 }
 
 static escm_number *
-getreal(escm_input *input, char **p, int radix)
+getreal(escm *e, escm_input *input, char **p, int radix)
 {
     char *exp;
     
@@ -1007,7 +1012,8 @@ getreal(escm_input *input, char **p, int radix)
 
 	n = strtol(*p, p, radix);
 	if (*(*p + 1) == '-') {
-	    escm_input_print(input, "the denominator must be positive.");
+	    escm_input_error(input, e->errp, "the denominator must be "
+			     "positive.");
 	    return NULL;
 	}
 	(*p)++;

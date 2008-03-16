@@ -45,6 +45,8 @@ escm_make_new_type(escm *e, escm_atom *args)
 {
     escm_type *t;
 
+    (void) args;
+
     t = xcalloc(1, sizeof *t);
     t->type = TYPE_DYN;
 

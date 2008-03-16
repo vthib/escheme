@@ -300,7 +300,7 @@ escm_achar_to_integer(escm *e, escm_atom *args)
     escm_atom *c;
 
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-	escm_error(e, "~s: number type is off.~%", e->curobj);
+	escm_error(e, "~s: number type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -316,7 +316,7 @@ escm_integer_to_achar(escm *e, escm_atom *args)
     escm_atom *n;
 
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-	escm_error(e, "~s: number type is off.~%", e->curobj);
+	escm_error(e, "~s: number type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -324,7 +324,7 @@ escm_integer_to_achar(escm *e, escm_atom *args)
     escm_assert(ESCM_ISINT(n), n, e);
 
     if (escm_number_ival(n) > 255 || escm_number_ival(n) < 0) {
-	fprintf(stderr, "%ld out of range [0;255].\n", escm_number_ival(n));
+	escm_error(e, "~s: ~s out of range [0;255].~%", escm_fun(e), n);
 	escm_abort(e);
     }
 
@@ -437,14 +437,16 @@ input_getchar(escm *e, escm_input *input)
 	for (p = str; *p != '\0'; p++)
 	    *p = tolower(*p);
 	if (*str == 'x') {
-	    if (strlen(str) > 3) { /* XXX: unicode support? */
-		fprintf(stderr, "invalid acharacter: #\\%s.\n", str);
+	    if (strlen(str) > 3) {
+		escm_input_error(input, e->errp, "parse error: invalid "
+				 "character: #\\%s.\n", str);
 		goto err;
 	    }
 
 	    for (p = str + 1; *p != '\0'; p++) {
 		if (*p < '0' || *p > 'f') {
-		    fprintf(stderr, "invalid acharacter: #\\%s.\n", str);
+		    escm_input_error(input, e->errp, "parse error: invalid "
+				     "character: #\\%s.\n", str);
 		    goto err;
 		}
 		if (*p <= '9')
@@ -475,7 +477,7 @@ input_getchar(escm *e, escm_input *input)
 	else if (strcmp(str, "delete") == 0)
 	    c = '\x7F';
 	else {
-	    escm_input_print(input, "unknown character #\\%s.", str);
+	    escm_input_error(input, e->errp, "unknown character #\\%s.", str);
 	    goto err;
 	}
     }

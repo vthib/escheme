@@ -22,6 +22,8 @@
 #define ESCM_TYPE_PROC (escm_proc_tget())
 
 #define ESCM_ISPROC(x) ((x)->type == ESCM_TYPE_PROC)
+#define ESCM_ISCLOSURE(x) (ESCM_ISPROC(x) && \
+			   (escm_proc_val(x)->type == ESCM_CLOSURE))
 
 #define escm_proc_val(x) ((escm_procedure *) (x)->ptr)
 

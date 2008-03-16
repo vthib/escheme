@@ -43,11 +43,11 @@ escm_open_input_string(escm *e, escm_atom *args)
     escm_atom *str;
 
     if (!escm_type_ison(ESCM_TYPE_STRING)) {
-	escm_error(e, "~s: string type is off.~%", e->curobj);
+	escm_error(e, "~s: string type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
     if (!escm_type_ison(ESCM_TYPE_PORT)) {
-	escm_error(e, "~s: port type is off.~%", e->curobj);
+	escm_error(e, "~s: port type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -76,11 +76,11 @@ escm_open_output_string(escm *e, escm_atom *args)
     (void) args;
 
     if (!escm_type_ison(ESCM_TYPE_STRING)) {
-	escm_error(e, "~s: string type is off.~%", e->curobj);
+	escm_error(e, "~s: string type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
     if (!escm_type_ison(ESCM_TYPE_PORT)) {
-	escm_error(e, "~s: port type is off.~%", e->curobj);
+	escm_error(e, "~s: port type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -94,11 +94,11 @@ escm_get_output_string(escm *e, escm_atom *args)
     escm_output *outp;
 
     if (!escm_type_ison(ESCM_TYPE_STRING)) {
-	escm_error(e, "~s: string type is off.~%", e->curobj);
+	escm_error(e, "~s: string type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
     if (!escm_type_ison(ESCM_TYPE_PORT)) {
-	escm_error(e, "~s: port type is off.~%", e->curobj);
+	escm_error(e, "~s: port type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -106,7 +106,7 @@ escm_get_output_string(escm *e, escm_atom *args)
     escm_assert(ESCM_ISPORT(port), port, e);
 
     if (escm_port_val(port)->input) {
-	escm_error(e, "~s: given port is not an output port.~%", e->curobj);
+	escm_error(e, "~s: given port is not an output port.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -140,15 +140,15 @@ escm_srfi_error(escm *e, escm_atom *args)
 
     reason = escm_cons_pop(e, &args);
 
-    fprintf(stderr, "Error: ");
+    escm_printf(e->errp, "Error: ");
     escm_atom_print4(e, reason, e->errp, 1);
     if (args)
-	fprintf(stderr, ": ");
+	escm_printf(e->errp, ": ");
     while (args) {
 	reason = escm_cons_pop(e, &args);
 	escm_atom_print4(e, reason, e->errp, 1);
     }
-    fprintf(stderr, "\n");
+    escm_putc(e->errp, '\n');
 
     escm_abort(e);
 }

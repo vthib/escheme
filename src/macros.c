@@ -121,13 +121,12 @@ escm_expand(escm *e, escm_atom *args)
     if (e->err == 1)
 	return NULL;
     if (!macro) {
-	escm_atom_printerr(e, atom);
-	fprintf(stderr, ": expression do not yield an applicable value.\n");
+	escm_error(e, "~s: ~s do not yield an applicable value.~%", escm_fun(e),
+		   atom);
 	escm_abort(e);
     }
     if (!ESCM_ISMACRO(macro)) {
-	escm_atom_printerr(e, macro);
-	fprintf(stderr, ": not a macro.\n");
+	escm_error(e, "~s: ~s is not a macro.~%", escm_fun(e), macro);
 	escm_abort(e);
     }
 
@@ -146,8 +145,8 @@ escm_define_syntax(escm *e, escm_atom *args)
     if (e->err == 1)
 	return NULL;
     if (!val) {
-	escm_atom_printerr(e, escm_cons_car(args));
-	fprintf(stderr, ": expression not allowed in a definition.\n");
+	escm_error(e, "~s: ~s expression not allowed in a definition "
+		   "context.~%", escm_fun(e), escm_cons_car(args));
 	escm_abort(e);
     }
     escm_assert(ESCM_ISMACRO(val), val, e);
@@ -177,7 +176,7 @@ escm_syntax_rules(escm *e, escm_atom *args)
 	escm_assert1(c->cdr != e->NIL, a, e, free(m));
 
 	if (!checksym(e, c->car)) {
-	    fprintf(stderr, "invalid syntax-rules.\n");
+	    escm_error(e, "~s: invalid syntax-rules.~%", escm_fun(e));
 	    escm_abort(e);
 	}
     }

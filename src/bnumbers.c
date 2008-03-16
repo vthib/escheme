@@ -32,7 +32,7 @@ static int number_equal(escm *, escm_bnumber *, escm_bnumber *, int);
 static int number_parsetest(escm *, int);
 static escm_atom *number_parse(escm *);
 
-static escm_bnumber *inputtonumber(escm_input *, int);
+static escm_bnumber *inputtonumber(escm *, escm_input *, int);
 static long pgcd(long, long);
 #ifdef ESCM_USE_STRINGS
 static char *bintostr(long);
@@ -253,7 +253,7 @@ escm_bquotient(escm *e, escm_atom *args)
     m = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISINT(m), m, e);
     if (escm_number_ival(m) == 0) {
-	fprintf(stderr, "quotient undefined with 0.\n");
+	escm_error(e, "~s: undefined with 0.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -271,7 +271,7 @@ escm_bremainder(escm *e, escm_atom *args)
     m = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISINT(m), m, e);
     if (escm_number_ival(m) == 0) {
-	fprintf(stderr, "remainder undefined with 0.\n");
+	escm_error(e, "~s: undefined with 0.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -290,7 +290,7 @@ escm_bmodulo(escm *e, escm_atom *args)
     m = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISINT(m), m, e);
     if (escm_number_ival(m) == 0) {
-	fprintf(stderr, "modulo undefined with 0.\n");
+	escm_error(e, "~s: undefined with 0.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -354,7 +354,7 @@ escm_blcm(escm *e, escm_atom *args)
 	c = pgcd(a, b);
 
 	if ((LONG_MAX / b) < a) {
-	    escm_error(e, "~s: integer overflow.~%", e->curobj);
+	    escm_error(e, "~s: integer overflow.~%", escm_fun(e));
 	    escm_abort(e);
 	}
 	a = ABS(a * b) / c;
@@ -382,7 +382,7 @@ escm_bnumerator(escm *e, escm_atom *args)
     a = escm_number_rval(n);
     while (!DBL_EQ(a, floor(a))) {
 	if (DBL_LT((LONG_MAX / 2), a)) {	
-	    escm_error(e, "~s: integer overflow.~%", e->curobj);
+	    escm_error(e, "~s: integer overflow.~%", escm_fun(e));
 	    escm_abort(e);
 	}
 	a *= 2;
@@ -408,7 +408,7 @@ escm_bdenominator(escm *e, escm_atom *args)
     a = escm_number_rval(n);
     while (!DBL_EQ(a, floor(a))) {
 	if (DBL_LT((LONG_MAX / 2), a) || DBL_LT((LONG_MAX / 2), b)) {
-	    escm_error(e, "~s: integer overflow.~%", e->curobj);
+	    escm_error(e, "~s: integer overflow.~%", escm_fun(e));
 	    escm_abort(e);
 	}
 	a *= 2, b *= 2;
@@ -648,7 +648,7 @@ escm_bnumber_to_string(escm *e, escm_atom *args)
     int len;
 
     if (!escm_type_ison(ESCM_TYPE_STRING)) {
-	escm_error(e, "~s: string type is off.~%", e->curobj);
+	escm_error(e, "~s: string type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -662,8 +662,8 @@ escm_bnumber_to_string(escm *e, escm_atom *args)
 	escm_assert(ESCM_ISINT(b), b, e);
 	radix = (int) escm_number_ival(b);
 	if (radix != 2 && radix != 8 && radix != 10 && radix != 16) {
-	    fprintf(stderr, "number->string: radix must be either 2, 8, 10 or "
-		    "16.\n");
+	    escm_error(e, "~s: radix must be either 2, 8, 10 or 16.~%",
+		       escm_fun(e));
 	    escm_abort(e);
 	}
     }
@@ -693,15 +693,16 @@ escm_bnumber_to_string(escm *e, escm_atom *args)
 
 
 	    if (len >= 22) { /* output truncated */
-		fprintf(stderr, "the output was been truncated. The read/write "
-			"invariance may not be respected.\n");
+		escm_warning(e, "~s: the output was been truncated. The "
+			     "read/write invariance may not be respected.~%",
+			     escm_fun(e));
 		len = 21;
 	    } else {
 		if (strtol(s, &str, radix) != escm_number_ival(a) ||
 		    *str != '\0')
 		    /* verify read/write invariance */
-		    fprintf(stderr, "warning: read write invariance not "
-			    "respected.\n");
+		    escm_warning(e, "~s: read write invariance not "
+				 "respected.~%", escm_fun(e));
 	    }
 
 	    return makestr(e, s, len);
@@ -714,14 +715,15 @@ escm_bnumber_to_string(escm *e, escm_atom *args)
 
 	len = snprintf(s, 30, "%.15g", d);
 	if (len >= 30) { /* output truncated */
-	    fprintf(stderr, "the output was been truncated. The read/write "
-		    "invariance may not be respected.\n");
+	    escm_warning(e, "~s: the output was been truncated. The "
+			 "read/write invariance may not be respected.~%",
+			 escm_fun(e));
 	    len = 29;
 	} else {
 	    if (!DBL_EQ(strtod(s, &str), d) || *str != '\0')
 		/* verify read/write invariance */
-		fprintf(stderr, "warning: read write invariance not "
-			"respected.\n");
+		escm_warning(e, "~s: read write invariance not "
+			     "respected.~%", escm_fun(e));
 	}
 
 	return makestr(e, s, len);
@@ -737,7 +739,7 @@ escm_string_to_bnumber(escm *e, escm_atom *args)
     int radix;
 
     if (!escm_type_ison(ESCM_TYPE_STRING)) {
-	escm_error(e, "~s: string type is off.~%", e->curobj);
+	escm_error(e, "~s: string type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -751,8 +753,8 @@ escm_string_to_bnumber(escm *e, escm_atom *args)
 	escm_assert(ESCM_ISINT(b), b, e);
 	radix = (int) escm_number_ival(b);
 	if (radix != 2 && radix != 8 && radix != 10 && radix != 16) {
-	    fprintf(stderr, "string->number: radix must be either 2, 8, 10 or "
-		    "16.\n");
+	    escm_error(e, "~s: radix must be either 2, 8, 10 or 16.~%",
+		       escm_fun(e));
 	    escm_abort(e);
 	}
     }
@@ -770,7 +772,7 @@ escm_string_to_bnumber(escm *e, escm_atom *args)
     input = escm_input_str(escm_str_val(a));
 #endif
 
-    number = inputtonumber(input, radix);
+    number = inputtonumber(e, input, radix);
     if (!number)
 	goto err;
     if (input->end == 0) {
@@ -805,7 +807,7 @@ escm_badd(escm *e, escm_atom *params)
 	if (a->fixnum) {
 	    if (b->fixnum) {
 		if ((LONG_MAX - b->d.ival) < a->d.ival) {
-		    escm_error(e, "~s: number overflow.~%", e->curobj);
+		    escm_error(e, "~s: number overflow.~%", escm_fun(e));
 		    free(a);
 		    escm_abort(e);
 		}
@@ -816,7 +818,7 @@ escm_badd(escm *e, escm_atom *params)
 		tmp = a->d.ival;
 		a->d.rval = (double) tmp;
 		if (DBL_LT((DBL_MAX - b->d.rval), a->d.rval)) {
-		    escm_error(e, "~s: number overflow.~%", e->curobj);
+		    escm_error(e, "~s: number overflow.~%", escm_fun(e));
 		    free(a);
 		    escm_abort(e);
 		}
@@ -826,14 +828,14 @@ escm_badd(escm *e, escm_atom *params)
 	} else {
 	    if (b->fixnum) {
 		if (DBL_LT((DBL_MAX - b->d.ival), a->d.rval)) {
-		    escm_error(e, "~s: number overflow.~%", e->curobj);
+		    escm_error(e, "~s: number overflow.~%", escm_fun(e));
 		    free(a);
 		    escm_abort(e);
 		}
 		a->d.rval += b->d.ival;
 	    } else {
 		if (DBL_LT((DBL_MAX - b->d.rval), a->d.rval)) {
-		    escm_error(e, "~s: number overflow.~%", e->curobj);
+		    escm_error(e, "~s: number overflow.~%", escm_fun(e));
 		    free(a);
 		    escm_abort(e);
 		}
@@ -873,7 +875,7 @@ escm_bsub(escm *e, escm_atom *params)
 	if (a->fixnum) {
 	    if (b->fixnum) {
 		if ((LONG_MIN + b->d.ival) > a->d.ival) {
-		    escm_error(e, "~s: number underflow.~%", e->curobj);
+		    escm_error(e, "~s: number underflow.~%", escm_fun(e));
 		    free(a);
 		    escm_abort(e);
 		}
@@ -884,7 +886,7 @@ escm_bsub(escm *e, escm_atom *params)
 		tmp = a->d.ival;
 		a->d.rval = (double) tmp;
 		if (DBL_GT((DBL_MIN + b->d.rval), a->d.rval)) {
-		    escm_error(e, "~s: number underflow.~%", e->curobj);
+		    escm_error(e, "~s: number underflow.~%", escm_fun(e));
 		    free(a);
 		    escm_abort(e);
 		}
@@ -894,14 +896,14 @@ escm_bsub(escm *e, escm_atom *params)
 	} else {
 	    if (b->fixnum) {
 		if (DBL_GT((DBL_MIN + b->d.ival), a->d.rval)) {
-		    escm_error(e, "~s: number underflow.~%", e->curobj);
+		    escm_error(e, "~s: number underflow.~%", escm_fun(e));
 		    free(a);
 		    escm_abort(e);
 		}
 		a->d.rval -= b->d.ival;
 	    } else {
 		if (DBL_GT((DBL_MIN + b->d.rval), a->d.rval)) {
-		    escm_error(e, "~s: number underflow.~%", e->curobj);
+		    escm_error(e, "~s: number underflow.~%", escm_fun(e));
 		    free(a);
 		    escm_abort(e);
 		}
@@ -940,7 +942,7 @@ escm_bmul(escm *e, escm_atom *params)
 	if (a->fixnum) {
 	    if (b->fixnum) {
 		if ((LONG_MAX / b->d.ival) < a->d.ival) {
-		    escm_error(e, "~s: number overflow.~%", e->curobj);
+		    escm_error(e, "~s: number overflow.~%", escm_fun(e));
 		    free(a);
 		    escm_abort(e);
 		}
@@ -951,7 +953,7 @@ escm_bmul(escm *e, escm_atom *params)
 		tmp = a->d.ival;
 		a->d.rval = (double) tmp;
 		if (DBL_LT((DBL_MAX / b->d.rval), a->d.rval)) {
-		    escm_error(e, "~s: number overflow.~%", e->curobj);
+		    escm_error(e, "~s: number overflow.~%", escm_fun(e));
 		    free(a);
 		    escm_abort(e);
 		}
@@ -961,14 +963,14 @@ escm_bmul(escm *e, escm_atom *params)
 	} else {
 	    if (b->fixnum) {
 		if (DBL_LT((DBL_MAX / b->d.ival), a->d.rval)) {
-		    escm_error(e, "~s: number overflow.~%", e->curobj);
+		    escm_error(e, "~s: number overflow.~%", escm_fun(e));
 		    free(a);
 		    escm_abort(e);
 		}
 		a->d.rval *= b->d.ival;
 	    } else {
 		if (DBL_LT((DBL_MAX / b->d.rval), a->d.rval)) {
-		    escm_error(e, "~s: number overflow.~%", e->curobj);
+		    escm_error(e, "~s: number overflow.~%", escm_fun(e));
 		    free(a);
 		    escm_abort(e);
 		}
@@ -1006,7 +1008,7 @@ escm_bdiv(escm *e, escm_atom *params)
 	b = ((escm_bnumber *) c->ptr);
 
 	if ((b->fixnum) ? b->d.ival == 0 : DBL_EQ(b->d.rval, 0)) {
-	    fprintf(stderr, "division by zero.\n");
+	    escm_error(e, "~s: division by zero.~%", escm_fun(e));
 	    escm_abort(e);
 	}
 
@@ -1256,14 +1258,14 @@ number_parse(escm *e)
 {
     escm_bnumber *n;
 
-    n = inputtonumber(e->input, 10);
+    n = inputtonumber(e, e->input, 10);
     if (!n)
 	return NULL;
     return escm_atom_new(e, bnumbertype, n);
 }
 
 static escm_bnumber *
-inputtonumber(escm_input *input, int radix)
+inputtonumber(escm *e, escm_input *input, int radix)
 {
     escm_bnumber *n;
     char *str, *ec;
@@ -1278,7 +1280,7 @@ inputtonumber(escm_input *input, int radix)
 	case 'd': radix = 10; break;
 	case 'x': radix = 16; break;
 	default:
-	    escm_input_print(input, "unknown character #%c.", c);
+	    escm_input_error(input, e->errp, "unknown character #%c.", c);
 	    return NULL;
 	}
     } else
@@ -1323,7 +1325,7 @@ inputtonumber(escm_input *input, int radix)
 #else
 	    input->d.str.cur = (char *) input->d.str.str + (ec - str + 1);
 #endif
-	escm_input_print(input, "Character `%c' unexpected.", *ec);
+	escm_input_error(input, e->errp, "Character `%c' unexpected.", *ec);
 	free(str);
 	free(n);
 	return NULL;

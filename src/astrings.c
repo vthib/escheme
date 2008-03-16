@@ -127,11 +127,11 @@ escm_make_astring(escm *e, escm_atom *args)
     size_t k;
 
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
-	escm_error(e, "~s: character type is off.~%", e->curobj);
+	escm_error(e, "~s: character type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-	escm_error(e, "~s: number type is off.~%", e->curobj);
+	escm_error(e, "~s: number type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -164,7 +164,7 @@ escm_prim_astring(escm *e, escm_atom *args)
     size_t len;
 
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
-	escm_error(e, "~s: character type is off.~%", e->curobj);
+	escm_error(e, "~s: character type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -194,7 +194,7 @@ escm_astring_length(escm *e, escm_atom *args)
     escm_atom *str;
 
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-	escm_error(e, "~s: number type is off.~%", e->curobj);
+	escm_error(e, "~s: number type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -213,11 +213,11 @@ escm_astring_ref(escm *e, escm_atom *args)
     long i;
 
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
-	escm_error(e, "~s: character type is off.~%", e->curobj);
+	escm_error(e, "~s: character type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-	escm_error(e, "~s: number type is off.~%", e->curobj);
+	escm_error(e, "~s: number type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -230,7 +230,7 @@ escm_astring_ref(escm *e, escm_atom *args)
     escm_assert(i >= 0, k, e);
 
     if ((size_t) i >= escm_astr_len(str)) {
-	fprintf(stderr, "index %ld is out of range.\n", i);
+	escm_error(e, "~s: index ~s is out of range.~s", escm_fun(e), k);
 	escm_abort(e);
     }
 
@@ -244,11 +244,11 @@ escm_astring_set_x(escm *e, escm_atom *args)
     long i;
 
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
-	escm_error(e, "~s: character type is off.~%", e->curobj);
+	escm_error(e, "~s: character type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-	escm_error(e, "~s: number type is off.~%", e->curobj);
+	escm_error(e, "~s: number type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -264,7 +264,7 @@ escm_astring_set_x(escm *e, escm_atom *args)
     escm_assert(ESCM_ISACHAR(c), c, e);
 
     if ((size_t) i >= escm_astr_len(str)) {
-	fprintf(stderr, "index %ld is out of range.\n", i);
+	escm_error(e, "~s: index ~s is out of range.~s", escm_fun(e), k);
 	escm_abort(e);
     }
 
@@ -469,7 +469,7 @@ escm_subastring(escm *e, escm_atom *args)
     char *s;
 
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-	escm_error(e, "~s: number type is off.~%", e->curobj);
+	escm_error(e, "~s: number type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -480,7 +480,7 @@ escm_subastring(escm *e, escm_atom *args)
     escm_assert(ESCM_ISINT(a), a, e);
     start = escm_number_ival(a);
     if (start < 0 || (size_t) start > escm_astr_len(str)) {
-	fprintf(stderr, "index %ld out of range.\n", start);
+	escm_error(e, "~s: index ~s is out of range.~s", escm_fun(e), a);
 	escm_abort(e);
     }
 
@@ -488,7 +488,7 @@ escm_subastring(escm *e, escm_atom *args)
     escm_assert(ESCM_ISINT(a), a, e);
     end = escm_number_ival(a);
     if (end < 0 || (size_t) end > escm_astr_len(str) || end < start) {
-	fprintf(stderr, "index %ld out of range.\n", end);
+	escm_error(e, "~s: index ~s is out of range.~s", escm_fun(e), a);
 	escm_abort(e);
     }
 
@@ -547,7 +547,7 @@ escm_astring_fill_x(escm *e, escm_atom *args)
     escm_atom *str, *c;
 
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
-	escm_error(e, "~s: character type is off.~%", e->curobj);
+	escm_error(e, "~s: character type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -573,7 +573,7 @@ escm_astring_to_list(escm *e, escm_atom *args)
     char *p;
 
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
-	escm_error(e, "~s: character type is off.~%", e->curobj);
+	escm_error(e, "~s: character type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 

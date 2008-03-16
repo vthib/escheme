@@ -275,10 +275,6 @@ escm_parse(escm *e)
 	}
     }
 
-/*    c = escm_input_getc(e->input);
-    if (c != '\n')
-    escm_input_ungetc(e->input, c);*/
-
     if (!atom || e->ctx != NULL)
 	return atom;
 
@@ -334,7 +330,7 @@ escm_ctx_put(escm *e, escm_atom *atom)
 	e->ctx->first = new;
     else {
 	if (!ESCM_ISCONS(e->ctx->last) || e->ctx->last == e->NIL) {
-	    escm_input_print(e->input, "illegal dotted form.");
+	    escm_input_error(e->input, e->errp, "illegal dotted form.");
 	    e->err = 1;
 	    return;
 	}
@@ -364,7 +360,7 @@ escm_ctx_put_splicing(escm *e, escm_atom *atom)
 	e->ctx->first = atom;
     else {
 	if (!ESCM_ISCONS(e->ctx->last)) { /* it's a "foo . bar" */
-	    escm_input_print(e->input, "')' expected.");
+	    escm_input_error(e->input, e->errp, "')' expected.");
 	    e->err = 1;
 	    return;
 	}
@@ -527,7 +523,7 @@ escm_tailrec3(escm *e, escm_atom *fun, escm_atom *args, int eval)
 	return;
 
     fun = escm_atom_eval(e, fun);
-    if (!fun || e->err == 1)
+    if (!fun || !ESCM_ISCLOSURE(fun) || e->err == 1)
 	return;
 
     for (ctx = e->ctx; ctx && ctx->fun != fun; ctx = ctx->prev)
@@ -559,6 +555,43 @@ escm_tailrec3(escm *e, escm_atom *fun, escm_atom *args, int eval)
     e->tailrec = 0;
     e->ctx = ctx;
     longjmp(ctx->jbuf, 1);
+}
+
+void
+escm_print_backtrace(escm *e, escm_output *stream)
+{
+    escm_context *ctx;
+    escm_cons *c;
+    unsigned long i;
+
+    if (!e->backtrace)
+	return;
+
+    escm_printf(stream, "\nbacktrace:\n");
+
+    for (i = 0, ctx = e->ctx; i < 20 && ctx; i++, ctx = ctx->prev) {
+	if (ctx->fun) { /* XXX: is it really necessary? */
+	    escm_printf(stream, "\t%u: ", i);
+	    escm_scmpf(e, stream, "(~s", ctx->fun);
+	    if (!ctx->first) {
+		if (!ctx->last)
+		    escm_printf(stream, " ...");
+	    } else {
+		escm_putc(stream, ' ');
+		for (c = escm_cons_val(ctx->first); c; c = escm_cons_next(c)) {
+		    escm_atom_print3(e, c->car, stream);
+		    if (c->cdr == e->NIL) {
+			/* an env at the last position is a indication for a
+			   tailrec, so it indicates a running closure */
+			if (i != 0 && !ESCM_ISENV(ctx->last))
+			    escm_printf(stream, " ...");
+		    } else
+			escm_printf(stream, " ");
+		}
+	    }
+	    escm_printf(stream, ").\n");
+	}
+    }
 }
 
 /* privates functions */

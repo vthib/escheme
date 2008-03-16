@@ -94,10 +94,14 @@ escm_primitives_load(escm *e)
 #endif
 
     (void) escm_procedure_new(e, "gc", 0, 0, escm_gc, NULL);
+    (void) escm_procedure_new(e, "backtrace", 0, 0, escm_backtrace, NULL);
+
     (void) escm_procedure_new(e, "set-case-sensitive!", 1, 1,
 			      escm_set_case_sensitive_x, NULL);
     (void) escm_procedure_new(e, "set-brackets-parens!", 1, 1,
 			      escm_set_brackets_parens_x, NULL);
+    (void) escm_procedure_new(e, "set-print-backtrace!", 1, 1,
+			      escm_set_print_backtrace_x, NULL);
 }
 
 escm_atom *
@@ -168,6 +172,7 @@ escm_define(escm *e, escm_atom *args)
 
     if (ESCM_ISCONS(c)) {
 	escm_cons *a;
+	escm_atom *proc;
 
 	a = escm_cons_val(c);
 	escm_assert(a != NULL && ESCM_ISSYM(a->car), c, e);
@@ -177,7 +182,9 @@ escm_define(escm *e, escm_atom *args)
 	while (args)
 	    escm_ctx_put(e, escm_cons_pop(e, &args)); /* body */
 
-	escm_env_set(e, e->env, a->car, escm_lambda(e, escm_ctx_first(e)));
+	proc = escm_lambda(e, escm_ctx_first(e));
+	escm_proc_val(proc)->name = xstrdup(escm_sym_name(a->car));
+	escm_env_set(e, e->env, a->car, proc);
 	escm_ctx_discard(e);
     } else {
 	escm_atom *val;
@@ -193,6 +200,8 @@ escm_define(escm *e, escm_atom *args)
 	if (!val)
 	    return NULL;
 
+	if (ESCM_ISCLOSURE(val))
+	    escm_proc_val(val)->name = xstrdup(escm_sym_name(c));
 	escm_env_set(e, e->env, c, val);
     }
 
@@ -209,7 +218,7 @@ escm_set_x(escm *e, escm_atom *args)
     escm_assert(ESCM_ISSYM(c), c, e);
 
     if (escm_sym_val(c) == NULL) {
-	escm_error(e, "~s: unknown identifier: ~s.~n", e->curobj, c);
+	escm_error(e, "~s: unknown identifier: ~s.~n", escm_fun(e), c);
 	return NULL;
     }
 
@@ -255,6 +264,8 @@ escm_let(escm *e, escm_atom *args)
 	    escm_abort(e);
 	}
 
+	if (ESCM_ISCLOSURE(varval))
+	    escm_proc_val(varval)->name = xstrdup(escm_sym_name(varname));
 	escm_env_set(e, env, varname, varval);
     }
 
@@ -304,6 +315,8 @@ escm_let_star(escm *e, escm_atom *args)
 	    escm_abort(e);
 	}
 
+	if (ESCM_ISCLOSURE(varval))
+	    escm_proc_val(varval)->name = xstrdup(escm_sym_name(varname));
 	escm_env_set(e, e->env, varname, varval);
     }
 
@@ -366,6 +379,8 @@ escm_letrec(escm *e, escm_atom *args)
 	varcons = escm_cons_val(c->car);
 	varname = varcons->car, varcons = escm_cons_next(varcons);
 
+	if (ESCM_ISCLOSURE(varcons->car))
+	    escm_proc_val(varcons->car)->name = xstrdup(escm_sym_name(varname));
 	escm_symbol_set(varname, varcons->car);
     }
 
@@ -893,6 +908,16 @@ escm_gc(escm *e, escm_atom *args)
 }
 
 escm_atom *
+escm_backtrace(escm *e, escm_atom *args)
+{
+    (void) args;
+
+    escm_print_backtrace(e, e->output);
+
+    return NULL;
+}
+
+escm_atom *
 escm_set_case_sensitive_x(escm *e, escm_atom *args)
 {
     e->casesensitive = ESCM_ISTRUE(escm_cons_car(args));
@@ -904,6 +929,14 @@ escm_atom *
 escm_set_brackets_parens_x(escm *e, escm_atom *args)
 {
     e->brackets = ESCM_ISTRUE(escm_cons_car(args));
+
+    return NULL;
+}
+
+escm_atom *
+escm_set_print_backtrace_x(escm *e, escm_atom *args)
+{
+    e->backtrace = ESCM_ISTRUE(escm_cons_car(args));
 
     return NULL;
 }

@@ -176,7 +176,7 @@ escm_set_car_x(escm *e, escm_atom *args)
     escm_assert(ESCM_ISCONS(o) && escm_cons_val(o) != NULL, o, e);
 
     if (o->ro == 1) {
-	escm_error(e, "~s: Can't modify ~s: immutable cons.~%", e->curobj, o);
+	escm_error(e, "~s: Can't modify ~s: immutable cons.~%", escm_fun(e), o);
 	escm_abort(e);
     }
 
@@ -204,7 +204,7 @@ escm_set_cdr_x(escm *e, escm_atom *args)
     escm_assert(ESCM_ISCONS(o) && escm_cons_val(o) != NULL, o, e);
 
     if (o->ro == 1) {
-	escm_error(e, "~s: Can't modify ~s: immutable cons.~%", e->curobj, o);
+	escm_error(e, "~s: Can't modify ~s: immutable cons.~%", escm_fun(e), o);
 	escm_abort(e);
     }
 
@@ -281,7 +281,7 @@ escm_append(escm *e, escm_atom *args)
     for (a = escm_cons_val(flist); a; a = escm_cons_next(a)) {
 	if (!ESCM_ISCONS(a->cdr)) {
 	    escm_atom_printerr(e, flist);
-	    escm_error(e, "~s: ~s: improper list.~%", e->curobj, flist);
+	    escm_error(e, "~s: ~s: improper list.~%", escm_fun(e), flist);
 	    escm_ctx_discard(e);
 	    escm_abort(e);
 	}
@@ -305,7 +305,7 @@ escm_reverse(escm *e, escm_atom *args)
     for (c = escm_cons_val(arg); c; c = escm_cons_next(c)) {
 	if (!ESCM_ISCONS(c->cdr)) {
 	    escm_atom_printerr(e, arg);
-	    escm_error(e, "~s: ~s: improper list.~%", e->curobj, arg);
+	    escm_error(e, "~s: ~s: improper list.~%", escm_fun(e), arg);
 	    escm_abort(e);
 	}
 	new = escm_cons_make(e, c->car, (new != NULL) ? new : e->NIL);
@@ -323,7 +323,7 @@ escm_length(escm *e, escm_atom *args)
     long n;
 
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-	escm_error(e, "~s: number type is off.~%", e->curobj);
+	escm_error(e, "~s: number type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -343,7 +343,7 @@ escm_length(escm *e, escm_atom *args)
 #endif
 	    ) {
 	    escm_error(e, "~s: Can't compute the length of a non proper "
-		       "list.~%", e->curobj);
+		       "list.~%", escm_fun(e));
 	    e->err = 1;
 #if ESCM_CIRCULAR_LIST >= 1
 	    break;
@@ -376,7 +376,7 @@ escm_list_tail(escm *e, escm_atom *args)
     long k;
 
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-	escm_error(e, "~s: number type is off.~%", e->curobj);
+	escm_error(e, "~s: number type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -412,7 +412,7 @@ escm_list_ref(escm *e, escm_atom *args)
     escm_atom *sublist;
 
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-	escm_error(e, "~s: number type is off.~%", e->curobj);
+	escm_error(e, "~s: number type is off.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -420,7 +420,7 @@ escm_list_ref(escm *e, escm_atom *args)
     if (!sublist)
 	return NULL;
     if (sublist == e->NIL) {
-	escm_error(e, "~s: index too large.~%", e->curobj);
+	escm_error(e, "~s: index too large.~%", escm_fun(e));
 	escm_abort(e);
     }
 
@@ -652,8 +652,9 @@ cons_parse(escm *e)
 	    c = escm_input_getc(e->input);
 	    if (e->brackets == 1 && (c == ')' || c == ']')) {
 		if ((open == '(' && c == ']') || (open == '[' && c == ')')) {
-		    escm_input_print(e->input, "expecting a '%c' to close a "
-				     "'%c'", (open == '(') ? ')' : ']', open);
+		    escm_input_error(e->input, e->errp,
+				     "expecting a '%c' to close a '%c'",
+				     (open == '(') ? ')' : ']', open);
 		    escm_ctx_discard(e);
 		    escm_abort(e);
 		}
@@ -700,7 +701,7 @@ cons_eval(escm *e, escm_cons *cons)
 
 #ifdef ESCM_USE_MACROS
     if (escm_type_ison(ESCM_TYPE_MACRO) && ESCM_ISMACRO(atomfun)) {
-	ret = escm_macro_expand(e, atomfun, e->curobj);
+	ret = escm_macro_expand(e, atomfun, escm_fun(e));
 	if (ret)
 	    return escm_atom_eval(e, ret);
     }

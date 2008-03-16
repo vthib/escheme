@@ -22,7 +22,7 @@
 #include "types.h"
 #include "cons.h"
 
-#define escm_fun(e) escm_cons_car((e)->curobj)
+#define escm_fun(e) ((e)->ctx->fun)
 
 #define escm_abort(e) do { (e)->err = 1; return NULL; } while(0)
 
@@ -116,6 +116,7 @@ struct escm {
     escm_type **types;
     unsigned long ntypes;
 
+    unsigned int backtrace : 1;
     unsigned int casesensitive : 1;
     unsigned int brackets : 1;
     unsigned int tailrec : 1;
@@ -147,5 +148,7 @@ void escm_gc_ungard(escm *, escm_atom *);
 
 void escm_tailrec(escm *, escm_atom *, int);
 void escm_tailrec3(escm *, escm_atom *, escm_atom *, int);
+
+void escm_print_backtrace(escm *, escm_output *);
 
 #endif /* ESCHEME_ESCM_H */
