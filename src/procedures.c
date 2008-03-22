@@ -251,7 +251,7 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
 
     escm_ctx_enter(e);
     if (setjmp(e->ctx->jbuf) != 0) {
-	escm_notice(e, "receive local jump with args ~s.~%", e->ctx->first);
+//	escm_notice(e, "receive local jump with args ~s.~%", e->ctx->first);
 /*	escm_gc_gard(e, atomcons);*/
 	env = e->ctx->last;
 	tailrec = 1;

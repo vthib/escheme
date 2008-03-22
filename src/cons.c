@@ -556,16 +556,14 @@ cons_print(escm *e, escm_cons *cons, escm_output *stream, int lvl)
     escm_cons *c, *end;
     size_t i;
 
-    (void) lvl;
-
     escm_putc(stream, '(');
 
     e->curobj->marked = 1; /* mark all atoms to check circular lists */
     for (c = cons, end = c; c; c = escm_cons_next(c), end = c) {
-	escm_atom_print3(e, c->car, stream);
+	escm_atom_print4(e, c->car, stream, lvl);
 	if (!ESCM_ISCONS(c->cdr)) {
 	    fprintf(stream, " . ");
-	    escm_atom_print3(e, c->cdr, stream);
+	    escm_atom_print4(e, c->cdr, stream, lvl);
 	    break;
 	} else if (c->cdr->marked == 1) {
 	    escm_printf(stream, " #");
@@ -591,10 +589,10 @@ cons_print(escm *e, escm_cons *cons, escm_output *stream, int lvl)
     escm_putc(stream, '(');
 
     for (; cons != NULL; cons = escm_cons_next(cons)) {
-	escm_atom_print3(e, cons->car, stream);
+	escm_atom_print4(e, cons->car, stream, lvl);
 	if (!ESCM_ISCONS(cons->cdr)) {
 	    escm_printf(stream, " . ");
-	    escm_atom_print3(e, cons->cdr, stream);
+	    escm_atom_print4(e, cons->cdr, stream, lvl);
 	    break;
 	} else if (cons->cdr != e->NIL)
 	    escm_putc(stream, ' ');

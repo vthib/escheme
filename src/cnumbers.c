@@ -965,7 +965,6 @@ inputtonumber(escm *e, escm_input *input, int radix)
     }
 
     a = getreal(e, input, &p, radix);
-    free(str);
     if (exact == 1 && a->exact != 1) {
 	escm_number *tmp;
 
@@ -977,6 +976,22 @@ inputtonumber(escm *e, escm_input *input, int radix)
 	tmp = extoinex(a);
 	free(a), a = tmp;
     }
+    if (*p != '\0') {
+	if (input->type == INPUT_FILE)
+	    input->d.file.car -= strlen(str) - (p - str) - 1;
+	else
+#ifdef ESCM_USE_UNICODE
+	    input->d.str.cur = (wchar_t *) input->d.str.str +
+		((p - str + 1) * sizeof (wchar_t));
+#else
+	    input->d.str.cur = (char *) input->d.str.str + (p - str + 1);
+#endif
+	escm_input_error(input, e->errp, "Character `%c' unexpected.", *p);
+	free(str);
+	free(a);
+	return NULL;
+    }
+    free(str);
     return a;
 }
 

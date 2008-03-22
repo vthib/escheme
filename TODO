@@ -5,8 +5,6 @@
    - Macros don't support multiples ...
    - Do not add or set a new variable in a read only env
    - Add the ability to add (& remove?) new rules in macros
-   - Fix the number parse for complete numbers ("5a" is parsed as 5 and this a
-     is lost)
 
  - Features
    - Unicode support (both characters and strings, see r6rs for possible impl)
