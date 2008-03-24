@@ -75,8 +75,8 @@ escm_rep_to_data(escm *e, escm_atom *args)
 
     if (e->types[t]->fmark == NULL) { /* basetype not set yet */
 	e->types[t]->d.dyn.basetype = atom->type;
-	e->types[t]->fmark = e->types[atom->type]->fmark;
-	e->types[t]->ffree = e->types[atom->type]->ffree;
+	e->types[t]->fmark = (Escm_Fun_Mark) escm_atom_mark;
+	e->types[t]->ffree = NULL;
     } else if (atom->type != e->types[t]->d.dyn.basetype) {
 	escm_error(e, "~s: can't create differents atoms with same type.~%",
 		   escm_fun(e));
@@ -230,4 +230,3 @@ escm_set_parse(escm *e, escm_atom *args)
     e->types[escm_number_ival(type)]->d.dyn.fparse = proc;
     return NULL;
 }
-

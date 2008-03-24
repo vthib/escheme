@@ -119,6 +119,42 @@ escm_atom_eval(escm *e, escm_atom *atom)
     return ret;
 }
 
+escm_atom *
+escm_atom_exec(escm *e, escm_atom *atom, escm_atom *args)
+{
+    escm_atom *ret, *old;
+
+    assert(e != NULL);
+    if (!atom)
+	return NULL;
+    if (atom->type >= e->ntypes) {
+	fprintf(stderr, "An atom have a unknown type.\n");
+	escm_abort(e);
+    }
+
+    old = e->curobj, e->curobj = atom;
+    if (e->types[atom->type]->type == TYPE_BUILT) {
+	if (e->types[atom->type]->d.c.fexec)
+	    ret = e->types[atom->type]->d.c.fexec(e, atom->ptr, args);
+	else
+	    goto noexec;
+    } else {
+	if (e->types[atom->type]->d.dyn.fexec)
+	    ret = escm_procedure_exec(e, e->types[atom->type]->d.dyn.fexec,
+				      escm_cons_make(e, atom, args), 0);
+	else
+	    goto noexec;
+    }
+    e->curobj = old;
+
+    return ret;
+
+noexec:
+    escm_error(e, "~s: object isn't applicable.~%", atom);
+    escm_abort(e);
+}
+
+
 void
 escm_atom_print4(escm *e, escm_atom *atom, escm_output *stream, int lvl)
 {

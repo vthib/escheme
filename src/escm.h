@@ -61,6 +61,7 @@ struct escm_type {
 	    Escm_Fun_Parse fparse;
 
 	    Escm_Fun_Eval feval;
+	    Escm_Fun_Exec fexec;
 
 	    Escm_Fun_Exit fexit;
 	    void *dexit;
@@ -71,6 +72,7 @@ struct escm_type {
 	    escm_atom *fparsetest;
 	    escm_atom *fparse;
 	    escm_atom *feval;
+	    escm_atom *fexec;
 
 	    unsigned long basetype;
 	} dyn;

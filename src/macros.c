@@ -46,6 +46,8 @@ static escm_atom *color(escm *, escm_macro *, escm_atom *, escm_atom *);
 
 static void macro_mark(escm *, escm_macro *);
 static void macro_print(escm *, escm_macro *, escm_output *, int);
+static escm_atom *macro_exec(escm *, escm_macro *, escm_atom *);
+static escm_atom *macro_expand(escm *, escm_macro *, escm_atom *);
 
 void
 escm_macros_init(escm *e)
@@ -57,6 +59,7 @@ escm_macros_init(escm *e)
     t->fmark = (Escm_Fun_Mark) macro_mark;
     t->ffree = (Escm_Fun_Free) free;
     t->d.c.fprint = (Escm_Fun_Print) macro_print;
+    t->d.c.fexec = (Escm_Fun_Exec) macro_exec;
 
     macrotype = escm_type_add(e, t);
 
@@ -75,39 +78,6 @@ escm_macro_tget(void)
 }
 
 escm_atom *
-escm_macro_expand(escm *e, escm_atom *macro, escm_atom *cont)
-{
-    escm_macro *m;
-    escm_atom *rules, *a, *prevenv;
-    escm_match *b, *prev;
-
-    m = macro->ptr;
-    rules = m->rules;
-    for (a = escm_cons_pop(e, &rules); a; a = escm_cons_pop(e, &rules)) {
-	if (match(e, m, escm_cons_car(a), cont)) {
-	    b = bind(e, m, escm_cons_car(a), cont, NULL);
-
-	    prevenv = escm_env_enter(e, m->env);
-	    /* little hack to build the new env over the current env, not
-	       over the env in which the macro has been build */
-	    e->env = prevenv;
-	    a = expand(e, m, escm_cons_car(escm_cons_val(a)->cdr), NULL, b, 0);
-	    e->env = m->env;
-	    while (b) {
-		prev = b->prev;
-		free(b);
-		b = prev;
-	    }
-	    escm_env_leave(e, prevenv);
-	    return a;
-	}
-    }
-
-    escm_error(e, "can't expand macro ~s.~%", cont);
-    escm_abort(e);
-}
-
-escm_atom *
 escm_expand(escm *e, escm_atom *args)
 {
     escm_atom *arg;
@@ -116,7 +86,7 @@ escm_expand(escm *e, escm_atom *args)
     arg = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCONS(arg), arg, e);
 
-    atom = escm_cons_car(arg);
+    atom = escm_cons_pop(e, &arg);
     macro = escm_atom_eval(e, atom);
     if (e->err == 1)
 	return NULL;
@@ -130,7 +100,7 @@ escm_expand(escm *e, escm_atom *args)
 	escm_abort(e);
     }
 
-    return escm_macro_expand(e, macro, arg);
+    return macro_expand(e, macro->ptr, arg);
 }
 
 escm_atom *
@@ -465,4 +435,44 @@ macro_print(escm *e, escm_macro *m, escm_output *stream, int lvl)
     (void) lvl;
 
     escm_printf(stream, "#<macro>");
+}
+
+static escm_atom *
+macro_exec(escm *e, escm_macro *m, escm_atom *args)
+{
+    escm_atom *a;
+
+    a = macro_expand(e, m, args);
+    return (a) ? escm_atom_eval(e, a) : a;
+}
+
+static escm_atom *
+macro_expand(escm *e, escm_macro *m, escm_atom *args)
+{
+    escm_atom *rules, *a, *prevenv;
+    escm_match *b, *prev;
+
+    rules = m->rules;
+    for (a = escm_cons_pop(e, &rules); a; a = escm_cons_pop(e, &rules)) {
+	if (match(e, m, escm_cons_cdr(escm_cons_val(a)->car), args)) {
+	    b = bind(e, m, escm_cons_cdr(escm_cons_val(a)->car), args, NULL);
+
+	    prevenv = escm_env_enter(e, m->env);
+	    /* little hack to build the new env over the current env, not
+	       over the env in which the macro has been build */
+	    e->env = prevenv;
+	    a = expand(e, m, escm_cons_car(escm_cons_val(a)->cdr), NULL, b, 0);
+	    e->env = m->env;
+	    while (b) {
+		prev = b->prev;
+		free(b);
+		b = prev;
+	    }
+	    escm_env_leave(e, prevenv);
+	    return a;
+	}
+    }
+
+    escm_error(e, "can't expand macro ~s.~%", escm_cons_car(e->curobj));
+    escm_abort(e);
 }

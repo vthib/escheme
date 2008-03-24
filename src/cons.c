@@ -684,8 +684,8 @@ cons_eval(escm *e, escm_cons *cons)
     escm_atom *atomfun, *ret;
 
     if (!cons) {
-	atomfun = e->NIL;
-	goto noexec;
+	escm_error(e, "~s: object isn't applicable.~%", e->NIL);
+	escm_abort(e);
     }
 
     atomfun = escm_atom_eval(e, cons->car);
@@ -697,30 +697,5 @@ cons_eval(escm *e, escm_cons *cons)
 	escm_abort(e);
     }
 
-#ifdef ESCM_USE_MACROS
-    if (escm_type_ison(ESCM_TYPE_MACRO) && ESCM_ISMACRO(atomfun)) {
-	ret = escm_macro_expand(e, atomfun, escm_fun(e));
-	if (ret)
-	    return escm_atom_eval(e, ret);
-    }
-#endif
-#ifdef ESCM_USE_CONTINUATIONS
-    if (escm_type_ison(ESCM_TYPE_CONTINUATION) &&
-	ESCM_ISCONTINUATION(atomfun)) {
-	escm_continuation_exec(e, atomfun, cons->cdr);
-	return NULL; /* the longjmp has failed */
-    }
-#endif
-    if (!ESCM_ISPROC(atomfun))
-	goto noexec;
-
-    escm_gc_gard(e, atomfun);
-    ret = escm_procedure_exec(e, atomfun, cons->cdr, 1);
-    escm_gc_ungard(e, atomfun);
-
-    return ret;
-
-noexec:
-    escm_error(e, "~s: object isn't applicable.~%", atomfun);
-    escm_abort(e);
+    return escm_atom_exec(e, atomfun, cons->cdr);
 }

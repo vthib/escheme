@@ -25,7 +25,8 @@ static unsigned long proctype = 1; /* uh, small hack */
 static void procedure_free(escm_procedure *);
 static void procedure_mark(escm *, escm_procedure *);
 static void procedure_print(escm *, escm_procedure *, escm_output *, int);
-
+static escm_atom *procedure_exec(escm *, escm_procedure *, escm_atom *);
+ 
 static escm_atom *runprimitive(escm *, escm_atom *, escm_atom *, int);
 static escm_atom *runlambda(escm *, escm_atom *, escm_atom *, int);
 
@@ -40,6 +41,7 @@ escm_procedures_init(escm *e)
     t->fmark = (Escm_Fun_Mark) procedure_mark;
     t->ffree = (Escm_Fun_Free) procedure_free;
     t->d.c.fprint = (Escm_Fun_Print) procedure_print;
+    t->d.c.fexec = (Escm_Fun_Exec) procedure_exec;
 
     proctype = escm_type_add(e, t);
 
@@ -159,6 +161,14 @@ procedure_print(escm *e, escm_procedure *procedure, escm_output *stream,
 	    escm_printf(stream, "#<closure>", procedure->name);
     } else
 	escm_printf(stream, "#<primitive %s>", procedure->name);
+}
+
+static escm_atom *
+procedure_exec(escm *e, escm_procedure *proc, escm_atom *args)
+{
+    (void) proc;
+
+    escm_procedure_exec(e, e->curobj, args, 1);
 }
 
 static escm_atom *

@@ -25,6 +25,7 @@ static escm_continuation *curcont = NULL;
 static void continuation_free(escm_continuation *);
 static void continuation_print(escm *, escm_continuation *, escm_output *, int);
 static escm_context *context_copy(escm_context *);
+static escm_atom *continuation_exec(escm *, escm_continuation *, escm_atom *);
 
 void
 escm_continuations_init(escm *e)
@@ -34,6 +35,7 @@ escm_continuations_init(escm *e)
     t = xcalloc(1, sizeof *t);
     t->ffree = (Escm_Fun_Free) continuation_free;
     t->d.c.fprint = (Escm_Fun_Print) continuation_print;
+    t->d.c.fexec = (Escm_Fun_Exec) continuation_exec;
 
     continuationtype = escm_type_add(e, t);
 
@@ -48,25 +50,6 @@ size_t
 escm_continuation_tget(void)
 {
     return continuationtype;
-}
-
-void
-escm_continuation_exec(escm *e, escm_atom *continuation, escm_atom *arg)
-{
-    escm_continuation *c;
-
-    (void) e;
-
-    c = continuation->ptr;
-    c->ret = escm_atom_eval(e, escm_cons_car(arg));
-    if (e->err == 1)
-	return;
-
-    while (e->ctx)
-	escm_ctx_discard(e);
-
-    curcont = c;
-    longjmp(c->buf, 1);
 }
 
 escm_atom *
@@ -148,5 +131,20 @@ context_copy(escm_context *ctx)
 
     return ret;
 }
+
+static escm_atom *
+continuation_exec(escm *e, escm_continuation *cont, escm_atom *args)
+{
+    cont->ret = escm_atom_eval(e, escm_cons_car(args));
+    if (e->err == 1)
+	return;
+
+    while (e->ctx)
+	escm_ctx_discard(e);
+
+    curcont = cont;
+    longjmp(cont->buf, 1);
+}
+
 
 

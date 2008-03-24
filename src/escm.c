@@ -567,7 +567,8 @@ escm_print_backtrace(escm *e, escm_output *stream)
     if (!e->backtrace)
 	return;
 
-    escm_printf(stream, "\nbacktrace:\n");
+    if (e->ctx)
+	escm_printf(stream, "\nbacktrace:\n");
 
     for (i = 0, ctx = e->ctx; i < 20 && ctx; i++, ctx = ctx->prev) {
 	if (ctx->fun) { /* XXX: is it really necessary? */
