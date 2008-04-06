@@ -113,6 +113,23 @@ escm_ustring_make(escm *e, const wchar_t *str, size_t len)
 }
 
 escm_atom *
+escm_ustring_make2(escm *e, const char *str)
+{
+    escm_ustring *s;
+    wchar_t *w;
+    size_t n;
+
+    n = mbstowcs(NULL, str, 0) + 1;
+    w = xmalloc(sizeof *w * n);
+    mbstowcs(w, str, n);
+
+    s = xmalloc(sizeof *s);
+    s->str = w, s->len = n;
+
+    return escm_atom_new(e, ustringtype, s);
+}
+
+escm_atom *
 escm_ustring_p(escm *e, escm_atom *args)
 {
     escm_atom *a;

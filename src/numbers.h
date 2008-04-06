@@ -49,7 +49,7 @@
 #  define ESCM_ISTRUE ESCM_ISCTRUE
 # endif
 # define escm_int_make(e, l) escm_cint_make(e, l, 1)
-# define escm_real_make(e, r) escm_creal_make(e, r, 0)
+# define escm_real_make escm_creal_make
 
 #else
 # include "bnumbers.h"
@@ -79,7 +79,7 @@
     ((escm_type_ison(ESCM_TYPE_CNUMBER)) ? escm_cint_make(e, i, 1) :	\
      escm_bint_make(e, i))
 # define escm_real_make(e, i)						\
-    ((escm_type_ison(ESCM_TYPE_CNUMBER)) ? escm_creal_make(e, i, 0) :	\
+    ((escm_type_ison(ESCM_TYPE_CNUMBER)) ? escm_creal_make(e, i) :	\
      escm_breal_make(e, i))
 
 #endif

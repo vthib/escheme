@@ -56,6 +56,17 @@ escm_atom *escm_bnumber_p(escm *, escm_atom *);
 escm_atom *escm_binteger_p(escm *, escm_atom *);
 escm_atom *escm_breal_p(escm *, escm_atom *);
 
+escm_atom *escm_beq(escm *, escm_atom *);
+escm_atom *escm_blt(escm *, escm_atom *);
+escm_atom *escm_bgt(escm *, escm_atom *);
+escm_atom *escm_ble(escm *, escm_atom *);
+escm_atom *escm_bge(escm *, escm_atom *);
+
+escm_atom *escm_badd(escm *, escm_atom *);
+escm_atom *escm_bsub(escm *, escm_atom *);
+escm_atom *escm_bmul(escm *, escm_atom *);
+escm_atom *escm_bdiv(escm *, escm_atom *);
+
 escm_atom *escm_bquotient(escm *, escm_atom *);
 escm_atom *escm_bremainder(escm *, escm_atom *);
 escm_atom *escm_bmodulo(escm *, escm_atom *);
@@ -89,16 +100,5 @@ escm_atom *escm_bexpt(escm *, escm_atom *);
 escm_atom *escm_bnumber_to_string(escm *, escm_atom *);
 escm_atom *escm_string_to_bnumber(escm *, escm_atom *);
 #endif
-
-escm_atom *escm_badd(escm *, escm_atom *);
-escm_atom *escm_bsub(escm *, escm_atom *);
-escm_atom *escm_bmul(escm *, escm_atom *);
-escm_atom *escm_bdiv(escm *, escm_atom *);
-
-escm_atom *escm_beq(escm *, escm_atom *);
-escm_atom *escm_blt(escm *, escm_atom *);
-escm_atom *escm_bgt(escm *, escm_atom *);
-escm_atom *escm_ble(escm *, escm_atom *);
-escm_atom *escm_bge(escm *, escm_atom *);
 
 #endif /* ESCHEME_BNUMBERS_H */

@@ -38,11 +38,6 @@ static long pgcd(long, long);
 static char *bintostr(long);
 #endif
 static inline int isnumber(int);
-#ifdef ESCM_USE_UNICODE
-escm_atom *makestr(escm *, char *, size_t);
-#else
-# define makestr escm_string_make
-#endif
 
 void
 escm_bnumbers_init(escm *e)
@@ -73,6 +68,17 @@ escm_bnumbers_init(escm *e)
     (void) escm_procedure_new(e, "number?", 1, 1, escm_bnumber_p, NULL);
     (void) escm_procedure_new(e, "integer?", 1, 1, escm_binteger_p, NULL);
     (void) escm_procedure_new(e, "real?", 1, 1, escm_breal_p, NULL);
+
+    (void) escm_procedure_new(e, "=", 2, -1, escm_beq, NULL);
+    (void) escm_procedure_new(e, "<", 2, -1, escm_blt, NULL);
+    (void) escm_procedure_new(e, ">", 2, -1, escm_bgt, NULL);
+    (void) escm_procedure_new(e, "<=", 2, -1, escm_ble, NULL);
+    (void) escm_procedure_new(e, ">=", 2, -1, escm_bge, NULL);
+
+    (void) escm_procedure_new(e, "+", 0, -1, escm_badd, NULL);
+    (void) escm_procedure_new(e, "-", 1, -1, escm_bsub, NULL);
+    (void) escm_procedure_new(e, "*", 0, -1, escm_bmul, NULL);
+    (void) escm_procedure_new(e, "/", 1, -1, escm_bdiv, NULL);
 
     (void) escm_procedure_new(e, "quotient", 2, 2, escm_bquotient, NULL);
     (void) escm_procedure_new(e, "remainder", 2, 2, escm_bremainder, NULL);
@@ -110,16 +116,6 @@ escm_bnumbers_init(escm *e)
 			      NULL);
 #endif
 
-    (void) escm_procedure_new(e, "+", 0, -1, escm_badd, NULL);
-    (void) escm_procedure_new(e, "-", 1, -1, escm_bsub, NULL);
-    (void) escm_procedure_new(e, "*", 0, -1, escm_bmul, NULL);
-    (void) escm_procedure_new(e, "/", 1, -1, escm_bdiv, NULL);
-
-    (void) escm_procedure_new(e, "=", 2, -1, escm_beq, NULL);
-    (void) escm_procedure_new(e, "<", 2, -1, escm_blt, NULL);
-    (void) escm_procedure_new(e, ">", 2, -1, escm_bgt, NULL);
-    (void) escm_procedure_new(e, "<=", 2, -1, escm_ble, NULL);
-    (void) escm_procedure_new(e, ">=", 2, -1, escm_bge, NULL);
 }
 
 size_t
@@ -151,15 +147,6 @@ escm_breal_make(escm *e, double r)
 }
 
 escm_atom *
-escm_bnumber_setexact(escm_atom *atom, int exact)
-{
-    (void) exact;
-    /* XXX: exactness for basic numbers? */
-
-    return atom;
-}
-
-escm_atom *
 escm_bnumber_p(escm *e, escm_atom *args)
 {
     return (ESCM_ISNUMBER(escm_cons_val(args)->car)) ? e->TRUE : e->FALSE;
@@ -186,6 +173,418 @@ escm_atom *
 escm_breal_p(escm *e, escm_atom *args)
 {
     return (ESCM_ISNUMBER(escm_cons_val(args)->car)) ? e->TRUE : e->FALSE;
+}
+
+escm_atom *
+escm_beq(escm *e, escm_atom *args)
+{
+    escm_atom *a, *b;
+
+    a = escm_cons_pop(e, &args);
+
+    escm_assert(ESCM_ISNUMBER(a), a, e);
+
+    for (b = escm_cons_pop(e, &args); b; b = escm_cons_pop(e, &args)) {
+	escm_assert(ESCM_ISNUMBER(b), b, e);
+
+	if (0 == escm_atom_equal(e, a, b, 0))
+	    return e->FALSE;
+    }
+
+    return e->TRUE;
+}
+
+escm_atom *
+escm_blt(escm *e, escm_atom *args)
+{
+    escm_bnumber *a, *b;
+    escm_atom *c;
+
+    c = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISNUMBER(c), c, e);
+    a = (escm_bnumber *) c->ptr;
+
+    for (c = escm_cons_pop(e, &args); c; c = escm_cons_pop(e, &args)) {
+	escm_assert(ESCM_ISNUMBER(c), c, e);
+	b = (escm_bnumber *) c->ptr;
+
+	if (a->fixnum) {
+	    if (b->fixnum) {
+		if (!(a->d.ival < b->d.ival))
+		    return e->FALSE;
+	    } else
+		if (!DBL_LT(a->d.ival, b->d.rval))
+		    return e->FALSE;
+	} else {
+	    if (b->fixnum) {
+		if (!DBL_LT(a->d.rval, b->d.ival))
+		    return e->FALSE;
+	    } else
+		if (!DBL_LT(a->d.rval, b->d.rval))
+		    return e->FALSE;
+	}
+
+	a = b;
+    }
+
+    return e->TRUE;
+}
+
+escm_atom *
+escm_bgt(escm *e, escm_atom *args)
+{
+    escm_bnumber *a, *b;
+    escm_atom *c;
+
+    c = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISNUMBER(c), c, e);
+    a = (escm_bnumber *) c->ptr;
+
+    for (c = escm_cons_pop(e, &args); c; c = escm_cons_pop(e, &args)) {
+	escm_assert(ESCM_ISNUMBER(c), c, e);
+	b = (escm_bnumber *) c->ptr;
+
+	if (a->fixnum) {
+	    if (b->fixnum) {
+		if (!(a->d.ival > b->d.ival))
+		    return e->FALSE;
+	    } else
+		if (!DBL_GT(a->d.ival, b->d.rval))
+		    return e->FALSE;
+	} else {
+	    if (b->fixnum) {
+		if (!DBL_GT(a->d.rval, b->d.ival))
+		    return e->FALSE;
+	    } else
+		if (!DBL_GT(a->d.rval, b->d.rval))
+		    return e->FALSE;
+	}
+
+	a = b;
+    }
+
+    return e->TRUE;
+}
+
+escm_atom *
+escm_ble(escm *e, escm_atom *args)
+{
+    escm_bnumber *a, *b;
+    escm_atom *c;
+
+    c = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISNUMBER(c), c, e);
+    a = (escm_bnumber *) c->ptr;
+
+    for (c = escm_cons_pop(e, &args); c; c = escm_cons_pop(e, &args)) {
+	escm_assert(ESCM_ISNUMBER(c), c, e);
+	b = (escm_bnumber *) c->ptr;
+
+	if (a->fixnum) {
+	    if (b->fixnum) {
+		if (!(a->d.ival <= b->d.ival))
+		    return e->FALSE;
+	    } else
+		if (!DBL_LE(a->d.ival, b->d.rval))
+		    return e->FALSE;
+	} else {
+	    if (b->fixnum) {
+		if (!DBL_LE(a->d.rval, b->d.ival))
+		    return e->FALSE;
+	    } else
+		if (!DBL_LE(a->d.rval, b->d.rval))
+		    return e->FALSE;
+	}
+
+	a = b;
+    }
+
+    return e->TRUE;
+}
+
+escm_atom *
+escm_bge(escm *e, escm_atom *args)
+{
+    escm_bnumber *a, *b;
+    escm_atom *c;
+
+    c = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISNUMBER(c), c, e);
+    a = (escm_bnumber *) c->ptr;
+
+    for (c = escm_cons_pop(e, &args); c; c = escm_cons_pop(e, &args)) {
+	escm_assert(ESCM_ISNUMBER(c), c, e);
+	b = (escm_bnumber *) c->ptr;
+
+	if (a->fixnum) {
+	    if (b->fixnum) {
+		if (!(a->d.ival >= b->d.ival))
+		    return e->FALSE;
+	    } else
+		if (!DBL_GE(a->d.ival, b->d.rval))
+		    return e->FALSE;
+	} else {
+	    if (b->fixnum) {
+		if (!DBL_GE(a->d.rval, b->d.ival))
+		    return e->FALSE;
+	    } else
+		if (!DBL_GE(a->d.rval, b->d.rval))
+		    return e->FALSE;
+	}
+
+	a = b;
+    }
+
+    return e->TRUE;
+}
+
+escm_atom *
+escm_badd(escm *e, escm_atom *params)
+{
+    escm_bnumber *a, *b;
+    escm_atom *c;
+
+    a = xmalloc(sizeof *a);
+    a->fixnum = 1, a->d.ival = 0;
+
+    c = escm_cons_pop(e, &params);
+    while (c) {
+	escm_assert1(ESCM_ISNUMBER(c), c, e, free(a));
+	b = ((escm_bnumber *) c->ptr);
+
+	if (a->fixnum) {
+	    if (b->fixnum) {
+		if ((LONG_MAX - b->d.ival) < a->d.ival) {
+		    escm_error(e, "~s: number overflow.~%", escm_fun(e));
+		    free(a);
+		    escm_abort(e);
+		}
+		a->d.ival += b->d.ival;
+	    } else {
+		long tmp;
+
+		tmp = a->d.ival;
+		a->d.rval = (double) tmp;
+		if (DBL_LT((DBL_MAX - b->d.rval), a->d.rval)) {
+		    escm_error(e, "~s: number overflow.~%", escm_fun(e));
+		    free(a);
+		    escm_abort(e);
+		}
+		a->d.rval += b->d.rval;
+		a->fixnum = 0;
+	    }
+	} else {
+	    if (b->fixnum) {
+		if (DBL_LT((DBL_MAX - b->d.ival), a->d.rval)) {
+		    escm_error(e, "~s: number overflow.~%", escm_fun(e));
+		    free(a);
+		    escm_abort(e);
+		}
+		a->d.rval += b->d.ival;
+	    } else {
+		if (DBL_LT((DBL_MAX - b->d.rval), a->d.rval)) {
+		    escm_error(e, "~s: number overflow.~%", escm_fun(e));
+		    free(a);
+		    escm_abort(e);
+		}
+		a->d.rval += b->d.rval;
+	    }
+	}
+
+	c = escm_cons_pop(e, &params);
+    }
+
+    return escm_atom_new(e, ESCM_TYPE_NUMBER, a);
+}
+
+escm_atom *
+escm_bsub(escm *e, escm_atom *params)
+{
+    escm_bnumber *a, *b;
+    escm_atom *c;
+
+    a = xmalloc(sizeof *a);
+    a->fixnum = 1, a->d.ival = 0;
+
+    c = escm_cons_pop(e, &params);
+
+    if (params) {
+	escm_assert1(ESCM_ISNUMBER(c), c, e, free(a));
+
+	memcpy(a, c->ptr, sizeof *a);
+
+	c = escm_cons_pop(e, &params);
+    }
+
+    do {
+	escm_assert1(ESCM_ISNUMBER(c), c, e, free(a));
+	b = ((escm_bnumber *) c->ptr);
+
+	if (a->fixnum) {
+	    if (b->fixnum) {
+		if ((LONG_MIN + b->d.ival) > a->d.ival) {
+		    escm_error(e, "~s: number underflow.~%", escm_fun(e));
+		    free(a);
+		    escm_abort(e);
+		}
+		a->d.ival -= b->d.ival;
+	    } else {
+		long tmp;
+
+		tmp = a->d.ival;
+		a->d.rval = (double) tmp;
+		if (DBL_GT((DBL_MIN + b->d.rval), a->d.rval)) {
+		    escm_error(e, "~s: number underflow.~%", escm_fun(e));
+		    free(a);
+		    escm_abort(e);
+		}
+		a->d.rval -= b->d.rval;
+		a->fixnum = 0;
+	    }
+	} else {
+	    if (b->fixnum) {
+		if (DBL_GT((DBL_MIN + b->d.ival), a->d.rval)) {
+		    escm_error(e, "~s: number underflow.~%", escm_fun(e));
+		    free(a);
+		    escm_abort(e);
+		}
+		a->d.rval -= b->d.ival;
+	    } else {
+		if (DBL_GT((DBL_MIN + b->d.rval), a->d.rval)) {
+		    escm_error(e, "~s: number underflow.~%", escm_fun(e));
+		    free(a);
+		    escm_abort(e);
+		}
+
+		a->d.rval -= b->d.rval;
+	    }
+	}
+
+	c = escm_cons_pop(e, &params);
+    } while (c);
+
+    return escm_atom_new(e, ESCM_TYPE_NUMBER, a);
+}
+
+escm_atom *
+escm_bmul(escm *e, escm_atom *params)
+{
+    escm_bnumber *a, *b;
+    escm_atom *c;
+
+    a = xmalloc(sizeof *a);
+    a->fixnum = 1, a->d.ival = 1;
+
+    c = escm_cons_pop(e, &params);
+    while (c) {
+	escm_assert1(ESCM_ISNUMBER(c), c, e, free(a));
+	b = ((escm_bnumber *) c->ptr);
+
+	if ((b->fixnum && b->d.ival == 0) ||
+	    (!b->fixnum && DBL_EQ(b->d.ival, 0.))) {
+	    a->fixnum = b->fixnum;
+	    memcpy(&a->d, &b->d, sizeof b->d);
+	    break;
+	}
+
+	if (a->fixnum) {
+	    if (b->fixnum) {
+		if ((LONG_MAX / b->d.ival) < a->d.ival) {
+		    escm_error(e, "~s: number overflow.~%", escm_fun(e));
+		    free(a);
+		    escm_abort(e);
+		}
+		a->d.ival *= b->d.ival;
+	    } else {
+		long tmp;
+
+		tmp = a->d.ival;
+		a->d.rval = (double) tmp;
+		if (DBL_LT((DBL_MAX / b->d.rval), a->d.rval)) {
+		    escm_error(e, "~s: number overflow.~%", escm_fun(e));
+		    free(a);
+		    escm_abort(e);
+		}
+		a->d.rval *= b->d.rval;
+		a->fixnum = 0;
+	    }
+	} else {
+	    if (b->fixnum) {
+		if (DBL_LT((DBL_MAX / b->d.ival), a->d.rval)) {
+		    escm_error(e, "~s: number overflow.~%", escm_fun(e));
+		    free(a);
+		    escm_abort(e);
+		}
+		a->d.rval *= b->d.ival;
+	    } else {
+		if (DBL_LT((DBL_MAX / b->d.rval), a->d.rval)) {
+		    escm_error(e, "~s: number overflow.~%", escm_fun(e));
+		    free(a);
+		    escm_abort(e);
+		}
+		a->d.rval *= b->d.rval;
+	    }
+	}
+
+	c = escm_cons_pop(e, &params);
+    }
+
+    return escm_atom_new(e, ESCM_TYPE_NUMBER, a);
+}
+
+escm_atom *
+escm_bdiv(escm *e, escm_atom *params)
+{
+    escm_bnumber *a, *b;
+    escm_atom *c;
+
+    a = xmalloc(sizeof *a);
+    a->fixnum = 1, a->d.ival = 1;
+
+    c = escm_cons_pop(e, &params);
+
+    if (params) {
+	escm_assert1(ESCM_ISNUMBER(c), c, e, free(a));
+
+	memcpy(a, c->ptr, sizeof *a);
+
+	c = escm_cons_pop(e, &params);
+    }
+
+    do {
+	escm_assert1(ESCM_ISNUMBER(c), c, e, free(a));
+	b = ((escm_bnumber *) c->ptr);
+
+	if ((b->fixnum) ? b->d.ival == 0 : DBL_EQ(b->d.rval, 0)) {
+	    escm_error(e, "~s: division by zero.~%", escm_fun(e));
+	    escm_abort(e);
+	}
+
+	if (a->fixnum) {
+	    if (b->fixnum && (a->d.ival % b->d.ival == 0))
+		a->d.ival /= b->d.ival;
+	    else {
+		long tmp;
+
+		tmp = a->d.ival;
+		a->d.rval = (double) tmp;
+		if (b->fixnum)
+		    a->d.rval /= b->d.ival;
+		else
+		    a->d.rval /= b->d.rval;
+		a->fixnum = 0;
+	    }
+	} else {
+	    if (b->fixnum)
+		a->d.rval /= b->d.ival;
+	    else
+		a->d.rval /= b->d.rval;
+	}
+
+	c = escm_cons_pop(e, &params);
+    } while (c);
+
+    return escm_atom_new(e, ESCM_TYPE_NUMBER, a);
 }
 
 escm_atom *
@@ -597,7 +996,7 @@ escm_bnumber_to_string(escm *e, escm_atom *args)
     escm_atom *a, *b;
     char *str;
     int radix;
-    int len;
+    int len, maxlen;
 
     if (!escm_type_ison(ESCM_TYPE_STRING)) {
 	escm_error(e, "~s: string type is off.~%", escm_fun(e));
@@ -625,61 +1024,50 @@ escm_bnumber_to_string(escm *e, escm_atom *args)
 	    escm_atom *atom;
 
 	    str = bintostr(escm_number_ival(a));
-	    atom = makestr(e, str, strlen(str));
-	    free(str);
-	    return atom;
+	    len = strlen(str);
+	    maxlen = len + 1;
 	} else {
-	    char s[22];
 
-	    switch (radix) { /*@+ignoresigns@*/
+	    maxlen = 22;
+	    str = xmalloc(sizeof *str * maxlen);
+
+	    switch (radix) {
 	    case 8:
-		len = snprintf(s, 22, "%lo", escm_number_ival(a));
+		len = snprintf(str, maxlen, "%lo", escm_number_ival(a));
 		break;
 	    case 16:
-		len = snprintf(s, 22, "%lx", escm_number_ival(a));
+		len = snprintf(str, maxlen, "%lx", escm_number_ival(a));
 		break;
 	    default:
-		len = snprintf(s, 22, "%ld", escm_number_ival(a));
+		len = snprintf(str, maxlen, "%ld", escm_number_ival(a));
 		break;
-	    } /*@=ignoresigns@*/
-
-
-	    if (len >= 22) { /* output truncated */
-		escm_warning(e, "~s: the output was been truncated. The "
-			     "read/write invariance may not be respected.~%",
-			     escm_fun(e));
-		len = 21;
-	    } else {
-		if (strtol(s, &str, radix) != escm_number_ival(a) ||
-		    *str != '\0')
-		    /* verify read/write invariance */
-		    escm_warning(e, "~s: read write invariance not "
-				 "respected.~%", escm_fun(e));
 	    }
-
-	    return makestr(e, s, len);
 	}
     } else {
 	double d;
-	char s[30];
 
 	d = escm_number_rval(a);
 
-	len = snprintf(s, 30, "%.15g", d);
-	if (len >= 30) { /* output truncated */
-	    escm_warning(e, "~s: the output was been truncated. The "
-			 "read/write invariance may not be respected.~%",
-			 escm_fun(e));
-	    len = 29;
-	} else {
-	    if (!DBL_EQ(strtod(s, &str), d) || *str != '\0')
-		/* verify read/write invariance */
-		escm_warning(e, "~s: read write invariance not "
-			     "respected.~%", escm_fun(e));
-	}
-
-	return makestr(e, s, len);
+	maxlen = 30;
+	str = xmalloc(sizeof *str * maxlen);
+	len = snprintf(str, maxlen, "%.15g", d);
     }
+
+
+    if (len >= maxlen) { /* output truncated */
+	escm_warning(e, "~s: the output was been truncated. The "
+		     "read/write invariance may not be respected.~%",
+		     escm_fun(e));
+	len = maxlen - 1;
+    }
+
+#ifdef ESCM_USE_UNICODE
+    a = escm_ustring_make2(e, str);
+#else
+    a = escm_astring_make(e, str, len);
+#endif
+    free(str);
+    return a;
 }
 
 escm_atom *
@@ -741,418 +1129,6 @@ err:
     return e->FALSE;
 }
 #endif
-
-escm_atom *
-escm_badd(escm *e, escm_atom *params)
-{
-    escm_bnumber *a, *b;
-    escm_atom *c;
-
-    a = xmalloc(sizeof *a);
-    a->fixnum = 1, a->d.ival = 0;
-
-    c = escm_cons_pop(e, &params);
-    while (c) {
-	escm_assert1(ESCM_ISNUMBER(c), c, e, free(a));
-	b = ((escm_bnumber *) c->ptr);
-
-	if (a->fixnum) {
-	    if (b->fixnum) {
-		if ((LONG_MAX - b->d.ival) < a->d.ival) {
-		    escm_error(e, "~s: number overflow.~%", escm_fun(e));
-		    free(a);
-		    escm_abort(e);
-		}
-		a->d.ival += b->d.ival;
-	    } else {
-		long tmp;
-
-		tmp = a->d.ival;
-		a->d.rval = (double) tmp;
-		if (DBL_LT((DBL_MAX - b->d.rval), a->d.rval)) {
-		    escm_error(e, "~s: number overflow.~%", escm_fun(e));
-		    free(a);
-		    escm_abort(e);
-		}
-		a->d.rval += b->d.rval;
-		a->fixnum = 0;
-	    }
-	} else {
-	    if (b->fixnum) {
-		if (DBL_LT((DBL_MAX - b->d.ival), a->d.rval)) {
-		    escm_error(e, "~s: number overflow.~%", escm_fun(e));
-		    free(a);
-		    escm_abort(e);
-		}
-		a->d.rval += b->d.ival;
-	    } else {
-		if (DBL_LT((DBL_MAX - b->d.rval), a->d.rval)) {
-		    escm_error(e, "~s: number overflow.~%", escm_fun(e));
-		    free(a);
-		    escm_abort(e);
-		}
-		a->d.rval += b->d.rval;
-	    }
-	}
-
-	c = escm_cons_pop(e, &params);
-    }
-
-    return escm_atom_new(e, ESCM_TYPE_NUMBER, a);
-}
-
-escm_atom *
-escm_bsub(escm *e, escm_atom *params)
-{
-    escm_bnumber *a, *b;
-    escm_atom *c;
-
-    a = xmalloc(sizeof *a);
-    a->fixnum = 1, a->d.ival = 0;
-
-    c = escm_cons_pop(e, &params);
-
-    if (params) {
-	escm_assert1(ESCM_ISNUMBER(c), c, e, free(a));
-
-	memcpy(a, c->ptr, sizeof *a);
-
-	c = escm_cons_pop(e, &params);
-    }
-
-    do {
-	escm_assert1(ESCM_ISNUMBER(c), c, e, free(a));
-	b = ((escm_bnumber *) c->ptr);
-
-	if (a->fixnum) {
-	    if (b->fixnum) {
-		if ((LONG_MIN + b->d.ival) > a->d.ival) {
-		    escm_error(e, "~s: number underflow.~%", escm_fun(e));
-		    free(a);
-		    escm_abort(e);
-		}
-		a->d.ival -= b->d.ival;
-	    } else {
-		long tmp;
-
-		tmp = a->d.ival;
-		a->d.rval = (double) tmp;
-		if (DBL_GT((DBL_MIN + b->d.rval), a->d.rval)) {
-		    escm_error(e, "~s: number underflow.~%", escm_fun(e));
-		    free(a);
-		    escm_abort(e);
-		}
-		a->d.rval -= b->d.rval;
-		a->fixnum = 0;
-	    }
-	} else {
-	    if (b->fixnum) {
-		if (DBL_GT((DBL_MIN + b->d.ival), a->d.rval)) {
-		    escm_error(e, "~s: number underflow.~%", escm_fun(e));
-		    free(a);
-		    escm_abort(e);
-		}
-		a->d.rval -= b->d.ival;
-	    } else {
-		if (DBL_GT((DBL_MIN + b->d.rval), a->d.rval)) {
-		    escm_error(e, "~s: number underflow.~%", escm_fun(e));
-		    free(a);
-		    escm_abort(e);
-		}
-
-		a->d.rval -= b->d.rval;
-	    }
-	}
-
-	c = escm_cons_pop(e, &params);
-    } while (c);
-
-    return escm_atom_new(e, ESCM_TYPE_NUMBER, a);
-}
-
-escm_atom *
-escm_bmul(escm *e, escm_atom *params)
-{
-    escm_bnumber *a, *b;
-    escm_atom *c;
-
-    a = xmalloc(sizeof *a);
-    a->fixnum = 1, a->d.ival = 1;
-
-    c = escm_cons_pop(e, &params);
-    while (c) {
-	escm_assert1(ESCM_ISNUMBER(c), c, e, free(a));
-	b = ((escm_bnumber *) c->ptr);
-
-	if ((b->fixnum && b->d.ival == 0) ||
-	    (!b->fixnum && DBL_EQ(b->d.ival, 0.))) {
-	    a->fixnum = b->fixnum;
-	    memcpy(&a->d, &b->d, sizeof b->d);
-	    break;
-	}
-
-	if (a->fixnum) {
-	    if (b->fixnum) {
-		if ((LONG_MAX / b->d.ival) < a->d.ival) {
-		    escm_error(e, "~s: number overflow.~%", escm_fun(e));
-		    free(a);
-		    escm_abort(e);
-		}
-		a->d.ival *= b->d.ival;
-	    } else {
-		long tmp;
-
-		tmp = a->d.ival;
-		a->d.rval = (double) tmp;
-		if (DBL_LT((DBL_MAX / b->d.rval), a->d.rval)) {
-		    escm_error(e, "~s: number overflow.~%", escm_fun(e));
-		    free(a);
-		    escm_abort(e);
-		}
-		a->d.rval *= b->d.rval;
-		a->fixnum = 0;
-	    }
-	} else {
-	    if (b->fixnum) {
-		if (DBL_LT((DBL_MAX / b->d.ival), a->d.rval)) {
-		    escm_error(e, "~s: number overflow.~%", escm_fun(e));
-		    free(a);
-		    escm_abort(e);
-		}
-		a->d.rval *= b->d.ival;
-	    } else {
-		if (DBL_LT((DBL_MAX / b->d.rval), a->d.rval)) {
-		    escm_error(e, "~s: number overflow.~%", escm_fun(e));
-		    free(a);
-		    escm_abort(e);
-		}
-		a->d.rval *= b->d.rval;
-	    }
-	}
-
-	c = escm_cons_pop(e, &params);
-    }
-
-    return escm_atom_new(e, ESCM_TYPE_NUMBER, a);
-}
-
-escm_atom *
-escm_bdiv(escm *e, escm_atom *params)
-{
-    escm_bnumber *a, *b;
-    escm_atom *c;
-
-    a = xmalloc(sizeof *a);
-    a->fixnum = 1, a->d.ival = 1;
-
-    c = escm_cons_pop(e, &params);
-
-    if (params) {
-	escm_assert1(ESCM_ISNUMBER(c), c, e, free(a));
-
-	memcpy(a, c->ptr, sizeof *a);
-
-	c = escm_cons_pop(e, &params);
-    }
-
-    do {
-	escm_assert1(ESCM_ISNUMBER(c), c, e, free(a));
-	b = ((escm_bnumber *) c->ptr);
-
-	if ((b->fixnum) ? b->d.ival == 0 : DBL_EQ(b->d.rval, 0)) {
-	    escm_error(e, "~s: division by zero.~%", escm_fun(e));
-	    escm_abort(e);
-	}
-
-	if (a->fixnum) {
-	    if (b->fixnum && (a->d.ival % b->d.ival == 0))
-		a->d.ival /= b->d.ival;
-	    else {
-		long tmp;
-
-		tmp = a->d.ival;
-		a->d.rval = (double) tmp;
-		if (b->fixnum)
-		    a->d.rval /= b->d.ival;
-		else
-		    a->d.rval /= b->d.rval;
-		a->fixnum = 0;
-	    }
-	} else {
-	    if (b->fixnum)
-		a->d.rval /= b->d.ival;
-	    else
-		a->d.rval /= b->d.rval;
-	}
-
-	c = escm_cons_pop(e, &params);
-    } while (c);
-
-    return escm_atom_new(e, ESCM_TYPE_NUMBER, a);
-}
-
-escm_atom *
-escm_beq(escm *e, escm_atom *args)
-{
-    escm_atom *a, *b;
-
-    a = escm_cons_pop(e, &args);
-
-    escm_assert(ESCM_ISNUMBER(a), a, e);
-
-    for (b = escm_cons_pop(e, &args); b; b = escm_cons_pop(e, &args)) {
-	escm_assert(ESCM_ISNUMBER(b), b, e);
-
-	if (0 == escm_atom_equal(e, a, b, 0))
-	    return e->FALSE;
-    }
-
-    return e->TRUE;
-}
-
-escm_atom *
-escm_blt(escm *e, escm_atom *args)
-{
-    escm_bnumber *a, *b;
-    escm_atom *c;
-
-    c = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISNUMBER(c), c, e);
-    a = (escm_bnumber *) c->ptr;
-
-    for (c = escm_cons_pop(e, &args); c; c = escm_cons_pop(e, &args)) {
-	escm_assert(ESCM_ISNUMBER(c), c, e);
-	b = (escm_bnumber *) c->ptr;
-
-	if (a->fixnum) {
-	    if (b->fixnum) {
-		if (!(a->d.ival < b->d.ival))
-		    return e->FALSE;
-	    } else
-		if (!DBL_LT(a->d.ival, b->d.rval))
-		    return e->FALSE;
-	} else {
-	    if (b->fixnum) {
-		if (!DBL_LT(a->d.rval, b->d.ival))
-		    return e->FALSE;
-	    } else
-		if (!DBL_LT(a->d.rval, b->d.rval))
-		    return e->FALSE;
-	}
-
-	a = b;
-    }
-
-    return e->TRUE;
-}
-
-escm_atom *
-escm_bgt(escm *e, escm_atom *args)
-{
-    escm_bnumber *a, *b;
-    escm_atom *c;
-
-    c = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISNUMBER(c), c, e);
-    a = (escm_bnumber *) c->ptr;
-
-    for (c = escm_cons_pop(e, &args); c; c = escm_cons_pop(e, &args)) {
-	escm_assert(ESCM_ISNUMBER(c), c, e);
-	b = (escm_bnumber *) c->ptr;
-
-	if (a->fixnum) {
-	    if (b->fixnum) {
-		if (!(a->d.ival > b->d.ival))
-		    return e->FALSE;
-	    } else
-		if (!DBL_GT(a->d.ival, b->d.rval))
-		    return e->FALSE;
-	} else {
-	    if (b->fixnum) {
-		if (!DBL_GT(a->d.rval, b->d.ival))
-		    return e->FALSE;
-	    } else
-		if (!DBL_GT(a->d.rval, b->d.rval))
-		    return e->FALSE;
-	}
-
-	a = b;
-    }
-
-    return e->TRUE;
-}
-
-escm_atom *
-escm_ble(escm *e, escm_atom *args)
-{
-    escm_bnumber *a, *b;
-    escm_atom *c;
-
-    c = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISNUMBER(c), c, e);
-    a = (escm_bnumber *) c->ptr;
-
-    for (c = escm_cons_pop(e, &args); c; c = escm_cons_pop(e, &args)) {
-	escm_assert(ESCM_ISNUMBER(c), c, e);
-	b = (escm_bnumber *) c->ptr;
-
-	if (a->fixnum) {
-	    if (b->fixnum) {
-		if (!(a->d.ival <= b->d.ival))
-		    return e->FALSE;
-	    } else
-		if (!DBL_LE(a->d.ival, b->d.rval))
-		    return e->FALSE;
-	} else {
-	    if (b->fixnum) {
-		if (!DBL_LE(a->d.rval, b->d.ival))
-		    return e->FALSE;
-	    } else
-		if (!DBL_LE(a->d.rval, b->d.rval))
-		    return e->FALSE;
-	}
-
-	a = b;
-    }
-
-    return e->TRUE;
-}
-
-escm_atom *
-escm_bge(escm *e, escm_atom *args)
-{
-    escm_bnumber *a, *b;
-    escm_atom *c;
-
-    c = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISNUMBER(c), c, e);
-    a = (escm_bnumber *) c->ptr;
-
-    for (c = escm_cons_pop(e, &args); c; c = escm_cons_pop(e, &args)) {
-	escm_assert(ESCM_ISNUMBER(c), c, e);
-	b = (escm_bnumber *) c->ptr;
-
-	if (a->fixnum) {
-	    if (b->fixnum) {
-		if (!(a->d.ival >= b->d.ival))
-		    return e->FALSE;
-	    } else
-		if (!DBL_GE(a->d.ival, b->d.rval))
-		    return e->FALSE;
-	} else {
-	    if (b->fixnum) {
-		if (!DBL_GE(a->d.rval, b->d.ival))
-		    return e->FALSE;
-	    } else
-		if (!DBL_GE(a->d.rval, b->d.rval))
-		    return e->FALSE;
-	}
-
-	a = b;
-    }
-
-    return e->TRUE;
-}
 
 static void
 number_print(escm *e, escm_bnumber *number, escm_output *stream, int lvl)
@@ -1345,22 +1321,3 @@ isnumber(int c)
 {
     return (strchr("+-i/#.e", c) != NULL || isxdigit(c));
 }
-
-#ifdef ESCM_USE_UNICODE
-escm_atom *
-makestr(escm *e, char *str, size_t len)
-{
-    escm_ustring *ustr;
-    wchar_t *w;
-    size_t n;
-
-    (void) len;
-
-    n = mbstowcs(NULL, str, 0) + 1;
-    w = xmalloc(sizeof *w * n);
-    mbstowcs(w, str, n);
-    ustr = xmalloc(sizeof *ustr);
-    ustr->str = w, ustr->len = n;
-    return escm_atom_new(e, ESCM_TYPE_USTRING, ustr);
-}
-#endif

@@ -34,6 +34,7 @@ typedef struct escm_ustring {
 void escm_ustrings_init(escm *);
 size_t escm_ustring_tget(void);
 escm_atom *escm_ustring_make(escm *, const wchar_t *, size_t);
+escm_atom *escm_ustring_make2(escm *, const char *);
 
 escm_atom *escm_ustring_p(escm *, escm_atom *);
 escm_atom *escm_make_ustring(escm *, escm_atom *);

@@ -76,41 +76,38 @@ void escm_numbers_init(escm *);
 size_t escm_number_tget(void);
 
 escm_atom *escm_cint_make(escm *, long, int);
-escm_atom *escm_creal_make(escm *, double, int);
-
-escm_atom *escm_cnumber_setexact(escm_atom *, int);
+escm_atom *escm_creal_make(escm *, double);
 
 void escm_number_add(escm *, escm_number **, escm_number *);
 void escm_number_sub(escm *, escm_number **, escm_number *);
 void escm_number_mul(escm *, escm_number **, escm_number *);
 void escm_number_div(escm *, escm_number **, escm_number *);
 
-escm_atom *escm_exact_to_inexact(escm *, escm_atom *);
-escm_atom *escm_inexact_to_exact(escm *, escm_atom *);
+escm_atom *escm_number_p(escm *, escm_atom *, void *);
+
+escm_atom *escm_exact_p(escm *, escm_atom *);
+escm_atom *escm_inexact_p(escm *, escm_atom *);
+
+escm_atom *escm_eq(escm *, escm_atom *);
+escm_atom *escm_lt(escm *, escm_atom *);
+escm_atom *escm_gt(escm *, escm_atom *);
+escm_atom *escm_le(escm *, escm_atom *);
+escm_atom *escm_ge(escm *, escm_atom *);
 
 escm_atom *escm_add(escm *, escm_atom *);
 escm_atom *escm_sub(escm *, escm_atom *);
 escm_atom *escm_mul(escm *, escm_atom *);
 escm_atom *escm_div(escm *, escm_atom *);
 
-escm_atom *escm_number_p(escm *, escm_atom *, void *);
+escm_atom *escm_quotient(escm *, escm_atom *);
+escm_atom *escm_remainder(escm *, escm_atom *);
+escm_atom *escm_modulo(escm *, escm_atom *);
 
-escm_atom *escm_lt(escm *, escm_atom *);
-escm_atom *escm_gt(escm *, escm_atom *);
-escm_atom *escm_le(escm *, escm_atom *);
-escm_atom *escm_ge(escm *, escm_atom *);
+escm_atom *escm_gcd(escm *, escm_atom *);
+escm_atom *escm_lcm(escm *, escm_atom *);
 
 escm_atom *escm_numerator(escm *, escm_atom *);
 escm_atom *escm_denominator(escm *, escm_atom *);
-
-#if 0
-
-# ifdef ESCM_USE_STRINGS
-escm_atom *escm_number_to_string(escm *, escm_atom *);
-escm_atom *escm_string_to_number(escm *, escm_atom *);
-# endif
-
-#endif
 
 #ifdef ESCM_USE_MATH
 escm_atom *escm_floor(escm *, escm_atom *);
@@ -131,13 +128,12 @@ escm_atom *escm_sqrt(escm *, escm_atom *);
 escm_atom *escm_expt(escm *, escm_atom *);
 #endif
 
-escm_atom *escm_eq(escm *, escm_atom *);
+escm_atom *escm_exact_to_inexact(escm *, escm_atom *);
+escm_atom *escm_inexact_to_exact(escm *, escm_atom *);
 
-escm_atom *escm_quotient(escm *, escm_atom *);
-escm_atom *escm_remainder(escm *, escm_atom *);
-escm_atom *escm_modulo(escm *, escm_atom *);
-
-escm_atom *escm_gcd(escm *, escm_atom *);
-escm_atom *escm_lcm(escm *, escm_atom *);
+#ifdef ESCM_USE_STRINGS
+escm_atom *escm_number_to_string(escm *, escm_atom *);
+escm_atom *escm_string_to_number(escm *, escm_atom *);
+#endif
 
 #endif /* ESCHEME_CNUMBERS_H */
