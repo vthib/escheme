@@ -571,7 +571,7 @@ escm_print_backtrace(escm *e, escm_output *stream)
 	escm_printf(stream, "\nbacktrace:\n");
 
     for (i = 0, ctx = e->ctx; i < 20 && ctx; i++, ctx = ctx->prev) {
-	if (ctx->fun) { /* XXX: is it really necessary? */
+	if (ctx->fun) {
 	    escm_printf(stream, "\t%u: ", i);
 	    escm_scmpf(e, stream, "(~s", ctx->fun);
 	    if (!ctx->first) {
@@ -591,7 +591,8 @@ escm_print_backtrace(escm *e, escm_output *stream)
 		}
 	    }
 	    escm_printf(stream, ").\n");
-	}
+	} else
+	    i--;
     }
 }
 

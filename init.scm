@@ -29,29 +29,29 @@
 (define (cddddr pair) (cdr (cdr (cdr (cdr pair)))))
 
 ;; some numbers primitives can be defined as lambdas expressions
-(define (zero? n) (= n 0))
-(define (positive? n) (> n 0))
-(define (negative? n) (< n 0))
-(define (odd? n) (and (integer? n) (not (= 0 (modulo n 2)))))
-(define (even? n) (and (integer? n) (= 0 (modulo n 2))))
+(define (zero? z) (= z 0))
+(define (positive? x) (> x 0))
+(define (negative? x) (< x 0))
+(define (odd? n) (and (integer? n) (= 1 (modulo n 2))))
+(define (even? n) (and (integer? n) (= 0 (remainder n 2))))
 
 (define (abs n) (if (< n 0) (- n) n))
 
-(define (max n . next)
+(define (max x . next)
   (letrec ((maxrec
-	 (lambda (n list)
-	   (if (null? list) n (maxrec
-			       (if (> n (car list)) n (car list))
-			       (cdr list))))))
-    (maxrec n next)))
+	    (lambda (x list)
+	      (if (null? list) x (maxrec
+				  (if (> x (car list)) x (car list))
+				  (cdr list))))))
+    (maxrec x next)))
 
-(define (min n . next)
+(define (min x . next)
   (letrec ((minrec
-	 (lambda (n list)
-	   (if (null? list) n (minrec
-			       (if (< n (car list)) n (car list))
-			       (cdr list))))))
-    (minrec n next)))
+	    (lambda (x list)
+	      (if (null? list) x (minrec
+				  (if (< x (car list)) x (car list))
+				  (cdr list))))))
+    (minrec x next)))
 
 ;; Ports primitives
 (define (call-with-input-file string proc)

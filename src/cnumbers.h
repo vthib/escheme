@@ -28,15 +28,17 @@
 			((escm_number *) (x)->ptr)->type == ESCM_REAL)
 #define ESCM_ISRATIONAL(x) (ESCM_ISNUMBER(x) &&				\
 			    ((escm_number *) (x)->ptr)->type == ESCM_RATIONAL)
-#define ESCM_ISCOMPLEX(x) ESCM_ISNUMBER(x)
+#define ESCM_ISCOMPLEX(x) (ESCM_ISNUMBER(x) &&				\
+			   ((escm_number *) (x)->ptr)->type == ESCM_COMPLEX)
 
-#define escm_cnumber_ival(x) (((escm_number *) (x)->ptr)->d.i)
-#define escm_cnumber_rval(x) (((escm_number *) (x)->ptr)->d.real)
+#define escm_cnumber_val(x) ((escm_number *) (x)->ptr)
+#define escm_cnumber_ival(x) (escm_cnumber_val(x)->d.i)
+#define escm_cnumber_rval(x) (escm_cnumber_val(x)->d.real)
 
 #define ESCM_ISCTRUE(x) (!ESCM_ISINT(x) || \
 			 (((escm_number *) (x)->ptr)->d.i != 0))
 
-#define ESCM_CNUMBER_EXACTP(x) ((((escm_number *) (x)->ptr)->exact)
+#define escm_cnumber_exactp(x) (escm_cnumber_val(x)->exact)
 
 typedef struct escm_number escm_number;
 
@@ -70,11 +72,13 @@ struct escm_number {
     unsigned int exact : 1;
 };
 
-void escm_cnumbers_init(escm *);
-size_t escm_cnumber_tget(void);
+void escm_numbers_init(escm *);
+size_t escm_number_tget(void);
 
-escm_atom *escm_cint_make(escm *, long);
-escm_atom *escm_creal_make(escm *, double);
+escm_atom *escm_cint_make(escm *, long, int);
+escm_atom *escm_creal_make(escm *, double, int);
+
+escm_atom *escm_cnumber_setexact(escm_atom *, int);
 
 void escm_number_add(escm *, escm_number **, escm_number *);
 void escm_number_sub(escm *, escm_number **, escm_number *);
@@ -90,23 +94,23 @@ escm_atom *escm_mul(escm *, escm_atom *);
 escm_atom *escm_div(escm *, escm_atom *);
 
 escm_atom *escm_number_p(escm *, escm_atom *, void *);
-#if 0
 
-escm_atom *escm_zero_p(escm *, escm_atom *);
-escm_atom *escm_positive_p(escm *, escm_atom *);
-escm_atom *escm_negative_p(escm *, escm_atom *);
-escm_atom *escm_odd_p(escm *, escm_atom *);
-escm_atom *escm_even_p(escm *, escm_atom *);
-
-escm_atom *escm_quotient(escm *, escm_atom *);
-escm_atom *escm_remainder(escm *, escm_atom *);
-escm_atom *escm_modulo(escm *, escm_atom *);
-
-escm_atom *escm_gcd(escm *, escm_atom *);
-escm_atom *escm_lcm(escm *, escm_atom *);
+escm_atom *escm_lt(escm *, escm_atom *);
+escm_atom *escm_gt(escm *, escm_atom *);
+escm_atom *escm_le(escm *, escm_atom *);
+escm_atom *escm_ge(escm *, escm_atom *);
 
 escm_atom *escm_numerator(escm *, escm_atom *);
 escm_atom *escm_denominator(escm *, escm_atom *);
+
+#if 0
+
+# ifdef ESCM_USE_STRINGS
+escm_atom *escm_number_to_string(escm *, escm_atom *);
+escm_atom *escm_string_to_number(escm *, escm_atom *);
+# endif
+
+#endif
 
 #ifdef ESCM_USE_MATH
 escm_atom *escm_floor(escm *, escm_atom *);
@@ -127,16 +131,13 @@ escm_atom *escm_sqrt(escm *, escm_atom *);
 escm_atom *escm_expt(escm *, escm_atom *);
 #endif
 
-#ifdef ESCM_USE_STRINGS
-escm_atom *escm_number_to_string(escm *, escm_atom *);
-escm_atom *escm_string_to_number(escm *, escm_atom *);
-#endif
-
 escm_atom *escm_eq(escm *, escm_atom *);
-escm_atom *escm_lt(escm *, escm_atom *);
-escm_atom *escm_gt(escm *, escm_atom *);
-escm_atom *escm_le(escm *, escm_atom *);
-escm_atom *escm_ge(escm *, escm_atom *);
-#endif
+
+escm_atom *escm_quotient(escm *, escm_atom *);
+escm_atom *escm_remainder(escm *, escm_atom *);
+escm_atom *escm_modulo(escm *, escm_atom *);
+
+escm_atom *escm_gcd(escm *, escm_atom *);
+escm_atom *escm_lcm(escm *, escm_atom *);
 
 #endif /* ESCHEME_CNUMBERS_H */

@@ -20,6 +20,11 @@
 
 #include "escheme.h"
 
+struct list {
+    escm_atom *atom;
+    struct list *next;
+};
+
 static escm_atom *named_let(escm *, escm_atom *, escm_atom *);
 static escm_atom *quasiquote(escm *, escm_atom *, unsigned int);
 #ifdef ESCM_USE_VECTORS
@@ -333,6 +338,7 @@ escm_letrec(escm *e, escm_atom *args)
 {
     escm_atom *prevenv, *arg, *varname, *ret;
     escm_cons *c, *varcons;
+    struct list *first, *last;
 
     arg = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCONS(arg), arg, e);
@@ -340,8 +346,9 @@ escm_letrec(escm *e, escm_atom *args)
     /* we first create a new empty environment, and we enter in */
     prevenv = escm_env_enter(e, escm_env_new(e, e->env));
 
-    /* we set the variables to NULL and the verify the validity of the
-       formals */
+    first = NULL;
+
+    /* we set the variables to NULL and verify the validity of the formals */
     for (c = escm_cons_val(arg); c; c = escm_cons_next(c)) {
 	escm_assert1(ESCM_ISCONS(c->car), c->car, e,
 		     escm_env_leave(e, prevenv));
@@ -360,28 +367,41 @@ escm_letrec(escm *e, escm_atom *args)
 
     /* compute the values */
     for (c = escm_cons_val(arg); c; c = escm_cons_next(c)) {
-	varcons = escm_cons_val(c->car);
-	varcons = escm_cons_next(varcons);
+	varcons = escm_cons_val(escm_cons_cdr(c->car));
 
 	ret = escm_atom_eval(e, varcons->car);
 	if (!ret) {
 	    if (e->err != 1)
-		escm_error(e, "~s: ~s: expression not allowed in this "
-			   "context.~%", escm_fun(e), varcons->car);
+		escm_error(e, "letrec: ~s: expression not allowed in this "
+			   "context.~%", varcons->car);
 	    escm_env_leave(e, prevenv);
+	    escm_ctx_discard(e);
 	    escm_abort(e);
 	}
-	varcons->car = ret;
+
+	/* we stock the results in a list */
+	if (!first) {
+	    first = xcalloc(1, sizeof *first);
+	    first->atom = ret;
+	    last = first;
+	} else {
+	    last->next = xcalloc(1, sizeof *last->next);
+	    last->next->atom = ret;
+	    last = last->next;
+	}
     }
 
     /* and bind the variables */
     for (c = escm_cons_val(arg); c; c = escm_cons_next(c)) {
-	varcons = escm_cons_val(c->car);
-	varname = varcons->car, varcons = escm_cons_next(varcons);
+	varname = escm_cons_car(c->car);
 
-	if (ESCM_ISCLOSURE(varcons->car))
-	    escm_proc_val(varcons->car)->name = xstrdup(escm_sym_name(varname));
-	escm_symbol_set(varname, varcons->car);
+	ret = first->atom;
+	last = first->next, free(first);
+	first = last;
+
+	if (ESCM_ISCLOSURE(ret) && !escm_proc_val(ret)->name)
+	    escm_proc_val(ret)->name = xstrdup(escm_sym_name(varname));
+	escm_symbol_set(varname, ret);
     }
 
     /* we now eval the body */

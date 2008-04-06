@@ -69,6 +69,8 @@ typedef struct escm_hash escm_hash;
 typedef struct escm_input escm_input;
 typedef struct escm_output escm_output;
 typedef struct escm_type escm_type;
+typedef struct escm_tst escm_tst;
+typedef struct escm_tstnode escm_tstnode;
 
 typedef void (*Escm_Fun_Mark)(escm *, void *);
 typedef void (*Escm_Fun_Free)(void *);

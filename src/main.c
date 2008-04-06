@@ -162,15 +162,15 @@ main(int argc, char **argv)
     escm_srfi_init(e);
 
     if (loadinit)
-	escm_fparse(e, "init.scm");
+	(void) escm_fparse(e, "init.scm");
 
     if (i < argc) {
 	while (i < argc) {
 	    if (0 == strcmp(argv[i], "-e")) {
-		escm_sparse(e, argv[i + 1]);
+		(void) escm_sparse(e, argv[i + 1]);
 		i += 2;
 	    } else
-		escm_fparse(e, argv[i++]);
+		(void) escm_fparse(e, argv[i++]);
 	}
     } else
 	escm_shell(e);

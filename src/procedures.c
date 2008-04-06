@@ -168,7 +168,7 @@ procedure_exec(escm *e, escm_procedure *proc, escm_atom *args)
 {
     (void) proc;
 
-    escm_procedure_exec(e, e->curobj, args, 1);
+    return escm_procedure_exec(e, e->curobj, args, 1);
 }
 
 static escm_atom *
@@ -261,7 +261,7 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
 
     escm_ctx_enter(e);
     if (setjmp(e->ctx->jbuf) != 0) {
-//	escm_notice(e, "receive local jump with args ~s.~%", e->ctx->first);
+/*	escm_notice(e, "receive local jump with args ~s.~%", e->ctx->first);*/
 /*	escm_gc_gard(e, atomcons);*/
 	env = e->ctx->last;
 	tailrec = 1;
@@ -350,7 +350,7 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
     for (cons = escm_cons_val(fun->d.closure.code); cons;
 	 cons = escm_cons_next(cons)) {
 	if (cons->cdr == e->NIL) {
-	    int tmp;
+	    unsigned int tmp;
 
 	    tmp = e->tailrec;
 	    e->tailrec = 1;

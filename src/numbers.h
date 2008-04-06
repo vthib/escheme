@@ -35,8 +35,6 @@
 # define escm_int_make escm_bint_make
 # define escm_real_make escm_breal_make
 
-# define ESCM_NUMBER_EXACTP ESCM_BNUMBER_EXACTP
-
 #elif !defined ESCM_USE_BNUMBERS
 
 # include "cnumbers.h"
@@ -50,10 +48,8 @@
 # ifdef ESCM_INTBOOL
 #  define ESCM_ISTRUE ESCM_ISCTRUE
 # endif
-# define escm_int_make escm_cint_make
-# define escm_real_make escm_creal_make
-
-# define ESCM_NUMBER_EXACTP ESCM_CNUMBER_EXACTP
+# define escm_int_make(e, l) escm_cint_make(e, l, 1)
+# define escm_real_make(e, r) escm_creal_make(e, r, 0)
 
 #else
 # include "bnumbers.h"
@@ -80,15 +76,11 @@
 # endif
 
 # define escm_int_make(e, i) \
-    ((escm_type_ison(ESCM_TYPE_CNUMBER)) ? escm_cint_make(e, i) :	\
+    ((escm_type_ison(ESCM_TYPE_CNUMBER)) ? escm_cint_make(e, i, 1) :	\
      escm_bint_make(e, i))
 # define escm_real_make(e, i)						\
-    ((escm_type_ison(ESCM_TYPE_CNUMBER)) ? escm_creal_make(e, i) :	\
+    ((escm_type_ison(ESCM_TYPE_CNUMBER)) ? escm_creal_make(e, i, 0) :	\
      escm_breal_make(e, i))
-
-# define ESCM_NUMBER_EXACTP(x)						\
-    ((escm_type_ison(ESCM_TYPE_CNUMBER)) ? ESCM_CNUMBER_EXACTP(x) :	\
-     ESCM_BNUMBER_EXACTP(x))
 
 #endif
 

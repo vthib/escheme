@@ -34,7 +34,7 @@
 			 escm_bnumber_ival(x) != 0 :			\
 			 DBL_EQ(0., escm_bnumber_rval(x)))
 
-#define ESCM_BNUMBER_EXACTP(x) \
+#define escm_bnumber_exactp(x)						\
     (ESCM_ISINT(x) || DBL_EQ(escm_bnumber_rval(x), floor(escm_bnumber_rval(x))))
 
 typedef struct escm_bnumber {
@@ -55,12 +55,6 @@ escm_atom *escm_breal_make(escm *, double);
 escm_atom *escm_bnumber_p(escm *, escm_atom *);
 escm_atom *escm_binteger_p(escm *, escm_atom *);
 escm_atom *escm_breal_p(escm *, escm_atom *);
-
-escm_atom *escm_bzero_p(escm *, escm_atom *);
-escm_atom *escm_bpositive_p(escm *, escm_atom *);
-escm_atom *escm_bnegative_p(escm *, escm_atom *);
-escm_atom *escm_bodd_p(escm *, escm_atom *);
-escm_atom *escm_beven_p(escm *, escm_atom *);
 
 escm_atom *escm_bquotient(escm *, escm_atom *);
 escm_atom *escm_bremainder(escm *, escm_atom *);

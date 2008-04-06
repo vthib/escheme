@@ -19,9 +19,6 @@
 
 #include "types.h"
 
-typedef struct escm_tst escm_tst;
-typedef struct escm_tstnode escm_tstnode;
-
 struct escm_tstnode {
     escm_atom *atom;
     escm_tstnode *prev;

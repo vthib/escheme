@@ -74,12 +74,6 @@ escm_bnumbers_init(escm *e)
     (void) escm_procedure_new(e, "integer?", 1, 1, escm_binteger_p, NULL);
     (void) escm_procedure_new(e, "real?", 1, 1, escm_breal_p, NULL);
 
-    (void) escm_procedure_new(e, "zero?", 1, 1, escm_bzero_p, NULL);
-    (void) escm_procedure_new(e, "positive?", 1, 1, escm_bpositive_p, NULL);
-    (void) escm_procedure_new(e, "negative?", 1, 1, escm_bnegative_p, NULL);
-    (void) escm_procedure_new(e, "odd?", 1, 1, escm_bodd_p, NULL);
-    (void) escm_procedure_new(e, "even?", 1, 1, escm_beven_p, NULL);
-
     (void) escm_procedure_new(e, "quotient", 2, 2, escm_bquotient, NULL);
     (void) escm_procedure_new(e, "remainder", 2, 2, escm_bremainder, NULL);
     (void) escm_procedure_new(e, "modulo", 2, 2, escm_bmodulo, NULL);
@@ -157,6 +151,15 @@ escm_breal_make(escm *e, double r)
 }
 
 escm_atom *
+escm_bnumber_setexact(escm_atom *atom, int exact)
+{
+    (void) exact;
+    /* XXX: exactness for basic numbers? */
+
+    return atom;
+}
+
+escm_atom *
 escm_bnumber_p(escm *e, escm_atom *args)
 {
     return (ESCM_ISNUMBER(escm_cons_val(args)->car)) ? e->TRUE : e->FALSE;
@@ -173,7 +176,7 @@ escm_binteger_p(escm *e, escm_atom *args)
        return e->FALSE;
     n = arg->ptr;
 #ifdef ESCM_USE_MATH
-    return (ESCM_BNUMBER_EXACTP(arg)) ? e->TRUE : e->FALSE;
+    return (escm_bnumber_exactp(arg)) ? e->TRUE : e->FALSE;
 #else
     return (n->fixnum == 1) ? e->TRUE : e->FALSE;
 #endif
@@ -183,63 +186,6 @@ escm_atom *
 escm_breal_p(escm *e, escm_atom *args)
 {
     return (ESCM_ISNUMBER(escm_cons_val(args)->car)) ? e->TRUE : e->FALSE;
-}
-
-escm_atom *
-escm_bzero_p(escm *e, escm_atom *args)
-{
-    escm_atom *arg;
-
-    arg = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISNUMBER(arg), arg, e);
-
-    return (escm_number_ival(arg) == 0) ? e->TRUE : e->FALSE;
-}
-
-escm_atom *
-escm_bpositive_p(escm *e, escm_atom *args)
-{
-    escm_atom *arg;
-
-    arg = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISNUMBER(arg), arg, e);
-    if (ESCM_ISINT(arg))
-       return (escm_number_ival(arg) > 0) ? e->TRUE : e->FALSE;
-    return (DBL_GT(escm_number_rval(arg), 0.)) ? e->TRUE : e->FALSE;
-}
-
-escm_atom *
-escm_bnegative_p(escm *e, escm_atom *args)
-{
-    escm_atom *arg;
-
-    arg = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISNUMBER(arg), arg, e);
-    if (ESCM_ISINT(arg))
-       return (escm_number_ival(arg) < 0) ? e->TRUE : e->FALSE;
-    return (DBL_LT(escm_number_rval(arg), 0.)) ? e->TRUE : e->FALSE;
-}
-
-escm_atom *
-escm_bodd_p(escm *e, escm_atom *args)
-{
-    escm_atom *arg;
-
-    arg = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISINT(arg), arg, e);
-
-    return (escm_number_ival(arg) % 2 == 1) ? e->TRUE : e->FALSE;
-}
-
-escm_atom *
-escm_beven_p(escm *e, escm_atom *args)
-{
-    escm_atom *arg;
-
-    arg = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISINT(arg), arg, e);
-
-    return (escm_number_ival(arg) % 2 == 0) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
@@ -253,8 +199,8 @@ escm_bquotient(escm *e, escm_atom *args)
     m = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISINT(m), m, e);
     if (escm_number_ival(m) == 0) {
-	escm_error(e, "~s: undefined with 0.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: undefined with 0.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     return escm_bint_make(e, escm_number_ival(n) / escm_number_ival(m));
@@ -271,8 +217,8 @@ escm_bremainder(escm *e, escm_atom *args)
     m = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISINT(m), m, e);
     if (escm_number_ival(m) == 0) {
-	escm_error(e, "~s: undefined with 0.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: undefined with 0.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     return escm_bint_make(e, escm_number_ival(n) % escm_number_ival(m));
@@ -290,13 +236,13 @@ escm_bmodulo(escm *e, escm_atom *args)
     m = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISINT(m), m, e);
     if (escm_number_ival(m) == 0) {
-	escm_error(e, "~s: undefined with 0.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: undefined with 0.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     res = escm_number_ival(n) % escm_number_ival(m);
     if (res * escm_number_ival(m) < 0)
-	res += escm_number_ival(m);
+        res += escm_number_ival(m);
     return escm_bint_make(e, res);
 }
 
@@ -308,7 +254,7 @@ escm_bgcd(escm *e, escm_atom *args)
 
     n1 = escm_cons_pop(e, &args);
     if (!n1)
-	return escm_bint_make(e, 0);
+        return escm_int_make(e, 0);
     escm_assert(ESCM_ISINT(n1), n1, e);
     a = escm_number_ival(n1);
 
@@ -317,20 +263,22 @@ escm_bgcd(escm *e, escm_atom *args)
 	return escm_bint_make(e, escm_number_ival(n1));
     escm_assert(ESCM_ISINT(n2), n2, e);
     b = escm_number_ival(n2);
+
     for (;;) {
-	if (b == 0)
+        if (b == 0)
 	    return escm_bint_make(e, a);
-	if (a == 0)
+        if (a == 0)
 	    return escm_bint_make(e, b);
 
-	a = pgcd(a, b);
+        a = pgcd(a, b);
 
-	n2 = escm_cons_pop(e, &args);
-	if (!n2)
+        n2 = escm_cons_pop(e, &args);
+        if (!n2)
 	    return escm_bint_make(e, a);
-	escm_assert(ESCM_ISINT(n2), n2, e);
-	b = escm_number_ival(n2);
-    };
+
+        escm_assert(ESCM_ISINT(n2), n2, e);
+        b = escm_number_ival(n2);
+    }
 }
 
 escm_atom *
@@ -341,30 +289,34 @@ escm_blcm(escm *e, escm_atom *args)
 
     n1 = escm_cons_pop(e, &args);
     if (!n1)
-	return escm_bint_make(e, 1);
+	return escm_int_make(e, 1);
+
     escm_assert(ESCM_ISINT(n1), n1, e);
-    a = escm_number_ival(n1);
+    a = ABS(escm_number_ival(n1));
 
     n2 = escm_cons_pop(e, &args);
     if (!n2)
-	return escm_bint_make(e, escm_number_ival(n1));
+        return escm_bint_make(e, escm_number_ival(n1));
+
     escm_assert(ESCM_ISINT(n2), n2, e);
-    b = escm_number_ival(n2);
+    b = ABS(escm_number_ival(n2));
+
     for (;;) {
-	c = pgcd(a, b);
+        c = pgcd(a, b);
 
 	if ((LONG_MAX / b) < a) {
 	    escm_error(e, "~s: integer overflow.~%", escm_fun(e));
-	    escm_abort(e);
-	}
-	a = ABS(a * b) / c;
+            escm_abort(e);
+        }
+        a = a*b / c;
 
-	n2 = escm_cons_pop(e, &args);
-	if (!n2)
+        n2 = escm_cons_pop(e, &args);
+        if (!n2)
 	    return escm_bint_make(e, a);
-	escm_assert(ESCM_ISINT(n2), n2, e);
-	b = escm_number_ival(n2);
-    };
+
+        escm_assert(ESCM_ISINT(n2), n2, e);
+        b = ABS(escm_number_ival(n2));
+    }
 }
 
 escm_atom *
@@ -388,7 +340,7 @@ escm_bnumerator(escm *e, escm_atom *args)
 	a *= 2;
     }
 
-    return escm_bint_make(e, (long) a);
+    return escm_int_make(e, (long) a);
 }
 
 escm_atom *
@@ -414,7 +366,7 @@ escm_bdenominator(escm *e, escm_atom *args)
 	a *= 2, b *= 2;
     }
 
-    return escm_bint_make(e, b);
+    return escm_int_make(e, b);
 }
 
 #ifdef ESCM_USE_MATH
@@ -428,7 +380,7 @@ escm_bfloor(escm *e, escm_atom *args)
     if (ESCM_ISINT(a))
 	return a;
 
-    return escm_breal_make(e, floor(escm_number_rval(a)));
+    return escm_real_make(e, floor(escm_number_rval(a)));
 }
 
 escm_atom *
@@ -441,7 +393,7 @@ escm_bceiling(escm *e, escm_atom *args)
     if (ESCM_ISINT(a))
 	return a;
 
-    return escm_breal_make(e, ceil(escm_number_rval(a)));
+    return escm_real_make(e, ceil(escm_number_rval(a)));
 }
 
 escm_atom *
@@ -455,12 +407,12 @@ escm_btruncate(escm *e, escm_atom *args)
 	return a;
 
 # ifdef ESCM_USE_C99
-    return escm_breal_make(e, trunc(escm_number_rval(a)));
+    return escm_real_make(e, trunc(escm_number_rval(a)));
 # else
     if (DBL_GE(escm_number_rval(a), 0.))
-	return escm_breal_make(e, floor(escm_number_rval(a)));
+	return escm_real_make(e, floor(escm_number_rval(a)));
     else
-	return escm_breal_make(e, ceil(escm_number_rval(a)));
+	return escm_real_make(e, ceil(escm_number_rval(a)));
 # endif
 }
 
@@ -474,7 +426,7 @@ escm_bround(escm *e, escm_atom *args)
     if (ESCM_ISINT(a))
 	return a;
 
-    return escm_breal_make(e, xround(escm_number_rval(a)));
+    return escm_real_make(e, xround(escm_number_rval(a)));
 }
 
 escm_atom *
@@ -488,7 +440,7 @@ escm_bexp(escm *e, escm_atom *args)
     a = (ESCM_ISINT(atom)) ? (double) escm_number_ival(atom) :
 	escm_number_rval(atom);
 
-    return escm_breal_make(e, exp(a));
+    return escm_real_make(e, exp(a));
 }
 
 escm_atom *
@@ -502,7 +454,7 @@ escm_blog(escm *e, escm_atom *args)
     a = (ESCM_ISINT(atom)) ? (double) escm_number_ival(atom) :
 	escm_number_rval(atom);
 
-    return escm_breal_make(e, log(a));
+    return escm_real_make(e, log(a));
 }
 
 escm_atom *
@@ -516,7 +468,7 @@ escm_bsin(escm *e, escm_atom *args)
     a = (ESCM_ISINT(atom)) ? (double) escm_number_ival(atom) :
 	escm_number_rval(atom);
 
-    return escm_breal_make(e, sin(a));
+    return escm_real_make(e, sin(a));
 }
 
 escm_atom *
@@ -530,7 +482,7 @@ escm_bcos(escm *e, escm_atom *args)
     a = (ESCM_ISINT(atom)) ? (double) escm_number_ival(atom) :
 	escm_number_rval(atom);
 
-    return escm_breal_make(e, cos(a));
+    return escm_real_make(e, cos(a));
 }
 
 escm_atom *
@@ -544,7 +496,7 @@ escm_btan(escm *e, escm_atom *args)
     a = (ESCM_ISINT(atom)) ? (double) escm_number_ival(atom) :
 	escm_number_rval(atom);
 
-    return escm_breal_make(e, tan(a));
+    return escm_real_make(e, tan(a));
 }
 
 escm_atom *
@@ -558,7 +510,7 @@ escm_basin(escm *e, escm_atom *args)
     a = (ESCM_ISINT(atom)) ? (double) escm_number_ival(atom) :
 	escm_number_rval(atom);
 
-    return escm_breal_make(e, asin(a));
+    return escm_real_make(e, asin(a));
 }
 
 escm_atom *
@@ -572,7 +524,7 @@ escm_bacos(escm *e, escm_atom *args)
     a = (ESCM_ISINT(atom)) ? (double) escm_number_ival(atom) :
 	escm_number_rval(atom);
 
-    return escm_breal_make(e, acos(a));
+    return escm_real_make(e, acos(a));
 }
 
 escm_atom *
@@ -592,9 +544,9 @@ escm_batan(escm *e, escm_atom *args)
 	b = (ESCM_ISINT(atom)) ? (double) escm_number_ival(atom) :
 	    escm_number_rval(atom);
 
-	return escm_breal_make(e, atan2(a, b));
+	return escm_real_make(e, atan2(a, b));
     }
-    return escm_breal_make(e, atan(a));
+    return escm_real_make(e, atan(a));
 }
 
 escm_atom *
@@ -610,9 +562,9 @@ escm_bsqrt(escm *e, escm_atom *args)
     a = sqrt(a);
 
     if (DBL_EQ(a, floor(a))) /* exact */
-	return escm_bint_make(e, (long) a);
+	return escm_int_make(e, (long) a);
     else
-	return escm_breal_make(e, a);
+	return escm_real_make(e, a);
 }
 
 escm_atom *
@@ -632,9 +584,9 @@ escm_bexpt(escm *e, escm_atom *args)
     a = pow(a, b);
 
     if (DBL_EQ(a, floor(a))) /* exact */
-	return escm_bint_make(e, (long) a);
+	return escm_int_make(e, (long) a);
     else
-	return escm_breal_make(e, a);
+	return escm_real_make(e, a);
 }
 #endif
 
@@ -1087,6 +1039,8 @@ escm_blt(escm *e, escm_atom *args)
 		if (!DBL_LT(a->d.rval, b->d.rval))
 		    return e->FALSE;
 	}
+
+	a = b;
     }
 
     return e->TRUE;
@@ -1121,6 +1075,8 @@ escm_bgt(escm *e, escm_atom *args)
 		if (!DBL_GT(a->d.rval, b->d.rval))
 		    return e->FALSE;
 	}
+
+	a = b;
     }
 
     return e->TRUE;
@@ -1155,6 +1111,8 @@ escm_ble(escm *e, escm_atom *args)
 		if (!DBL_LE(a->d.rval, b->d.rval))
 		    return e->FALSE;
 	}
+
+	a = b;
     }
 
     return e->TRUE;
@@ -1189,6 +1147,8 @@ escm_bge(escm *e, escm_atom *args)
 		if (!DBL_GE(a->d.rval, b->d.rval))
 		    return e->FALSE;
 	}
+
+	a = b;
     }
 
     return e->TRUE;

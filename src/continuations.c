@@ -137,7 +137,7 @@ continuation_exec(escm *e, escm_continuation *cont, escm_atom *args)
 {
     cont->ret = escm_atom_eval(e, escm_cons_car(args));
     if (e->err == 1)
-	return;
+	return NULL;
 
     while (e->ctx)
 	escm_ctx_discard(e);

@@ -681,7 +681,7 @@ end:
 static escm_atom *
 cons_eval(escm *e, escm_cons *cons)
 {
-    escm_atom *atomfun, *ret;
+    escm_atom *atomfun;
 
     if (!cons) {
 	escm_error(e, "~s: object isn't applicable.~%", e->NIL);
