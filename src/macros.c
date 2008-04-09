@@ -42,7 +42,7 @@ static escm_atom *expand(escm *, escm_macro *, escm_atom *, escm_atom *,
 			 escm_match *, int);
 static escm_match *add(escm *, escm_match *, escm_atom *, escm_atom *);
 static escm_match *checkup(escm *, escm_match *, escm_atom *);
-static escm_atom *color(escm *, escm_macro *, escm_atom *, escm_atom *);
+static escm_atom *color(escm *, escm_atom *, escm_atom *);
 
 static void macro_mark(escm *, escm_macro *);
 static void macro_print(escm *, escm_macro *, escm_output *, int);
@@ -86,7 +86,7 @@ escm_expand(escm *e, escm_atom *args)
     arg = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCONS(arg), arg, e);
 
-    atom = escm_cons_pop(e, &arg);
+    atom = escm_cons_car(arg);
     macro = escm_atom_eval(e, atom);
     if (e->err == 1)
 	return NULL;
@@ -100,7 +100,7 @@ escm_expand(escm *e, escm_atom *args)
 	escm_abort(e);
     }
 
-    return macro_expand(e, macro->ptr, arg);
+    return macro_expand(e, macro->ptr, escm_cons_cdr(arg));
 }
 
 escm_atom *
@@ -163,7 +163,7 @@ match(escm *e, escm_macro *m, escm_atom *m1, escm_atom *m2)
     escm_atom *a1, *a2;
 
     /* assert(iscons(rule && cons)) */
-    rule = m1->ptr, cons = m2->ptr;
+    rule = m1->ptr, cons = (m2) ? m2->ptr : NULL;
     while (rule) {
 	a1 = rule->car;
 	a2 = (cons) ? cons->car : NULL;
@@ -253,33 +253,21 @@ static escm_atom *
 expand(escm *e, escm_macro *m, escm_atom *tpl, escm_atom *env,
        escm_match *bind, int abort)
 {
-    escm_atom *a;
+    escm_atom *a, *ret;
     escm_match *match;
     int top = 0;
 
     if (!env) {
 	env = escm_env_new(e, e->env);
-	escm_ctx_enter(e);
-	escm_ctx_put(e, escm_symbol_make(e, "with"));
-	escm_ctx_put(e, env);
 	top = 1;
     }
 
     if (ESCM_ISSYM(tpl)) {
 	match = checkup(e, bind, tpl);
-	if (match) {
-	    if (top) {
-		escm_ctx_put(e, escm_cons_car(match->val.fst));
-		return escm_ctx_leave(e);
-	    } else
-		return escm_cons_car(match->val.fst);
-	} else {
-	    if (top) {
-		escm_ctx_put(e, color(e, m, env, tpl));
-		return escm_ctx_leave(e);
-	    } else
-		return color(e, m, env, tpl);
-	}
+	if (match)
+	    ret = escm_cons_car(match->val.fst);
+	else
+	    ret = color(e, env, tpl);
     } else if (ESCM_ISCONS(tpl)) {
 	escm_ctx_enter(e);
 
@@ -311,7 +299,7 @@ expand(escm *e, escm_macro *m, escm_atom *tpl, escm_atom *env,
 		} else {
 		    if (!tpl || !ESCM_ISSYM(escm_cons_car(tpl)) ||
 			0 != strcmp(escm_sym_name(escm_cons_car(tpl)), "..."))
-			escm_ctx_put(e,	color(e, m, env, a));
+			escm_ctx_put(e,	color(e, env, a));
 		}
 	    } else if (ESCM_ISCONS(a)) {
 		if (tpl && ESCM_ISSYM(escm_cons_car(tpl)) &&
@@ -329,16 +317,13 @@ expand(escm *e, escm_macro *m, escm_atom *tpl, escm_atom *env,
 		escm_ctx_put(e,	a);
 	}
 
-	if (top)
-	    escm_ctx_put(e, escm_ctx_leave(e));
-	return escm_ctx_leave(e);
-    } else {
-	if (top) {
-	    escm_ctx_put(e, tpl);
-	    return escm_ctx_leave(e);
-	}
+	ret = escm_ctx_leave(e);
+    } else
 	return tpl;
-    }
+
+    if (top && ret)
+	ret->env = env;
+    return ret;
 }
 
 static escm_match *
@@ -399,13 +384,11 @@ checksym(escm *e, escm_atom *cons)
 }
 
 static escm_atom *
-color(escm *e, escm_macro *m, escm_atom *env, escm_atom *arg)
+color(escm *e, escm_atom *env, escm_atom *arg)
 {
     escm_atom *a;
     size_t len;
     char *buf;
-
-    (void) m;
 
     len = strlen(escm_sym_name(arg)) + 4;
     buf = xmalloc(sizeof *buf * len);

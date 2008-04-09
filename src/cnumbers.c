@@ -835,12 +835,15 @@ escm_truncate(escm *e, escm_atom *args)
 # ifdef ESCM_USE_C99
     return escm_cint_make(e, trunc(numbertoreal(a->ptr)), ESCM_ISRATIONAL(a));
 # else
-    if (DBL_GE(r, 0.))
-	return escm_cint_make(e, floor(numbertoreal(a->ptr)),
-			      ESCM_ISRATIONAL(a));
-    else
-	return escm_cint_make(e, ceil(numbertoreal(a->ptr)),
-			      ESCM_ISRATIONAL(a));
+    {
+	double r;
+
+	r = numbertoreal(a->ptr);
+	if (DBL_GE(r, 0.))
+	    return escm_cint_make(e, floor(r), ESCM_ISRATIONAL(a));
+	else
+	    return escm_cint_make(e, ceil(r), ESCM_ISRATIONAL(a));
+    }
 # endif
 }
 
@@ -1049,7 +1052,7 @@ escm_number_to_string(escm *e, escm_atom *args)
 #ifdef ESCM_USE_UNICODE
     a = escm_ustring_make2(e, str);
 #else
-    a = escm_astring_make(e, str, strlen(len));
+    a = escm_astring_make(e, str, strlen(str));
 #endif
     free(str);
     return a;

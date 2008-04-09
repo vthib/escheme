@@ -188,7 +188,8 @@ escm_define(escm *e, escm_atom *args)
 	    escm_ctx_put(e, escm_cons_pop(e, &args)); /* body */
 
 	proc = escm_lambda(e, escm_ctx_first(e));
-	escm_proc_val(proc)->name = xstrdup(escm_sym_name(a->car));
+	if (!escm_proc_val(proc)->name)
+	    escm_proc_val(proc)->name = xstrdup(escm_sym_name(a->car));
 	escm_env_set(e, e->env, a->car, proc);
 	escm_ctx_discard(e);
     } else {
@@ -205,7 +206,7 @@ escm_define(escm *e, escm_atom *args)
 	if (!val)
 	    return NULL;
 
-	if (ESCM_ISCLOSURE(val))
+	if (ESCM_ISCLOSURE(val) && !escm_proc_val(val)->name)
 	    escm_proc_val(val)->name = xstrdup(escm_sym_name(c));
 	escm_env_set(e, e->env, c, val);
     }
@@ -269,7 +270,7 @@ escm_let(escm *e, escm_atom *args)
 	    escm_abort(e);
 	}
 
-	if (ESCM_ISCLOSURE(varval))
+	if (ESCM_ISCLOSURE(varval) && !escm_proc_val(varval)->name)
 	    escm_proc_val(varval)->name = xstrdup(escm_sym_name(varname));
 	escm_env_set(e, env, varname, varval);
     }
@@ -320,7 +321,7 @@ escm_let_star(escm *e, escm_atom *args)
 	    escm_abort(e);
 	}
 
-	if (ESCM_ISCLOSURE(varval))
+	if (ESCM_ISCLOSURE(varval) && !escm_proc_val(varval)->name)
 	    escm_proc_val(varval)->name = xstrdup(escm_sym_name(varname));
 	escm_env_set(e, e->env, varname, varval);
     }
