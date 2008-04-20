@@ -71,7 +71,7 @@ void escm_input_close(escm_input *);
 
 void escm_input_rewind(escm_input *);
 
-void escm_input_error(escm_input *, escm_output *, const char *, ...);
+void escm_input_print(escm_input *, escm_output *);
 
 #ifdef ESCM_USE_UNICODE
 wint_t escm_input_getwc(escm_input *);

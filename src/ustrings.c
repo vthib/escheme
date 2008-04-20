@@ -250,7 +250,7 @@ escm_ustring_ref(escm *e, escm_atom *args)
     escm_assert(i >= 0, k, e);
 
     if ((size_t) i >= escm_ustr_len(str)) {
-	escm_error(e, "~s: index ~s is out of range.~%", k);
+	escm_error(e, "~s: index ~s is out of range.~%", escm_fun(e), k);
 	escm_abort(e);
     }
 
@@ -500,7 +500,7 @@ escm_subustring(escm *e, escm_atom *args)
     escm_assert(ESCM_ISINT(a), a, e);
     start = escm_number_ival(a);
     if (start < 0 || (size_t) start > escm_ustr_len(str)) {
-	escm_error(e, "~s: index ~s is out of range.~%", a);
+	escm_error(e, "~s: index ~s is out of range.~%", escm_fun(e), a);
 	escm_abort(e);
     }
 
@@ -508,7 +508,7 @@ escm_subustring(escm *e, escm_atom *args)
     escm_assert(ESCM_ISINT(a), a, e);
     end = escm_number_ival(a);
     if (end < 0 || (size_t) end > escm_ustr_len(str) || end < start) {
-	escm_error(e, "~s: index ~s is out of range.~%", a);
+	escm_error(e, "~s: index ~s is out of range.~%", escm_fun(e), a);
 	escm_abort(e);
     }
 

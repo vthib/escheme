@@ -204,15 +204,26 @@ escm_vprintf(escm_output *f, const char *format, va_list args)
 }
 
 void
-escm_printf(escm_output *f, const char *format, ...)
+escm_printf(escm_output *stream, const char *format, ...)
 {
     va_list args;
 
-    assert(f != NULL);
+    va_start(args, format);
+
+    escm_vprintf(stream, format, args);
+
+    va_end(args);
+}
+
+void
+escm_parse_print(escm *e, escm_output *stream, const char *format, ...)
+{
+    va_list args;
 
     va_start(args, format);
 
-    escm_vprintf(f, format, args);
+    escm_input_print(e->input, stream);
+    escm_vprintf(stream, format, args);
 
     va_end(args);
 }

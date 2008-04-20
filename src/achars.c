@@ -422,7 +422,7 @@ input_getchar(escm *e, escm_input *input)
     char c;
     size_t len;
 
-    str = escm_input_getstr_fun(input, isalnum, 1);
+    str = escm_input_getstr_fun(input, isalnum, e->casesensitive);
     len = strlen(str);
 
     c = '\0';
@@ -434,19 +434,17 @@ input_getchar(escm *e, escm_input *input)
     else {
 	char *p;
 
-	for (p = str; *p != '\0'; p++)
-	    *p = tolower(*p);
 	if (*str == 'x') {
 	    if (strlen(str) > 3) {
-		escm_input_error(input, e->errp, "parse error: invalid "
-				 "character: #\\%s.\n", str);
+		escm_parse_print(e, e->errp, "invalid character: #\\%s.\n",
+				 str);
 		goto err;
 	    }
 
 	    for (p = str + 1; *p != '\0'; p++) {
 		if (*p < '0' || *p > 'f') {
-		    escm_input_error(input, e->errp, "parse error: invalid "
-				     "character: #\\%s.\n", str);
+		    escm_parse_print(e, e->errp, "invalid character: #\\%s.\n",
+				     str);
 		    goto err;
 		}
 		if (*p <= '9')
@@ -477,7 +475,7 @@ input_getchar(escm *e, escm_input *input)
 	else if (strcmp(str, "delete") == 0)
 	    c = '\x7F';
 	else {
-	    escm_input_error(input, e->errp, "unknown character #\\%s.", str);
+	    escm_parse_print(e, e->errp, "unknown character #\\%s.", str);
 	    goto err;
 	}
     }

@@ -219,20 +219,11 @@ escm_input_rewind(escm_input *f)
     f->end = 0;
 }
 
-/**
- * @brief print a error message in the form
- * "filename:line:car: message\n" or "str: message"
- *                                     ^
- */
+/* print a brief resume of the input ("filename:line:car: " or ""str":car: ") */
 void
-escm_input_error(escm_input *f, escm_output *outp, const char *s, ...)
+escm_input_print(escm_input *f, escm_output *outp)
 {
-    va_list va;
-
     assert(f != NULL);
-    assert(s != NULL);
-
-    va_start(va, s);
 
     if (f->type == INPUT_FILE) {
 	escm_printf(outp, "%s:", f->d.file.name);
@@ -244,34 +235,15 @@ escm_input_error(escm_input *f, escm_output *outp, const char *s, ...)
 	    escm_printf(outp, ": ");
 	else
 	    escm_printf(outp, "%ld: ", f->d.file.car);
-
-	escm_vprintf(outp, s, va);
-	escm_putc(outp, '\n');
     } else {
 #ifdef ESCM_USE_UNICODE
-	size_t i;
-
-	escm_printf(outp, "%ls: ", f->d.str.str);
-	escm_vprintf(outp, s, va);
-	escm_putc(outp, '\n');
-
-	for (i = 0; &(f->d.str.str[i]) < f->d.str.cur; i++)
-	    escm_putc(outp, ' ');
-	escm_printf(outp, "^\n");
+	escm_printf(outp, "\"%ls\":%d: ", f->d.str.str,
+		    f->d.str.cur - f->d.str.str);
 #else
-	char *p;
-
-	escm_printf(outp, "%s: ", f->d.str.str);
-	escm_vprintf(outp, s, va);
-	escm_putc(outp, '\n');
-
-	for (p = f->d.str.str; p < (f->d.str.cur - 1); p++)
-	    fprintf(stderr, " ");
-	fprintf(stderr, "^\n");
+	escm_printf(outp, "\"%s\":%d: ", f->d.str.str,
+		    f->d.str.cur - f->d.str.str);
 #endif
     }
-
-    va_end(va);
 }
 
 #ifndef ESCM_USE_UNICODE

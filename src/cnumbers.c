@@ -1684,7 +1684,7 @@ inputtonumber(escm *e, escm_input *input, int radix)
 	case 'i': exact = 0; break;
 	case 'e': exact = 1; break;
 	default:
-	    escm_input_error(input, e->errp, "unknown character #%c.", c);
+	    escm_parse_print(e, e->errp, "unknown character #%c.\n", c);
 	    return NULL;
 	}
     }
@@ -1699,8 +1699,8 @@ inputtonumber(escm *e, escm_input *input, int radix)
 	cpx->type = ESCM_COMPLEX;
 	if (*(str + 1) == 'i') {
 	    if (*(str + 2) != '\0') {
-		escm_input_error(input, e->errp, "complex number must end with "
-				 "a i.\n");
+		escm_parse_print(e, e->errp, "complex number must end with a "
+				 "i.\n");
 		goto cpxbad;
 	    }
 	    cpx->d.cpx.re = xmalloc(sizeof *cpx->d.cpx.re);
@@ -1721,8 +1721,8 @@ inputtonumber(escm *e, escm_input *input, int radix)
 	    goto cpxbad;
 
 	if (*p != '-' && *p != '+') {	
-	    escm_input_error(input, e->errp, "expecting a '+' or a '-' before "
-			     "the imaginary part.");
+	    escm_parse_print(e, e->errp, "expecting a '+' or a '-' before the "
+			     "imaginary part.\n");
 	    number_free(cpx->d.cpx.re);
 	    goto cpxbad;
 	}
@@ -1735,8 +1735,7 @@ inputtonumber(escm *e, escm_input *input, int radix)
 	    p++;
 	}
 	if (*p != 'i' || *(p + 1) != '\0') {
-	    escm_input_error(input, e->errp, "complex number must end with a "
-			     "i.");
+	    escm_parse_print(e, e->errp, "complex number must end with a i.\n");
  	    number_free(cpx->d.cpx.im);
  	    number_free(cpx->d.cpx.re);
 	    goto cpxbad;
@@ -1800,7 +1799,7 @@ inputtonumber(escm *e, escm_input *input, int radix)
 #else
 	    input->d.str.cur = (char *) input->d.str.str + (p - str + 1);
 #endif
-	escm_input_error(input, e->errp, "Character `%c' unexpected.", *p);
+	escm_parse_print(e, e->errp, "Character `%c' unexpected.\n", *p);
 	free(str);
 	free(a);
 	return NULL;
@@ -1841,8 +1840,7 @@ getreal(escm *e, escm_input *input, char **p, int radix)
 
 	n = strtol(*p, p, radix);
 	if (*(*p + 1) == '-') {
-	    escm_input_error(input, e->errp, "the denominator must be "
-			     "positive.");
+	    escm_parse_print(e, e->errp, "the denominator must be positive.\n");
 	    return NULL;
 	}
 	(*p)++;

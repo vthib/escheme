@@ -202,7 +202,6 @@ escm_parse(escm *e)
 	return e->EOF_OBJ;
 
     e->err = 0;
-
     do {
 	c = escm_input_getc(e->input);
 	if (c == '.') {
@@ -270,7 +269,7 @@ escm_parse(escm *e)
 	    }
 	}
 	if (i >= e->ntypes) {
-	    fprintf(stderr, "unknown character `%c'.\n", c);
+	    escm_parse_print(e, e->errp, "unknown character `%c'.\n", c);
 	    escm_abort(e);
 	}
     }
@@ -281,6 +280,7 @@ escm_parse(escm *e)
     escm_gc_gard(e, atom);
     ret = escm_atom_eval(e, atom);
     escm_gc_ungard(e, atom);
+
     return ret;
 }
 
@@ -330,7 +330,7 @@ escm_ctx_put(escm *e, escm_atom *atom)
 	e->ctx->first = new;
     else {
 	if (!ESCM_ISCONS(e->ctx->last) || e->ctx->last == e->NIL) {
-	    escm_input_error(e->input, e->errp, "illegal dotted form.");
+	    escm_parse_print(e, e->errp, "illegal dotted form.\n");
 	    e->err = 1;
 	    return;
 	}
@@ -360,7 +360,7 @@ escm_ctx_put_splicing(escm *e, escm_atom *atom)
 	e->ctx->first = atom;
     else {
 	if (!ESCM_ISCONS(e->ctx->last)) { /* it's a "foo . bar" */
-	    escm_input_error(e->input, e->errp, "')' expected.");
+	    escm_parse_print(e, e->errp, "')' expected.\n");
 	    e->err = 1;
 	    return;
 	}

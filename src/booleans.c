@@ -104,6 +104,8 @@ boolean_parsetest(escm *e, int c)
 	int c2;
 
 	c2 = escm_input_peek(e->input);
+	if (e->casesensitive == 0)
+	    c2 = tolower(c2);
 	return (c2 == 't' || c2 == 'f');
     }
 
@@ -113,7 +115,12 @@ boolean_parsetest(escm *e, int c)
 static escm_atom *
 boolean_parse(escm *e)
 {
+    int c;
+
     (void) escm_input_getc(e->input); /* skip '#' */
 
-    return (escm_input_getc(e->input) == 't') ? e->TRUE : e->FALSE;
+    c = escm_input_getc(e->input);
+    if (e->casesensitive == 0)
+	c = tolower(c);
+    return (c == 't') ? e->TRUE : e->FALSE;
 }

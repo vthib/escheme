@@ -203,8 +203,8 @@ usage(char *name)
 	   "-d\tdo not load dynamic types primitives.\n"
 	   "\n"
 	   "-q\tdo not load the init file.\n"
-	   "-g\tSymbols are treated case-insensitively.\n"
-	   "-G\tSymbols are treated case-sensitively (default).\n"
+	   "-G\tSymbols are treated case-insensitively.\n"
+	   "-g\tSymbols are treated case-sensitively (default).\n"
 	   "\n"
 	   "-e expr\tEvaluates expr.\n\n");
 }

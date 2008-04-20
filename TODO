@@ -7,10 +7,7 @@
    - Add the ability to add (& remove?) new rules in macros
 
  - Features
-   - Unicode support (both characters and strings, see r6rs for possible impl)
-   - Finish the complete number type
    - Bignums
-   - Tailrec
    - Finish type implementation
 
  - Maybe:

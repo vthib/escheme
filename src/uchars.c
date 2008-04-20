@@ -420,7 +420,7 @@ input_getuchar(escm *e, escm_input *input)
     wchar_t c;
     size_t len;
 
-    str = escm_input_getwstr_fun(input, iswalnum, 1);
+    str = escm_input_getwstr_fun(input, iswalnum, e->casesensitive);
     len = wcslen(str);
 
     c = '\0';
@@ -432,13 +432,11 @@ input_getuchar(escm *e, escm_input *input)
     else {
 	wchar_t *p;
 
-	for (p = str; *p != '\0'; p++)
-	    *p = towlower(*p);
 	if (*str == 'x') {
 	    for (p = str + 1; *p != '\0'; p++) {
 		if (*p < '0' || *p > 'f') {
-		    escm_input_error(input, e->errp, "parse error: invalid "
-				     "character: #\\%ls.\n", str);
+		    escm_parse_print(e, e->errp, "invalid character: #\\%ls.\n",
+				     str);
 		    goto err;
 		}
 		if (*p <= '9')
@@ -469,7 +467,7 @@ input_getuchar(escm *e, escm_input *input)
 	else if (wcscmp(str, L"delete") == 0)
 	    c = L'\x7F';
 	else {
-	    escm_input_error(input, e->errp, "unknown character #\\%s.", str);
+	    escm_parse_print(e, e->errp, "unknown character #\\%s.\n", str);
 	    goto err;
 	}
     }
