@@ -759,8 +759,10 @@ escm_load(escm *e, escm_atom *args)
 	char *s;
 
 	s = wcstostr(escm_ustr_val(str));
-	if (!escm_fparse(e, s))
+	if (!escm_fparse(e, s)) {
+	    free(s);
 	    escm_abort(e);
+	}
 	free(s);
     }
 # else
@@ -1044,10 +1046,7 @@ quasiquote(escm *e, escm_atom *atom, unsigned int lvl)
     escm_ctx_enter(e);
 
     for (c = escm_cons_val(atom); c; c = escm_cons_next(c)) {
-	if (!ESCM_ISCONS(c->cdr)) {
-	    e->ctx->dotted = 1;
-	    escm_ctx_put(e, c->cdr);
-	} else if (ESCM_ISSYM(c->car)) {
+	if (ESCM_ISSYM(c->car)) {
 	    /* this form can be found when adding a unquote after a dot
 	       (ie `(1 2 . ,a) -> `(1 2 unquote a) */
 	    if (0 == strcmp(escm_sym_name(c->car), "unquote")) {
@@ -1131,6 +1130,11 @@ quasiquote(escm *e, escm_atom *atom, unsigned int lvl)
 	    }
 	} else
 	    escm_ctx_put(e, c->car);
+
+	if (!ESCM_ISCONS(c->cdr)) {
+	    e->ctx->dotted = 1;
+	    escm_ctx_put(e, c->cdr);
+	}
     }
 
     return escm_ctx_leave(e);

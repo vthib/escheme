@@ -435,7 +435,7 @@ input_getuchar(escm *e, escm_input *input)
 	if (*str == 'x') {
 	    for (p = str + 1; *p != '\0'; p++) {
 		if (*p < '0' || *p > 'f') {
-		    escm_parse_print(e, e->errp, "invalid character: #\\%ls.\n",
+		    escm_parse_print(input, e->errp, "invalid character: #\\%ls.\n",
 				     str);
 		    goto err;
 		}
@@ -467,7 +467,7 @@ input_getuchar(escm *e, escm_input *input)
 	else if (wcscmp(str, L"delete") == 0)
 	    c = L'\x7F';
 	else {
-	    escm_parse_print(e, e->errp, "unknown character #\\%s.\n", str);
+	    escm_parse_print(input, e->errp, "unknown character #\\%s.\n", str);
 	    goto err;
 	}
     }

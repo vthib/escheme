@@ -39,7 +39,7 @@ xmalloc(size_t n)
     p = malloc(n);
     if (!p) {
         fprintf(stderr, _("Memory is too low\n"));
-        exit(EXIT_FAILURE);
+	exit(EXIT_FAILURE);
     }
 
     return p;

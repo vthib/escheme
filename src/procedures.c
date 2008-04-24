@@ -45,6 +45,8 @@ escm_procedures_init(escm *e)
 
     proctype = escm_type_add(e, t);
 
+    (void) escm_procedure_new(e, "procedure?", 1, 1, escm_procedure_p, NULL);
+
     (void) escm_procedure_new(e, "apply", 2, -1, escm_apply, NULL);
     (void) escm_procedure_new(e, "map", 2, -1, escm_map, NULL);
     (void) escm_procedure_new(e, "for-each", 2, -1, escm_for_each, NULL);
@@ -87,6 +89,12 @@ escm_procedure_exec(escm *e, escm_atom *atomfun, escm_atom *args, int eval)
 	return runprimitive(e, atomfun, args, eval);
     else
 	return runlambda(e, atomfun, args, eval);
+}
+
+escm_atom *
+escm_procedure_p(escm *e, escm_atom *args)
+{
+    return ESCM_ISPROC(escm_cons_pop(e, &args)) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
@@ -248,7 +256,7 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
     escm_procedure *volatile fun;
     escm_atom *ret;
     escm_atom *volatile prevenv;
-    escm_atom *env, *args;
+    escm_atom *env;
     escm_cons *cons;
     int tailrec;
 
@@ -302,27 +310,27 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
 	    else
 		escm_env_modify(e, env, fun->d.closure.args, escm_ctx_first(e));
 	} else {
-	    escm_cons *funargs;
+	    escm_cons *funargs, *args;
 
 	    for (funargs = escm_cons_val(fun->d.closure.args),
-		     args = e->ctx->first; args;
-		 funargs = escm_cons_next(funargs)) {
+		     args = escm_cons_val(e->ctx->first); args;
+		 funargs = escm_cons_next(funargs),
+		     args = escm_cons_next(args)) {
 		if (!funargs) {
 		    escm_error(e, "~s: too much arguments.~%", atomfun);
 		    goto errarg;
 		}
 
 		if (!tailrec)
-		    escm_env_set(e, env, funargs->car, escm_cons_pop(e, &args));
+		    escm_env_set(e, env, funargs->car, args->car);
 		else
-		    escm_env_modify(e, env, funargs->car,
-				    escm_cons_pop(e, &args));
+		    escm_env_modify(e, env, funargs->car, args->car);
 
 		if (ESCM_ISSYM(funargs->cdr)) { /* rest arguments */
 		    if (!tailrec)
-			escm_env_set(e, env, funargs->cdr, args);
+			escm_env_set(e, env, funargs->cdr, args->cdr);
 		    else
-			escm_env_modify(e, env, funargs->cdr, args);
+			escm_env_modify(e, env, funargs->cdr, args->cdr);
 		    funargs = NULL;
 		    break;
 		}

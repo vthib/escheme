@@ -40,6 +40,7 @@
     ((escm_type_ison(ESCM_TYPE_ASTRING)) ? escm_astr_val(x) : escm_ustr_val(x))
 # define escm_str_len(x)						\
     ((escm_type_ison(ESCM_TYPE_ASTRING)) ? escm_astr_len(x) : escm_ustr_len(x))
+/* XXX: escm_string_make */
 #endif
 
 #endif /* ESCHEME_STRINGS_H */

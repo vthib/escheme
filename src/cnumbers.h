@@ -72,8 +72,8 @@ struct escm_number {
     unsigned int exact : 1;
 };
 
-void escm_numbers_init(escm *);
-size_t escm_number_tget(void);
+void escm_cnumbers_init(escm *);
+size_t escm_cnumber_tget(void);
 
 escm_atom *escm_cint_make(escm *, long, int);
 escm_atom *escm_creal_make(escm *, double);

@@ -142,12 +142,18 @@ escm_string_to_symbol(escm *e, escm_atom *args)
     escm_assert(ESCM_ISSTR(str), str, e);
 
 #ifdef ESCM_USE_UNICODE
-    if (escm_type_ison(ESCM_TYPE_USTRING))
-	return escm_symbol_make(e, wcstostr(escm_ustr_val(str)));
-    else
-	return escm_symbol_make(e, xstrdup(escm_astr_val(str)));
+    if (escm_type_ison(ESCM_TYPE_USTRING)) {
+	char *s;
+	escm_atom *ret;
+
+	s = wcstostr(escm_ustr_val(str));
+	ret = escm_symbol_make(e, s);
+	free(s);
+	return ret;
+    } else
+	return escm_symbol_make(e, escm_astr_val(str));
 #else
-	return escm_symbol_make(e, xstrdup(escm_str_val(str)));
+    return escm_symbol_make(e, escm_str_val(str));
 #endif
 }
 #endif

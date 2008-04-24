@@ -340,7 +340,7 @@ vector_parse(escm *e)
 	    c = escm_input_getc(e->input);
 	    if (e->brackets == 1 && (c == ')' || c == ']')) {
 		if ((open == '(' && c == ']') || (open == '[' && c == ')')) {
-		    escm_parse_print(e, e->errp, "expecting a '%c' to "
+		    escm_parse_print(e->input, e->errp, "expecting a '%c' to "
 				     "close a '%c'.\n",
 				     (open == '(') ? ')' : ']', open);
 		    escm_ctx_discard(e);

@@ -5,10 +5,13 @@
    - Macros don't support multiples ...
    - Do not add or set a new variable in a read only env
    - Add the ability to add (& remove?) new rules in macros
+   - Grow stacks when memory full
+   - Cons tailrec (cons 1 (cons 2 (cons 3)))
 
  - Features
    - Bignums
    - Finish type implementation
+   - Common Lisp Macros
 
  - Maybe:
    - Slashification

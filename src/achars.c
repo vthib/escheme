@@ -436,14 +436,14 @@ input_getchar(escm *e, escm_input *input)
 
 	if (*str == 'x') {
 	    if (strlen(str) > 3) {
-		escm_parse_print(e, e->errp, "invalid character: #\\%s.\n",
+		escm_parse_print(input, e->errp, "invalid character: #\\%s.\n",
 				 str);
 		goto err;
 	    }
 
 	    for (p = str + 1; *p != '\0'; p++) {
 		if (*p < '0' || *p > 'f') {
-		    escm_parse_print(e, e->errp, "invalid character: #\\%s.\n",
+		    escm_parse_print(input, e->errp, "invalid character: #\\%s.\n",
 				     str);
 		    goto err;
 		}
@@ -475,7 +475,7 @@ input_getchar(escm *e, escm_input *input)
 	else if (strcmp(str, "delete") == 0)
 	    c = '\x7F';
 	else {
-	    escm_parse_print(e, e->errp, "unknown character #\\%s.", str);
+	    escm_parse_print(input, e->errp, "unknown character #\\%s.", str);
 	    goto err;
 	}
     }

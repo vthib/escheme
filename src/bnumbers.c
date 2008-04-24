@@ -1021,8 +1021,6 @@ escm_bnumber_to_string(escm *e, escm_atom *args)
 
     if (ESCM_ISINT(a)) {
 	if (radix == 2) {
-	    escm_atom *atom;
-
 	    str = bintostr(escm_number_ival(a));
 	    len = strlen(str);
 	    maxlen = len + 1;
@@ -1216,7 +1214,7 @@ inputtonumber(escm *e, escm_input *input, int radix)
 	case 'd': radix = 10; break;
 	case 'x': radix = 16; break;
 	default:
-	    escm_parse_print(e, e->errp, "unknown character #%c.\n", c);
+	    escm_parse_print(input, e->errp, "unknown character #%c.\n", c);
 	    return NULL;
 	}
     } else
@@ -1261,7 +1259,7 @@ inputtonumber(escm *e, escm_input *input, int radix)
 #else
 	    input->d.str.cur = (char *) input->d.str.str + (ec - str + 1);
 #endif
-	escm_parse_print(e, e->errp, "Character `%c' unexpected.\n", *ec);
+	escm_parse_print(input, e->errp, "Character `%c' unexpected.\n", *ec);
 	free(str);
 	free(n);
 	return NULL;

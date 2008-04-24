@@ -59,7 +59,7 @@ void escm_output_close(escm_output *);
 
 void escm_vprintf(escm_output *, const char *, va_list);
 void escm_printf(escm_output *, const char *, ...);
-void escm_parse_print(escm *, escm_output *, const char *, ...);
+void escm_parse_print(escm_input *, escm_output *, const char *, ...);
 void escm_scmpf(escm *, escm_output *, const char *, ...);
 
 void escm_notice(escm *, const char *, ...);
