@@ -37,6 +37,7 @@ void escm_atom_free(escm *, escm_atom *);
 
 void escm_atom_mark(escm *, escm_atom *);
 escm_atom *escm_atom_eval(escm *, escm_atom *);
+escm_atom *escm_atom_eval3(escm *, escm_atom *, int);
 escm_atom *escm_atom_exec(escm *, escm_atom *, escm_atom *);
 
 #define escm_atom_print(e, atom) \

@@ -60,7 +60,7 @@ escm_cons_init(escm *e)
     (void) escm_procedure_new(e, "pair?", 1, 1, escm_pair_p, NULL);
     (void) escm_procedure_new(e, "list?", 1, 1, escm_list_p, NULL);
 
-    (void) escm_procedure_new(e, "append", 2, 2, escm_append, NULL);
+    (void) escm_procedure_new(e, "append", 0, -1, escm_append, NULL);
     (void) escm_procedure_new(e, "reverse", 1, 1, escm_reverse, NULL);
 
 #ifdef ESCM_USE_NUMBERS
@@ -273,22 +273,16 @@ escm_append(escm *e, escm_atom *args)
     escm_atom *flist;
     escm_cons *a;
 
-    flist = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISCONS(flist), flist, e);
-
     escm_ctx_enter(e);
+    while (args != e->NIL && args) {
+	flist = escm_cons_pop(e, &args);
+	escm_assert(ESCM_ISCONS(flist), flist, e);
 
-    for (a = escm_cons_val(flist); a; a = escm_cons_next(a)) {
-	if (!ESCM_ISCONS(a->cdr)) {
-	    escm_atom_printerr(e, flist);
-	    escm_error(e, "~s: ~s: improper list.~%", escm_fun(e), flist);
-	    escm_ctx_discard(e);
-	    escm_abort(e);
-	}
-	escm_ctx_put(e, a->car);
+	escm_ctx_put_splicing(e, flist);
+	if (e->err == 1)
+	    return NULL;
     }
 
-    escm_ctx_put_splicing(e, escm_cons_pop(e, &args));
     return escm_ctx_leave(e);
 }
 
@@ -301,14 +295,14 @@ escm_reverse(escm *e, escm_atom *args)
     arg = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCONS(arg), arg, e);
 
-    new = NULL;
+    new = e->NIL;
     for (c = escm_cons_val(arg); c; c = escm_cons_next(c)) {
 	if (!ESCM_ISCONS(c->cdr)) {
 	    escm_atom_printerr(e, arg);
 	    escm_error(e, "~s: ~s: improper list.~%", escm_fun(e), arg);
 	    escm_abort(e);
 	}
-	new = escm_cons_make(e, c->car, (new != NULL) ? new : e->NIL);
+	new = escm_cons_make(e, c->car, new);
     }
 
     return new;

@@ -33,7 +33,8 @@ static void env_free(escm_env *);
 static void env_mark(escm *, escm_env *);
 static void env_print(escm *, escm_env *, escm_output *, int);
 
-static void enter(escm_atom *, int);
+static escm_atom *env_enter(escm *, escm_atom *);
+static void enterrec(escm_atom *, int);
 
 void
 escm_environments_init(escm *e)
@@ -116,6 +117,17 @@ escm_env_set(escm *e, escm_atom *atomenv, escm_atom *sym, escm_atom *atom)
 	return;
     }
 
+    for (l = env->list; l; l = l->next) {
+	if (l->tree == escm_sym_node(sym)) {
+	    if (!l->node) {
+		l->node = xmalloc(sizeof *l->node);
+		l->node->prev = NULL;
+	    }
+	    l->node->atom = atom;
+	    return;
+	}
+    }
+
     l = xmalloc(sizeof *l);
     l->tree = escm_sym_node(sym);
     l->node = xmalloc(sizeof *l->node);
@@ -158,32 +170,9 @@ escm_env_modify(escm *e, escm_atom *atomenv, escm_atom *sym, escm_atom *atom)
 escm_atom *
 escm_env_enter(escm *e, escm_atom *new)
 {
-    struct envlist *l;
     escm_atom *a;
-    escm_env *env;
 
-    assert(e != NULL);
-    assert(new != NULL);
-
-    /* first we mark all the env we want to enter in */
-    for (a = new; a; a = escm_env_val(a)->prev)
-	a->marked = 1;
-
-    env = new->ptr;
-
-    /* then we leave the non-marked environments */
-    for (a = e->env; a && !a->marked; a = escm_env_val(a)->prev) {
-	for (l = escm_env_val(a)->list; l; l = l->next)
-	    l->tree->node = l->tree->node->prev;
-    }
-    if (a)
-	a->marked = 0;
-
-    /* finally we enter in the new envs */
-    enter(new, 0);
-
-    a = e->env;
-    e->env = new;
+    a = env_enter(e, new);
     escm_gc_gard(e, a);
     return a;
 }
@@ -192,7 +181,7 @@ void
 escm_env_leave(escm *e, escm_atom *prevenv)
 {
     escm_gc_ungard(e, prevenv);
-    escm_gc_ungard(e, escm_env_enter(e, prevenv));
+    env_enter(e, prevenv);
 }
 
 /*@-usedef@*/
@@ -369,8 +358,40 @@ env_free(escm_env *env)
     free(env);
 }
 
+static escm_atom *
+env_enter(escm *e, escm_atom *new)
+{
+    struct envlist *l;
+    escm_atom *a;
+    escm_env *env;
+
+    assert(e != NULL);
+    assert(new != NULL);
+
+    /* first we mark all the env we want to enter in */
+    for (a = new; a; a = escm_env_val(a)->prev)
+	a->marked = 1;
+
+    env = new->ptr;
+
+    /* then we leave the non-marked environments */
+    for (a = e->env; a && !a->marked; a = escm_env_val(a)->prev) {
+	for (l = escm_env_val(a)->list; l; l = l->next)
+	    l->tree->node = l->tree->node->prev;
+    }
+    if (a)
+	a->marked = 0;
+
+    /* finally we enter in the new envs */
+    enterrec(new, 0);
+
+    a = e->env;
+    e->env = new;
+    return a;
+}
+
 static void
-enter(escm_atom *atom, int onlyclean)
+enterrec(escm_atom *atom, int onlyclean)
 {
     struct envlist *l;
     escm_env *env;
@@ -384,7 +405,7 @@ enter(escm_atom *atom, int onlyclean)
 
     env = atom->ptr;
 
-    enter(env->prev, onlyclean);
+    enterrec(env->prev, onlyclean);
 
     if (!onlyclean) {
 	for (l = env->list; l; l = l->next) {

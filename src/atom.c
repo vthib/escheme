@@ -91,7 +91,14 @@ escm_atom_mark(escm *e, escm_atom *atom)
 escm_atom *
 escm_atom_eval(escm *e, escm_atom *atom)
 {
+    return escm_atom_eval3(e, atom, 0);
+}
+
+escm_atom *
+escm_atom_eval3(escm *e, escm_atom *atom, int trec)
+{
     escm_atom *ret, *old, *prevenv;
+    int tmp;
 
     assert(e != NULL);
     if (!atom)
@@ -101,8 +108,17 @@ escm_atom_eval(escm *e, escm_atom *atom)
 	escm_abort(e);
     }
 
+    tmp = e->tailrec;
+    if (!trec && e->tailrec == 1)
+	e->tailrec = 0;
+    if (trec) {
+	if (!escm_tailrec(e, atom, 1))
+	    return NULL;
+    }
+
     old = e->curobj, e->curobj = atom;
     prevenv = (atom->env) ? escm_env_enter(e, atom->env) : NULL;
+
     if (e->types[atom->type]->type == TYPE_BUILT) {
 	if (e->types[atom->type]->d.c.feval)
 	    ret = e->types[atom->type]->d.c.feval(e, atom->ptr);
@@ -119,6 +135,8 @@ escm_atom_eval(escm *e, escm_atom *atom)
     if (prevenv)
 	escm_env_leave(e, prevenv);
     e->curobj = old;
+    e->tailrec = tmp;
+
     return ret;
 }
 

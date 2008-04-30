@@ -93,6 +93,11 @@ struct escm_context {
     unsigned int dotted : 1;
 };
 
+struct escm_slist {
+    escm_atom *atom;
+    struct escm_slist *prev;
+};
+
 struct escm {
     escm_context *ctx;
     struct escm_slist *gard;
@@ -118,10 +123,10 @@ struct escm {
     escm_type **types;
     unsigned long ntypes;
 
+    unsigned int tailrec : 2;
     unsigned int backtrace : 1;
     unsigned int casesensitive : 1;
     unsigned int brackets : 1;
-    unsigned int tailrec : 1;
     unsigned int err : 1;
 };
 
@@ -148,8 +153,8 @@ void escm_gc_collect(escm *);
 void escm_gc_gard(escm *, escm_atom *);
 void escm_gc_ungard(escm *, escm_atom *);
 
-void escm_tailrec(escm *, escm_atom *, int);
-void escm_tailrec3(escm *, escm_atom *, escm_atom *, int);
+int escm_tailrec(escm *, escm_atom *, int);
+int escm_tailrec3(escm *, escm_atom *, escm_atom *, int);
 
 void escm_print_backtrace(escm *, escm_output *);
 

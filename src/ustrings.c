@@ -143,6 +143,7 @@ escm_atom *
 escm_make_ustring(escm *e, escm_atom *args)
 {
     escm_atom *length, *c;
+    escm_ustring *s;
     wchar_t *wcs;
     size_t k;
 
@@ -165,12 +166,12 @@ escm_make_ustring(escm *e, escm_atom *args)
 	escm_assert(ESCM_ISUCHAR(c), c, e);
 
     wcs = xmalloc((k + 1) * sizeof *wcs);
-    wmemset(wcs, (c != NULL) ? escm_uchar_val(c) : 0, k + 1);
+    wmemset(wcs, (c != NULL) ? escm_uchar_val(c) : L'\0', k);
     wcs[k] = L'\0';
 
-    c = escm_ustring_make(e, wcs, k);
-    free(wcs);
-    return c;
+    s = xmalloc(sizeof *s);
+    s->str = wcs, s->len = k;
+    return escm_atom_new(e, ustringtype, s);
 }
 #endif
 
@@ -272,14 +273,14 @@ escm_ustring_set_x(escm *e, escm_atom *args)
 	escm_abort(e);
     }
 
+    str = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISUSTR(str), str, e);
     if (str->ro == 1) {
 	escm_error(e, "~s: Can't modify ~s: immutable string.~%", escm_fun(e),
 		   str);
 	escm_abort(e);
     }
 
-    str = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISUSTR(str), str, e);
 
     k = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISINT(k), k, e);

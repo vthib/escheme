@@ -34,7 +34,7 @@
 # define ESCM_USE_CONTINUATIONS
 */
 
-# define ESCM_CIRCULAR_LIST 1 /* 0: no handle, 1: just in list? and length
+# define ESCM_CIRCULAR_LIST 2 /* 0: no handle, 1: just in list? and length
 				 2: check also when printing */
 #endif
 

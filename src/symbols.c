@@ -30,6 +30,7 @@ static void symbol_print(escm *, escm_tst *, escm_output *, int);
 static int symbol_parsetest(escm *, int);
 static escm_atom *symbol_parse(escm *);
 static escm_atom *symbol_eval(escm *, escm_tst *);
+static int symbol_mark(escm *, escm_tst *);
 static int symbol_equal(escm *, escm_tst *, escm_tst *, int);
 static int symbol_eq_colorless(char *, char *);
 
@@ -47,6 +48,7 @@ escm_symbols_init(escm *e)
     t->d.c.fparse = symbol_parse;
     t->d.c.feval = (Escm_Fun_Eval) symbol_eval;
     t->d.c.fequal = (Escm_Fun_Equal) symbol_equal;
+    t->fmark = (Escm_Fun_Mark) symbol_mark;
 
     symboltype = escm_type_add(e, t);
 
@@ -88,7 +90,6 @@ escm_symbol_set(escm_atom *sym, escm_atom *atom)
 	t->node = xcalloc(1, sizeof *t->node);
     t->node->atom = atom;
 }
-
 
 escm_atom *
 escm_symbol_p(escm *e, escm_atom *args)
@@ -241,6 +242,13 @@ symbol_equal(escm *e, escm_tst *t1, escm_tst *t2, int lvl)
     if (lvl == 3)
 	return symbol_eq_colorless(t1->symname, t2->symname);
     return t1 == t2;
+}
+
+static int
+symbol_mark(escm *e, escm_tst *sym)
+{
+    if (sym->node && sym->node->atom)
+	escm_atom_mark(e, sym->node->atom);
 }
 
 /* XXX: checks for symbol_type, ...? */

@@ -22,17 +22,12 @@
 #include "escheme.h"
 
 #ifndef ESCM_NSEG
-# define ESCM_NSEG 10
+# define ESCM_NSEG 100
 #endif
 
 #ifndef ESCM_CPSEG
-# define ESCM_CPSEG 2000
+# define ESCM_CPSEG 20000
 #endif
-
-struct escm_slist {
-    escm_atom *atom;
-    struct escm_slist *prev;
-};
 
 static unsigned char *alloc_seg(escm *);
 static escm_atom *enterin(escm *, const char *);
@@ -196,6 +191,7 @@ escm_parse(escm *e)
     int c;
 
     assert(e != NULL);
+
     if (!e->input)
 	return NULL;
     if (e->input->end)
@@ -360,7 +356,8 @@ escm_ctx_put_splicing(escm *e, escm_atom *atom)
 	e->ctx->first = atom;
     else {
 	if (!ESCM_ISCONS(e->ctx->last)) { /* it's a "foo . bar" */
-	    escm_parse_print(e->input, e->errp, "')' expected.\n");
+	    escm_error(e, "can't append a list after an improper list ~s.~%",
+		e->ctx->first);
 	    e->err = 1;
 	    return;
 	}
@@ -504,41 +501,45 @@ escm_gc_ungard(escm *e, escm_atom *a)
     }
 }
 
-void
+int
 escm_tailrec(escm *e, escm_atom *cons, int eval)
 {
-    if (!e->tailrec || !ESCM_ISCONS(cons))
-	return;
+    if (e->tailrec != 1 || !ESCM_ISCONS(cons))
+	return 1;
 
-    escm_tailrec3(e, escm_cons_car(cons), escm_cons_cdr(cons), eval);
+    return escm_tailrec3(e, escm_cons_car(cons), escm_cons_cdr(cons), eval);
 }
 
-void
+int
 escm_tailrec3(escm *e, escm_atom *fun, escm_atom *args, int eval)
 {
     escm_context *ctx, *c, *prev;
     escm_atom *a;
 
-    if (!e->tailrec || !ESCM_ISCONS(args))
-	return;
+    if (e->tailrec != 1 || !ESCM_ISCONS(args))
+	return 1;
 
     fun = escm_atom_eval(e, fun);
-    if (!fun || !ESCM_ISCLOSURE(fun) || e->err == 1)
-	return;
+    if (!fun || !ESCM_ISCLOSURE(fun))
+	return 1;
+    if (e->err == 1)
+	return 0;
 
     for (ctx = e->ctx; ctx && ctx->fun != fun; ctx = ctx->prev)
 	;
     if (!ctx)
-	return;
+	return 1;
 
+    e->tailrec = 2;
     /* we have a match, now we eval the new args */
     escm_ctx_enter(e);
     for (a = escm_cons_pop(e, &args); a; a = escm_cons_pop(e, &args)) {
 	if (eval) {
 	    a = escm_atom_eval(e, a);
 	    if (!a || e->err == 1) {
+		escm_error(e, "~s: expression must return a value.~%", fun);
 		escm_ctx_discard(e);
-		return;
+		return 0;
 	    }
 	}
 	escm_ctx_put(e, a);
@@ -550,10 +551,11 @@ escm_tailrec3(escm *e, escm_atom *fun, escm_atom *args, int eval)
 	prev = c->prev;
 	free(c);
     }
+    e->ctx = ctx;
 
     /* and jump */
+    e->curobj = ctx->fun;
     e->tailrec = 0;
-    e->ctx = ctx;
     longjmp(ctx->jbuf, 1);
 }
 

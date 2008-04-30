@@ -430,15 +430,13 @@ escm_if(escm *e, escm_atom *args)
     }
 
     if (ESCM_ISTRUE(test)) {
-	escm_tailrec(e, a, 1);
-	return escm_atom_eval(e, escm_cons_pop(e, &args));
+	a = escm_cons_pop(e, &args);
+	return escm_atom_eval3(e, a, 1);
     } else {
 	(void) escm_cons_pop(e, &args); /* skip the 'true' statement */
 	a = escm_cons_pop(e, &args);
-	if (a) {
-	    escm_tailrec(e, a, 1);
-	    return escm_atom_eval(e, a);
-	}
+	if (a)
+	    return escm_atom_eval3(e, a, 1);
     }
 
     return NULL;
@@ -538,9 +536,12 @@ escm_and(escm *e, escm_atom *args)
     ret = NULL; /* make splint happy */
     while (c) {
 	if (!args)
-	    escm_tailrec(e, c, 1);
-	ret = escm_atom_eval(e, c);
-	if (!ret || !ESCM_ISTRUE(ret))
+	    ret = escm_atom_eval3(e, c, 1);
+	else
+	    ret = escm_atom_eval(e, c);
+	if (e->err == 1)
+	    return NULL;
+	if (!ESCM_ISTRUE(ret))
 	    return ret;
 
 	c = escm_cons_pop(e, &args);
@@ -561,8 +562,11 @@ escm_or(escm *e, escm_atom *args)
     ret = NULL; /* make splint happy */
     while (c) {
 	if (!args)
-	    escm_tailrec(e, c, 1);
-	ret = escm_atom_eval(e, c);
+	    ret = escm_atom_eval3(e, c, 1);
+	else
+	    ret = escm_atom_eval(e, c);
+	if (e->err == 1)
+	    return NULL;
 	if (!ret || ESCM_ISTRUE(ret))
 	    return ret; /* true value (or null) */
 
@@ -584,8 +588,9 @@ escm_begin(escm *e, escm_atom *args)
     ret = NULL;
     for (a = escm_cons_pop(e, &args); a; a = escm_cons_pop(e, &args)) {
 	if (!args)
-	    escm_tailrec(e, a, 1);
-	ret = escm_atom_eval(e, a);
+	    ret = escm_atom_eval3(e, a, 1);
+	else
+	    ret = escm_atom_eval(e, a);
 	if (!ret && e->err == 1)
 	    return ret;
     }
@@ -1007,6 +1012,7 @@ named_let(escm *e, escm_atom *name, escm_atom *args)
     fun = escm_lambda(e, escm_ctx_leave(e));
     if (!fun)
 	escm_abort(e);
+    escm_gc_gard(e, fun);
 
     /* build the new environment */
     env = escm_env_new(e, e->env);
@@ -1023,7 +1029,9 @@ named_let(escm *e, escm_atom *name, escm_atom *args)
 	escm_ctx_put(e, cons->car);
     }
 
-    return escm_procedure_exec(e, fun, escm_ctx_leave(e), 1);
+    val = escm_procedure_exec(e, fun, escm_ctx_leave(e), 1);
+    escm_gc_ungard(e, fun);
+    return val;
 }
 
 static escm_atom *
@@ -1068,7 +1076,7 @@ quasiquote(escm *e, escm_atom *atom, unsigned int lvl)
 	    } else
 		escm_ctx_put(e, c->car);
 	} else if (ESCM_ISCONS(c->car)) {
-	    if (ESCM_ISSYM(escm_cons_val(c->car)->car)) {
+	    if (ESCM_ISSYM(escm_cons_car(c->car))) {
 		escm_cons *cons;
 
 		cons = escm_cons_val(c->car);
@@ -1121,12 +1129,14 @@ quasiquote(escm *e, escm_atom *atom, unsigned int lvl)
 			goto err;
 		    escm_ctx_put(e, ret);
 		    escm_ctx_put(e, escm_ctx_leave(e));
-		} else {
-		    ret = quasiquote(e, c->car, lvl);
-		    if (!ret)
-			goto err;
-		    escm_ctx_put(e, ret);
-		}
+		} else
+		    goto nospecialcase;
+	    } else {
+	    nospecialcase:
+		ret = quasiquote(e, c->car, lvl);
+		if (!ret)
+		    goto err;
+		escm_ctx_put(e, ret);
 	    }
 	} else
 	    escm_ctx_put(e, c->car);
