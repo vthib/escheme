@@ -378,7 +378,7 @@ uchar_print(escm *e, int c, escm_output *stream, int lvl)
 	if (iswprint(c))
 	    escm_printf(stream, "%lc", c);
 	else
-	    escm_printf(stream, "x%x", (wint_t) c);
+	    escm_printf(stream, "x%x", (wint_t) c);	
     }
 }
 
@@ -435,8 +435,8 @@ input_getuchar(escm *e, escm_input *input)
 	if (*str == 'x') {
 	    for (p = str + 1; *p != '\0'; p++) {
 		if (*p < '0' || *p > 'f') {
-		    escm_parse_print(input, e->errp, "invalid character: #\\%ls.\n",
-				     str);
+		    escm_parse_print(input, e->errp, "invalid character: "
+				     "#\\%ls.\n", str);
 		    goto err;
 		}
 		if (*p <= '9')

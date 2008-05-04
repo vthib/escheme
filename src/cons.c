@@ -30,6 +30,9 @@ static int cons_parsetest(escm *, int);
 static escm_atom *cons_parse(escm *);
 static escm_atom *cons_eval(escm *, escm_cons *);
 
+static escm_atom *member(escm *, escm_atom *, int);
+static escm_atom *assoc(escm *, escm_atom *, int);
+
 void
 escm_cons_init(escm *e)
 {
@@ -425,112 +428,37 @@ escm_list_ref(escm *e, escm_atom *args)
 escm_atom *
 escm_memq(escm *e, escm_atom *args)
 {
-    escm_atom *elem, *list;
-    escm_atom *c;
-
-    elem = escm_cons_pop(e, &args);
-    list = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISCONS(list), list, e);
-
-    for (c = list; c != NULL && c != e->NIL;
-	 c = ESCM_ISCONS(escm_cons_val(c)->cdr) ?
-	     escm_cons_val(c)->cdr : NULL) {
-	if (escm_atom_equal(e, escm_cons_val(c)->car, elem, 0))
-	    return c;
-    }
-
-    return e->FALSE;
+    return member(e, args, 0);
 }
 
 escm_atom *
 escm_memv(escm *e, escm_atom *args)
 {
-    escm_atom *elem, *list;
-    escm_atom *c;
-
-    elem = escm_cons_pop(e, &args);
-    list = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISCONS(list), list, e);
-
-    for (c = escm_cons_pop(e, &list); c; c = escm_cons_pop(e, &list)) {
-	if (escm_atom_equal(e, c, elem, 1))
-	    return c;
-    }
-
-    return e->FALSE;
+    return member(e, args, 1);
 }
 
 escm_atom *
 escm_member(escm *e, escm_atom *args)
 {
-    escm_atom *elem, *list;
-    escm_atom *c;
-
-    elem = escm_cons_pop(e, &args);
-    list = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISCONS(list), list, e);
-
-    for (c = list; c; c = ESCM_ISCONS(escm_cons_val(c)->cdr) ?
-	     escm_cons_val(c)->cdr : NULL) {
-	if (escm_atom_equal(e, escm_cons_val(c)->car, elem, 2))
-	    return c;
-    }
-
-    return e->FALSE;
+    return member(e, args, 2);
 }
 
 escm_atom *
 escm_assq(escm *e, escm_atom *args)
 {
-    escm_atom *elem, *list, *pair;
-
-    elem = escm_cons_pop(e, &args);
-    list = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISCONS(list), list, e);
-
-    for (pair = escm_cons_pop(e, &list); pair; pair = escm_cons_pop(e, &list)) {
-	escm_assert(ESCM_ISCONS(pair), pair, e);
-	if (escm_atom_equal(e, escm_cons_val(pair)->car, elem, 0))
-	    return pair;
-    }
-
-    return e->FALSE;
+    return assoc(e, args, 0);
 }
 
 escm_atom *
 escm_assv(escm *e, escm_atom *args)
 {
-    escm_atom *elem, *list, *pair;
-
-    elem = escm_cons_pop(e, &args);
-    list = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISCONS(list), list, e);
-
-    for (pair = escm_cons_pop(e, &list); pair; pair = escm_cons_pop(e, &list)) {
-	escm_assert(ESCM_ISCONS(pair), pair, e);
-	if (escm_atom_equal(e, escm_cons_val(pair)->car, elem, 1))
-	    return pair;
-    }
-
-    return e->FALSE;
+    return assoc(e, args, 1);
 }
 
 escm_atom *
 escm_assoc(escm *e, escm_atom *args)
 {
-    escm_atom *elem, *list, *pair;
-
-    elem = escm_cons_pop(e, &args);
-    list = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISCONS(list), list, e);
-
-    for (pair = escm_cons_pop(e, &list); pair; pair = escm_cons_pop(e, &list)) {
-	escm_assert(ESCM_ISCONS(pair), pair, e);
-	if (escm_atom_equal(e, escm_cons_val(pair)->car, elem, 2))
-	    return pair;
-    }
-
-    return e->FALSE;
+    return assoc(e, args, 2);
 }
 
 static void
@@ -615,7 +543,7 @@ cons_equal(escm *e, escm_cons *c1, escm_cons *c2, int lvl)
 		return (ESCM_ISCONS(c2->cdr)) ? 0 :
 		    escm_atom_equal(e, c1->cdr, c2->cdr, 2);
 	}
-	return 1;
+	return !c2;
     }
 }
 
@@ -692,4 +620,43 @@ cons_eval(escm *e, escm_cons *cons)
     }
 
     return escm_atom_exec(e, atomfun, cons->cdr);
+}
+
+static escm_atom *
+member(escm *e, escm_atom *args, int lvl)
+{
+    escm_atom *elem, *list, *c;
+
+    elem = escm_cons_pop(e, &args);
+    list = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISCONS(list), list, e);
+
+    for (c = list; c != e->NIL; c = ESCM_ISCONS(escm_cons_cdr(c)) ?
+	     escm_cons_cdr(c) : e->NIL) {
+	if (escm_atom_equal(e, escm_cons_car(c), elem, lvl))
+	    return c;
+    }
+
+    return e->FALSE;
+}
+
+static escm_atom *
+assoc(escm *e, escm_atom *args, int lvl)
+{
+    escm_atom *elem, *list, *c;
+
+    elem = escm_cons_pop(e, &args);
+    list = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISCONS(list), list, e);
+
+    for (c = escm_cons_pop(e, &list); c; c = escm_cons_pop(e, &list)) {
+	if (!ESCM_ISCONS(c)) {
+	    escm_error(e, "~s: ~s is not a c.~%", escm_fun(e), c);
+	    escm_abort(e);
+	}
+	if (escm_atom_equal(e, escm_cons_car(c), elem, lvl))
+	    return c;
+    }
+
+    return e->FALSE;
 }

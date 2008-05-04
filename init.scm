@@ -128,10 +128,3 @@
 (define letrec-syntax letrec)
 
 ;; ALPHAS
-
-(define-syntax alpha-set
-  (syntax-rules ()
-    ((alpha-set alpha name val) (with alpha (define name val)))))
-(define-syntax alpha-get
-  (syntax-rules ()
-    ((alpha-get alpha name) (with alpha name))))

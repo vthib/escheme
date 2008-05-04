@@ -26,7 +26,7 @@
 #endif
 
 #ifndef ESCM_CPSEG
-# define ESCM_CPSEG 20000
+# define ESCM_CPSEG 50000
 #endif
 
 static unsigned char *alloc_seg(escm *);
@@ -330,7 +330,7 @@ escm_ctx_put(escm *e, escm_atom *atom)
 	    e->err = 1;
 	    return;
 	}
-	escm_cons_val(e->ctx->last)->cdr = new;
+	escm_cons_cdr(e->ctx->last) = new;
     }
 
     e->ctx->last = new;
@@ -339,7 +339,7 @@ escm_ctx_put(escm *e, escm_atom *atom)
 void
 escm_ctx_put_splicing(escm *e, escm_atom *atom)
 {
-    escm_cons *c;
+    escm_atom *new;
 
     assert(e != NULL);
     assert(atom != NULL);
@@ -352,28 +352,27 @@ escm_ctx_put_splicing(escm *e, escm_atom *atom)
 
     e->ctx->dotted = 0;
 
-    if (!e->ctx->first)
-	e->ctx->first = atom;
-    else {
-	if (!ESCM_ISCONS(e->ctx->last)) { /* it's a "foo . bar" */
-	    escm_error(e, "can't append a list after an improper list ~s.~%",
-		e->ctx->first);
-	    e->err = 1;
-	    return;
-	}
-	escm_cons_val(e->ctx->last)->cdr = atom;
+    if (e->ctx->last && !ESCM_ISCONS(e->ctx->last)) { /* it's a "foo . bar" */
+	escm_error(e, "can't append a list after an improper list ~s.~%",
+		   e->ctx->first);
+	e->err = 1;
+	return;
     }
 
-    if (ESCM_ISCONS(atom)) {
-	escm_atom *obj;
+    if (!e->ctx->first) {
+	e->ctx->first = escm_cons_make(e, escm_cons_car(atom),
+				       escm_cons_cdr(atom));
+	e->ctx->last = e->ctx->first;
+	atom = escm_cons_cdr(atom);
+    }
 
-	obj = atom;
-	for (c = escm_cons_val(atom); c->cdr != e->NIL && ESCM_ISCONS(c->cdr);
-	     c = escm_cons_next(c))
-	    obj = c->cdr;
-	e->ctx->last = (c->cdr == e->NIL) ? obj : c->cdr;
-    } else
-	e->ctx->last = atom;
+    while (atom && atom != e->NIL) {
+	new = (ESCM_ISCONS(atom)) ? escm_cons_make(e, escm_cons_car(atom),
+						   escm_cons_cdr(atom)) : atom;
+	escm_cons_cdr(e->ctx->last) = new;
+	e->ctx->last = new;
+	atom = (ESCM_ISCONS(atom)) ? escm_cons_cdr(atom) : NULL;
+    }
 }
 
 escm_atom *
