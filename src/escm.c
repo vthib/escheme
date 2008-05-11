@@ -421,8 +421,10 @@ escm_gc_collect(escm *e)
     size_t i;
 
     /* we mark all the known atoms */
-    for (ctx = e->ctx; ctx; ctx = ctx->prev)
+    for (ctx = e->ctx; ctx; ctx = ctx->prev) {
 	escm_atom_mark(e, ctx->first);
+	escm_atom_mark(e, ctx->fun);
+    }
 
     /* plus the garded ones */
     for (li = e->gard; li; li = li->prev)
@@ -501,21 +503,21 @@ escm_gc_ungard(escm *e, escm_atom *a)
 }
 
 int
-escm_tailrec(escm *e, escm_atom *cons, int eval)
+escm_tailrec(escm *e, escm_atom *cons)
 {
-    if (e->tailrec != 1 || !ESCM_ISCONS(cons))
+    if (!ESCM_ISCONS(cons))
 	return 1;
 
-    return escm_tailrec3(e, escm_cons_car(cons), escm_cons_cdr(cons), eval);
+    return escm_tailrec4(e, escm_cons_car(cons), escm_cons_cdr(cons), 1);
 }
 
 int
-escm_tailrec3(escm *e, escm_atom *fun, escm_atom *args, int eval)
+escm_tailrec4(escm *e, escm_atom *fun, escm_atom *args, int eval)
 {
     escm_context *ctx, *c, *prev;
     escm_atom *a;
 
-    if (e->tailrec != 1 || !ESCM_ISCONS(args))
+    if ((e->ctx->fun && e->ctx->tailrec == 0) || !ESCM_ISCONS(args))
 	return 1;
 
     fun = escm_atom_eval(e, fun);
@@ -524,19 +526,23 @@ escm_tailrec3(escm *e, escm_atom *fun, escm_atom *args, int eval)
     if (e->err == 1)
 	return 0;
 
-    for (ctx = e->ctx; ctx && ctx->fun != fun; ctx = ctx->prev)
+    for (ctx = e->ctx; ctx && ctx->fun != fun && (!ctx->fun || ctx->tailrec);
+	 ctx = ctx->prev)
 	;
-    if (!ctx)
+    if (!ctx || ctx->fun != fun || !ctx->tailrec)
 	return 1;
 
-    e->tailrec = 2;
+    ctx->tailrec = 0;
     /* we have a match, now we eval the new args */
     escm_ctx_enter(e);
     for (a = escm_cons_pop(e, &args); a; a = escm_cons_pop(e, &args)) {
 	if (eval) {
 	    a = escm_atom_eval(e, a);
-	    if (!a || e->err == 1) {
+	    if (!a) {
 		escm_error(e, "~s: expression must return a value.~%", fun);
+		e->err = 1;
+	    }
+	    if (e->err == 1) {
 		escm_ctx_discard(e);
 		return 0;
 	    }
@@ -554,7 +560,6 @@ escm_tailrec3(escm *e, escm_atom *fun, escm_atom *args, int eval)
 
     /* and jump */
     e->curobj = ctx->fun;
-    e->tailrec = 0;
     longjmp(ctx->jbuf, 1);
 }
 

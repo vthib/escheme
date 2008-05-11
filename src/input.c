@@ -366,7 +366,7 @@ escm_input_getwc(escm_input *f)
 	    c = fgetwc(f->d.file.fp);
 
 	if (c == WEOF)
-	    f->end = 1;
+	    f->end = 1, c = EOF;
 	else if (c == L'\n') {
 	    if (f->d.file.line != -1)
 		f->d.file.line++;
@@ -377,7 +377,7 @@ escm_input_getwc(escm_input *f)
 	}
     } else {
 	if (*f->d.str.cur == L'\0')
-	    f->end = 1, c = WEOF;
+	    f->end = 1, c = EOF;
 	else
 	    c = *f->d.str.cur++;
     }
@@ -393,7 +393,7 @@ escm_input_wpeek(escm_input *f)
     assert(f != NULL);
 
     if (f->end)
-	return WEOF;
+	return EOF;
 
     if (f->type == INPUT_FILE) {
 	if (f->d.file.un > 0)
@@ -423,7 +423,7 @@ escm_input_getwtext(escm_input *f, const wchar_t *end)
     assert(end != NULL);
 
     c = escm_input_getwc(f);
-    while (c != WEOF && !wcschr(end, c)) {
+    while (c != EOF && !wcschr(end, c)) {
 	if (c == L'\\') {
 	    c = escm_input_getwc(f);
 	    switch (c) {
@@ -469,7 +469,7 @@ escm_input_getwstr_fun(escm_input *f, int (*fun)(wint_t), int casesens)
 	if (!casesens)
 	    c = towlower(c);
 	wcsbuf[len++] = (wchar_t) c;
-    } while (c != WEOF && fun(c));
+    } while (c != EOF && fun(c));
 
     if (!f->end)
 	escm_input_ungetwc(f, c);

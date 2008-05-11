@@ -1123,7 +1123,6 @@ escm_string_to_bnumber(escm *e, escm_atom *args)
 
 err:
     escm_input_close(input);
-    e->err = 1;
     return e->FALSE;
 }
 #endif
@@ -1217,12 +1216,17 @@ inputtonumber(escm *e, escm_input *input, int radix)
 	    escm_parse_print(input, e->errp, "unknown character #%c.\n", c);
 	    return NULL;
 	}
-    } else
+    } else if (c == EOF)
+	return NULL;
+    else
 	escm_input_ungetc(input, c);
 
     n = xmalloc(sizeof *n);
 
     str = escm_input_getstr_fun(input, isnumber, 1);
+    if (!str)
+	return NULL;
+
     if (strchr(str, '.') != NULL) { /* real */
 	n->fixnum = 0;
 

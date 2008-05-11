@@ -1113,7 +1113,6 @@ escm_string_to_number(escm *e, escm_atom *args)
 
 err:
     escm_input_close(input);
-    e->err = 1;
     return e->FALSE;
 }
 #endif
@@ -1688,9 +1687,13 @@ inputtonumber(escm *e, escm_input *input, int radix)
 	    return NULL;
 	}
     }
+    if (c == EOF)
+	return NULL;
     escm_input_ungetc(input, c);
 
     str = escm_input_getstr_fun(input, isnumber, 1);
+    if (!str)
+	return NULL;
     p = str;
     if (strchr(str, 'i')) {
 	escm_number *cpx;

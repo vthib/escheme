@@ -116,7 +116,7 @@ escm_apply(escm *e, escm_atom *args)
     else
 	args = c->car;
 
-    if (!escm_tailrec3(e, fun, args, 0))
+    if (!escm_tailrec4(e, fun, args, 0))
 	return NULL;
     return escm_procedure_exec(e, fun, args, 0);
 }
@@ -196,6 +196,7 @@ runprimitive(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
 
     escm_ctx_enter(e);
     e->ctx->fun = atomfun;
+    e->ctx->tailrec = 0;
 
     for (param = 0; args; args = escm_cons_next(args), param++) {
 	/* check parameter's number */
@@ -268,6 +269,9 @@ runlambda(escm *e, escm_atom *volatile atomfun, escm_atom *atomargs, int eval)
     fun = escm_proc_val(atomfun);
 
     escm_ctx_enter(e);
+    e->ctx->fun = atomfun;
+    e->ctx->tailrec = 0;
+
     if (setjmp(e->ctx->jbuf) != 0) {
 	struct escm_slist *li, *lprev;
 
@@ -279,8 +283,8 @@ runlambda(escm *e, escm_atom *volatile atomfun, escm_atom *atomargs, int eval)
 	    lprev = li->prev, free(li);
 	e->gard = li;
 
-	/* escm_notice(e, "~s receive local jump with args ~s.~%", atomfun,
-	   e->ctx->first);*/
+	/*escm_notice(e, "~s receive local jump with args ~s.~%", atomfun,
+	  e->ctx->first);*/
     } else {
 	escm_atom *atom;
 
@@ -298,7 +302,6 @@ runlambda(escm *e, escm_atom *volatile atomfun, escm_atom *atomargs, int eval)
 	    escm_ctx_put(e, atom);
 	}
 
-	e->ctx->fun = atomfun;
 	lastgarded = e->gard->atom;
     }
 
@@ -342,15 +345,12 @@ runlambda(escm *e, escm_atom *volatile atomfun, escm_atom *atomargs, int eval)
 
     /* now execute */
     ret = NULL;
-    unsigned int tmp;
 
-    tmp = e->tailrec;
     for (cons = escm_cons_val(fun->d.closure.code); cons;
 	 cons = escm_cons_next(cons)) {
 	if (cons->cdr == e->NIL) {
-	    if (tmp != 2)
-		e->tailrec = 1;
-	    ret = escm_atom_eval3(e, cons->car, 1);
+	    e->ctx->tailrec = 1;
+	    ret = escm_atom_eval(e, cons->car);
 	} else
 	    ret = escm_atom_eval(e, cons->car);
 
@@ -359,7 +359,6 @@ runlambda(escm *e, escm_atom *volatile atomfun, escm_atom *atomargs, int eval)
 	    goto erreval;
 	}
     }
-    e->tailrec = tmp;
 
     escm_ctx_discard(e);
     escm_env_leave(e, prevenv);

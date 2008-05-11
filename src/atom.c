@@ -91,14 +91,7 @@ escm_atom_mark(escm *e, escm_atom *atom)
 escm_atom *
 escm_atom_eval(escm *e, escm_atom *atom)
 {
-    return escm_atom_eval3(e, atom, 0);
-}
-
-escm_atom *
-escm_atom_eval3(escm *e, escm_atom *atom, int trec)
-{
     escm_atom *ret, *old, *prevenv;
-    int tmp;
 
     assert(e != NULL);
     if (!atom)
@@ -106,14 +99,6 @@ escm_atom_eval3(escm *e, escm_atom *atom, int trec)
     if (atom->type >= e->ntypes) {
 	fprintf(stderr, "An atom have a unknown type.\n");
 	escm_abort(e);
-    }
-
-    tmp = e->tailrec;
-    if (!trec && e->tailrec == 1)
-	e->tailrec = 0;
-    if (trec) {
-	if (!escm_tailrec(e, atom, 1))
-	    return NULL;
     }
 
     old = e->curobj, e->curobj = atom;
@@ -135,7 +120,6 @@ escm_atom_eval3(escm *e, escm_atom *atom, int trec)
     if (prevenv)
 	escm_env_leave(e, prevenv);
     e->curobj = old;
-    e->tailrec = tmp;
 
     return ret;
 }

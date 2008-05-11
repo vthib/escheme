@@ -76,7 +76,7 @@ escm_astrings_init(escm *e)
 			      NULL);
 
 #ifdef ESCM_USE_NUMBERS
-    (void) escm_procedure_new(e, "substring", 3, 3, escm_subastring, NULL);
+    (void) escm_procedure_new(e, "substring", 2, 3, escm_subastring, NULL);
 #endif
     (void) escm_procedure_new(e, "string-append", 0, -1, escm_astring_append,
 			      NULL);
@@ -485,12 +485,15 @@ escm_subastring(escm *e, escm_atom *args)
     }
 
     a = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISINT(a), a, e);
-    end = escm_number_ival(a);
-    if (end < 0 || (size_t) end > escm_astr_len(str) || end < start) {
-	escm_error(e, "~s: index ~s is out of range.~s", escm_fun(e), a);
-	escm_abort(e);
-    }
+    if (a) {
+	escm_assert(ESCM_ISINT(a), a, e);
+	end = escm_number_ival(a);
+	if (end < 0 || (size_t) end > escm_astr_len(str) || end < start) {
+	    escm_error(e, "~s: index ~s is out of range.~s", escm_fun(e), a);
+	    escm_abort(e);
+	}
+    } else
+	end = escm_astr_len(str);
 
     s = xmalloc((size_t) (end - start + 1) * sizeof *s);
     memcpy(s, &(escm_astr_val(str)[start]), (size_t) end - start);

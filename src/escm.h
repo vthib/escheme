@@ -90,6 +90,7 @@ struct escm_context {
 
     escm_context *prev;
 
+    unsigned int tailrec : 1;
     unsigned int dotted : 1;
 };
 
@@ -123,7 +124,6 @@ struct escm {
     escm_type **types;
     unsigned long ntypes;
 
-    unsigned int tailrec : 2;
     unsigned int backtrace : 1;
     unsigned int casesensitive : 1;
     unsigned int brackets : 1;
@@ -153,8 +153,8 @@ void escm_gc_collect(escm *);
 void escm_gc_gard(escm *, escm_atom *);
 void escm_gc_ungard(escm *, escm_atom *);
 
-int escm_tailrec(escm *, escm_atom *, int);
-int escm_tailrec3(escm *, escm_atom *, escm_atom *, int);
+int escm_tailrec(escm *, escm_atom *);
+int escm_tailrec4(escm *, escm_atom *, escm_atom *, int);
 
 void escm_print_backtrace(escm *, escm_output *);
 
