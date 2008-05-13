@@ -22,11 +22,11 @@
 #include "escheme.h"
 
 #ifndef ESCM_NSEG
-# define ESCM_NSEG 100
+# define ESCM_NSEG 10
 #endif
 
 #ifndef ESCM_CPSEG
-# define ESCM_CPSEG 50000
+# define ESCM_CPSEG 10000
 #endif
 
 static unsigned char *alloc_seg(escm *);
@@ -514,7 +514,7 @@ escm_tailrec(escm *e, escm_atom *cons)
 int
 escm_tailrec4(escm *e, escm_atom *fun, escm_atom *args, int eval)
 {
-    escm_context *ctx, *c, *prev;
+    escm_context *ctx, *c, *prev, *lastjmp;
     escm_atom *a;
 
     if ((e->ctx->fun && e->ctx->tailrec == 0) || !ESCM_ISCONS(args))
@@ -526,13 +526,17 @@ escm_tailrec4(escm *e, escm_atom *fun, escm_atom *args, int eval)
     if (e->err == 1)
 	return 0;
 
-    for (ctx = e->ctx; ctx && ctx->fun != fun && (!ctx->fun || ctx->tailrec);
-	 ctx = ctx->prev)
-	;
-    if (!ctx || ctx->fun != fun || !ctx->tailrec)
+    lastjmp = NULL;
+    for (ctx = e->ctx; ctx && (!ctx->fun || ctx->tailrec); ctx = ctx->prev) {
+	if (ctx->fun && ESCM_ISCLOSURE(ctx->fun))
+	    lastjmp = ctx;
+    }
+    if (!lastjmp)
 	return 1;
+    ctx = lastjmp;
+    ctx->fun = fun;
 
-    ctx->tailrec = 0;
+    ctx->tailrec = 0, e->ctx->tailrec = 0;
     /* we have a match, now we eval the new args */
     escm_ctx_enter(e);
     for (a = escm_cons_pop(e, &args); a; a = escm_cons_pop(e, &args)) {

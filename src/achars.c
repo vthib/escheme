@@ -328,7 +328,7 @@ escm_integer_to_achar(escm *e, escm_atom *args)
 	escm_abort(e);
     }
 
-    return escm_achar_make(e, (char) escm_number_ival(n));
+    return escm_achar_make(e, (unsigned char) escm_number_ival(n));
 }
 #endif
 

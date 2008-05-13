@@ -23,7 +23,7 @@
 
 #define ESCM_ISACHAR(x) ((x)->type == ESCM_TYPE_ACHAR)
 
-#define escm_achar_val(x) ((char) (escm_intptr) (x)->ptr)
+#define escm_achar_val(x) ((unsigned char) (escm_intptr) (x)->ptr)
 
 void escm_achars_init(escm *);
 size_t escm_achar_tget(void);

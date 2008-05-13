@@ -275,16 +275,17 @@ runlambda(escm *e, escm_atom *volatile atomfun, escm_atom *atomargs, int eval)
     if (setjmp(e->ctx->jbuf) != 0) {
 	struct escm_slist *li, *lprev;
 
-	/* atomfun = e->ctx->fun; */
+	/*escm_notice(e, "~s receive local jump with args ~s for ~s.~%", atomfun,
+	  e->ctx->first, e->ctx->fun);*/
+
+	atomfun = e->ctx->fun;
+	fun = escm_proc_val(atomfun);
 	escm_env_leave(e, prevenv);
 
 	/* clean the gc gards */
 	for (li = e->gard; li && li->atom != lastgarded; li = lprev)
 	    lprev = li->prev, free(li);
 	e->gard = li;
-
-	/*escm_notice(e, "~s receive local jump with args ~s.~%", atomfun,
-	  e->ctx->first);*/
     } else {
 	escm_atom *atom;
 
