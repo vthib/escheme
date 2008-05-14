@@ -43,7 +43,6 @@ main(int argc, char **argv)
     escm *e;
     int i;
     unsigned int noload[MAXTYPE];
-    unsigned int loadinit = 1;
     unsigned int casesens = 1;
     unsigned int useascii = 0;
     char *p;
@@ -53,10 +52,6 @@ main(int argc, char **argv)
     if (!setlocale(LC_ALL, "") ||
         !setlocale(LC_NUMERIC, "C"))  /* corrects strtod interpretation */
         fprintf(stderr, "can't set the locale.\n");
-
-    e = escm_new();
-    if (!e)
-	return EXIT_FAILURE;
 
     for (i = 1; i < argc; i++) {
 	if (*argv[i] == '-' && argv[i][1] != 'e') {
@@ -74,18 +69,20 @@ main(int argc, char **argv)
 		case 'm': noload[MACRO] = 1; break;
 		case 'C': noload[CONT] = 1; break;
 		case 'd': noload[DYNTYPE] = 1; break;
-		case 'q': loadinit = 0; break;
 		case 'g': casesens = 1; break;
 		case 'G': casesens = 0; break;
 		case 'h':
 		    usage(argv[0]);
-		    escm_free(e);
 		    return EXIT_SUCCESS;
 		}
 	    }
 	} else
 	    break;
     }
+
+    e = escm_new();
+    if (!e)
+	return EXIT_FAILURE;
 
 #ifdef ESCM_USE_BOOLEANS
     if (!noload[BOOL])
@@ -154,15 +151,10 @@ main(int argc, char **argv)
     e->EOF_OBJ = e->FALSE;
 #endif
 
-    escm_primitives_load(e);
-
     e->casesensitive = casesens;
     e->backtrace = 1;
 
-    escm_srfi_init(e);
-
-    if (loadinit)
-	(void) escm_fparse(e, "init.scm");
+    escm_init(e);
 
     if (i < argc) {
 	while (i < argc) {
@@ -202,7 +194,6 @@ usage(char *name)
 	   "-C\tdo not load the continuation type.\n"
 	   "-d\tdo not load dynamic types primitives.\n"
 	   "\n"
-	   "-q\tdo not load the init file.\n"
 	   "-G\tSymbols are treated case-insensitively.\n"
 	   "-g\tSymbols are treated case-sensitively (default).\n"
 	   "\n"

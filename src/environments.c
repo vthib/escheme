@@ -181,10 +181,9 @@ void
 escm_env_leave(escm *e, escm_atom *prevenv)
 {
     escm_gc_ungard(e, prevenv);
-    env_enter(e, prevenv);
+    (void) env_enter(e, prevenv);
 }
 
-/*@-usedef@*/
 escm_atom *
 escm_eval(escm *e, escm_atom *args)
 {
@@ -203,7 +202,6 @@ escm_eval(escm *e, escm_atom *args)
 
     return expr;
 }
-/*@=usedef@*/
 
 escm_atom *
 escm_alpha(escm *e, escm_atom *args)
@@ -329,6 +327,11 @@ env_print(escm *e, escm_env *env, escm_output *stream, int lvl)
     (void) e;
     (void) lvl;
 
+    if (!env) { /* represent eof_object when characters type is not enabled */
+	escm_printf(stream, "#<eof-object>");
+	return;
+    }
+
     escm_printf(stream, "#<Alpha {");
     for (list = env->list; list; list = list->next) {
 	escm_printf(stream, "\"%s\": ", list->tree->symname);
@@ -363,7 +366,6 @@ env_enter(escm *e, escm_atom *new)
 {
     struct envlist *l;
     escm_atom *a;
-    escm_env *env;
 
     assert(e != NULL);
     assert(new != NULL);
@@ -371,8 +373,6 @@ env_enter(escm *e, escm_atom *new)
     /* first we mark all the env we want to enter in */
     for (a = new; a; a = escm_env_val(a)->prev)
 	a->marked = 1;
-
-    env = new->ptr;
 
     /* then we leave the non-marked environments */
     for (a = e->env; a && !a->marked; a = escm_env_val(a)->prev) {

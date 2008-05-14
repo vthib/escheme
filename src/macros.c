@@ -304,8 +304,6 @@ expand(escm *e, escm_macro *m, escm_atom *tpl, escm_atom *env,
 	    } else if (ESCM_ISCONS(a)) {
 		if (tpl && ESCM_ISSYM(escm_cons_car(tpl)) &&
 		    0 == strcmp(escm_sym_name(escm_cons_car(tpl)), "...")) {
-		    escm_atom *ret;
-
 		    ret = expand(e, m, a, env, bind, 1);
 		    while (ret) {
 			escm_ctx_put(e, ret);

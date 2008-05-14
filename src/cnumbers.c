@@ -806,7 +806,8 @@ escm_floor(escm *e, escm_atom *args)
 
     if (ESCM_ISINT(a))
 	return a;
-    return escm_cint_make(e, floor(numbertoreal(a->ptr)), ESCM_ISRATIONAL(a));
+    return escm_cint_make(e, (long) floor(numbertoreal(a->ptr)),
+			  ESCM_ISRATIONAL(a));
 }
 
 escm_atom *
@@ -819,7 +820,8 @@ escm_ceiling(escm *e, escm_atom *args)
 
     if (ESCM_ISINT(a))
 	return a;
-    return escm_cint_make(e, ceil(numbertoreal(a->ptr)), ESCM_ISRATIONAL(a));
+    return escm_cint_make(e, (long) ceil(numbertoreal(a->ptr)),
+			  ESCM_ISRATIONAL(a));
 }
 
 escm_atom *
@@ -833,16 +835,17 @@ escm_truncate(escm *e, escm_atom *args)
     if (ESCM_ISINT(a))
 	return a;
 # ifdef ESCM_USE_C99
-    return escm_cint_make(e, trunc(numbertoreal(a->ptr)), ESCM_ISRATIONAL(a));
+    return escm_cint_make(e, (long) trunc(numbertoreal(a->ptr)),
+			  ESCM_ISRATIONAL(a));
 # else
     {
 	double r;
 
 	r = numbertoreal(a->ptr);
 	if (DBL_GE(r, 0.))
-	    return escm_cint_make(e, floor(r), ESCM_ISRATIONAL(a));
+	    return escm_cint_make(e, (long) floor(r), ESCM_ISRATIONAL(a));
 	else
-	    return escm_cint_make(e, ceil(r), ESCM_ISRATIONAL(a));
+	    return escm_cint_make(e, (long) ceil(r), ESCM_ISRATIONAL(a));
     }
 # endif
 }
@@ -857,7 +860,8 @@ escm_round(escm *e, escm_atom *args)
 
     if (ESCM_ISINT(a))
 	return a;
-    return escm_cint_make(e, xround(numbertoreal(a->ptr)), ESCM_ISRATIONAL(a));
+    return escm_cint_make(e, (long) xround(numbertoreal(a->ptr)),
+			  ESCM_ISRATIONAL(a));
 }
 
 escm_atom *
@@ -1299,7 +1303,7 @@ numbertoreal(escm_number *a)
     case ESCM_REAL:
 	return (double) a->d.real;
     case ESCM_RATIONAL:
-	return a->d.rat.n / (double) a->d.rat.d;
+	return (double) a->d.rat.n / (double) a->d.rat.d;
     default:
 	return 0.;
     }
@@ -1827,17 +1831,17 @@ getreal(escm *e, escm_input *input, char **p, int radix)
 	
     /* this will not work with radix != 10 */
     if (strchr(*p, '.') || strchr(*p, 'e')) {
-	double e;
+	double a;
 
-	e = strtod(*p, p);
-	if (DBL_EQ(floor(e), e)) {
+	a = strtod(*p, p);
+	if (DBL_EQ(floor(a), a)) {
 	    escm_number *n;
 
-	    n = makeint((long) e);
+	    n = makeint((long) a);
 	    n->exact = 0;
 	    return n;
 	}
-	return makereal(e);
+	return makereal(a);
     } else if (strchr(*p, '/')) {
 	long n, d;
 

@@ -1,9 +1,14 @@
-project(Escheme)
+cmake_minimum_required(VERSION 2.4.6)
+
+project(escheme C)
 
 set (FILES src/atom.c src/cons.c src/environments.c src/escm.c src/input.c
-  src/main.c src/output.c src/primitives.c src/procedures.c src/srfi.c
-  src/symbols.c src/tst.c src/utils.c)
-set (DEFINES -Dinline="__inline__")
+  src/output.c src/primitives.c src/procedures.c src/srfi.c src/symbols.c
+  src/tst.c src/utils.c)
+set (DEFINES -Dinline="__inline__" -I.. -I. -Wall -W -Wmissing-prototypes
+  -pedantic-errors)
+#set (DEFINES -I.. -I. -Wall -fast)
+#set (CMAKE_C_COMPILER "/opt/intel/cce/10.1.012/bin/icc")
 
 macro(append_dep)
   set(FILES ${FILES} ${ARGN})
@@ -13,8 +18,8 @@ macro(append_define)
   set(DEFINES ${DEFINES} ${ARGN})
 endmacro(append_define)
 
-add_definitions(-g)
-add_definitions($ENV{CFLAGS})
+append_define(-g)
+append_define($ENV{CFLAGS})
 
 option(unicode "build the unicode version of strings and characters" 0)
 option(c99 "use the c99 standard" 0)
@@ -120,17 +125,27 @@ if (dyntypes)
   append_dep(src/dyntypes.c)
 endif(dyntypes)
 
-add_executable(escheme ${FILES})
-
 if (math)
   append_define(-DESCM_USE_MATH)
   find_library(libmath m)
-  if (NOT libmath)
-    message("Math library not found, disabling math support.")
-  else (NOT libmath)
-    target_link_libraries(escheme m)
-  endif (NOT libmath)
 endif (math)
 
+add_library(escm SHARED ${FILES})
+add_executable(escheme src/main.c)
+target_link_libraries(escheme escm)
+
 add_definitions(${DEFINES})
+if (NOT libmath)
+  message("Math library not found, disabling math support.")
+else (NOT libmath)
+  target_link_libraries(escm m)
+endif (NOT libmath)
+
+set(ESCM_SHARE_PATH "${CMAKE_INSTALL_PREFIX}/share/escheme/")
+
+configure_file(config.h.cmake config.h ESCAPE_QUOTES)
+
+install(FILES init.scm DESTINATION ${ESCM_SHARE_PATH})
+install(PROGRAMS escheme DESTINATION bin)
+install(TARGETS escm DESTINATION lib)
 

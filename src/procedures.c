@@ -253,9 +253,9 @@ err:
 }
 
 static escm_atom *
-runlambda(escm *e, escm_atom *volatile atomfun, escm_atom *atomargs, int eval)
+runlambda(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
 {
-    escm_procedure *volatile fun;
+    escm_procedure *fun;
     escm_atom *ret;
     escm_atom *volatile prevenv;
     escm_atom *volatile lastgarded;
@@ -275,8 +275,8 @@ runlambda(escm *e, escm_atom *volatile atomfun, escm_atom *atomargs, int eval)
     if (setjmp(e->ctx->jbuf) != 0) {
 	struct escm_slist *li, *lprev;
 
-	/*escm_notice(e, "~s receive local jump with args ~s for ~s.~%", atomfun,
-	  e->ctx->first, e->ctx->fun);*/
+	/*escm_notice(e, "~s receive local jump with args ~s for ~s.~%",
+	  atomfun, e->ctx->first, e->ctx->fun);*/
 
 	atomfun = e->ctx->fun;
 	fun = escm_proc_val(atomfun);

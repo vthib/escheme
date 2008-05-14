@@ -144,6 +144,8 @@ continuation_exec(escm *e, escm_continuation *cont, escm_atom *args)
 
     curcont = cont;
     longjmp(cont->buf, 1);
+
+    return NULL;
 }
 
 

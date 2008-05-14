@@ -1042,13 +1042,9 @@ escm_bnumber_to_string(escm *e, escm_atom *args)
 	    }
 	}
     } else {
-	double d;
-
-	d = escm_number_rval(a);
-
 	maxlen = 30;
 	str = xmalloc(sizeof *str * maxlen);
-	len = snprintf(str, maxlen, "%.15g", d);
+	len = snprintf(str, maxlen, "%.15g", escm_number_rval(a));
     }
 
 

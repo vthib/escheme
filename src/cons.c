@@ -274,7 +274,6 @@ escm_atom *
 escm_append(escm *e, escm_atom *args)
 {
     escm_atom *flist;
-    escm_cons *a;
 
     escm_ctx_enter(e);
     while (args != e->NIL && args) {

@@ -20,6 +20,7 @@
 #include <ctype.h>
 
 #include "escheme.h"
+#include "config.h"
 
 #ifndef ESCM_NSEG
 # define ESCM_NSEG 10
@@ -59,6 +60,18 @@ escm_new(void)
     escm_cons_init(e);
 
     return e;
+}
+
+void
+escm_init(escm *e)
+{
+    if (!e->EOF_OBJ)
+	e->EOF_OBJ = escm_atom_new(e, ESCM_TYPE_ENV, NULL);
+
+    escm_primitives_load(e);
+    escm_srfi_init(e);
+
+    (void) escm_fparse(e, ESCM_SHARE_PATH "init.scm");
 }
 
 void
@@ -565,6 +578,8 @@ escm_tailrec4(escm *e, escm_atom *fun, escm_atom *args, int eval)
     /* and jump */
     e->curobj = ctx->fun;
     longjmp(ctx->jbuf, 1);
+
+    return 1;
 }
 
 void

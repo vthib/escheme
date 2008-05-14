@@ -27,7 +27,7 @@ static void achar_print(escm *, int, escm_output *, int);
 static int achar_equal(escm *, escm_intptr, escm_intptr, int);
 static int achar_parsetest(escm *, int);
 static escm_atom *achar_parse(escm *);
-static char input_getchar(escm *, escm_input *);
+static int input_getchar(escm *, escm_input *);
 
 void
 escm_achars_init(escm *e)
@@ -405,7 +405,7 @@ achar_parsetest(escm *e, int c)
 static escm_atom *
 achar_parse(escm *e)
 {
-    char c;
+    int c;
 
     (void) escm_input_getc(e->input), escm_input_getc(e->input); /* skip #\ */
     c = input_getchar(e, e->input);
@@ -415,11 +415,11 @@ achar_parse(escm *e)
     return escm_achar_make(e, c);
 }
 
-static char
+static int
 input_getchar(escm *e, escm_input *input)
 {
     char *str;
-    char c;
+    int c;
     size_t len;
 
     str = escm_input_getstr_fun(input, isalnum, e->casesensitive);
@@ -443,8 +443,8 @@ input_getchar(escm *e, escm_input *input)
 
 	    for (p = str + 1; *p != '\0'; p++) {
 		if (*p < '0' || *p > 'f') {
-		    escm_parse_print(input, e->errp, "invalid character: #\\%s.\n",
-				     str);
+		    escm_parse_print(input, e->errp, "invalid character: "
+				     "#\\%s.\n", str);
 		    goto err;
 		}
 		if (*p <= '9')

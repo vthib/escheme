@@ -347,7 +347,7 @@ escm_letrec(escm *e, escm_atom *args)
     /* we first create a new empty environment, and we enter in */
     prevenv = escm_env_enter(e, escm_env_new(e, e->env));
 
-    first = NULL;
+    first = NULL, last = NULL;
 
     /* we set the variables to NULL and verify the validity of the formals */
     for (c = escm_cons_val(arg); c; c = escm_cons_next(c)) {

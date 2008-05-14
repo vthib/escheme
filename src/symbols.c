@@ -30,7 +30,7 @@ static void symbol_print(escm *, escm_tst *, escm_output *, int);
 static int symbol_parsetest(escm *, int);
 static escm_atom *symbol_parse(escm *);
 static escm_atom *symbol_eval(escm *, escm_tst *);
-static int symbol_mark(escm *, escm_tst *);
+static void symbol_mark(escm *, escm_tst *);
 static int symbol_equal(escm *, escm_tst *, escm_tst *, int);
 static int symbol_eq_colorless(char *, char *);
 
@@ -244,7 +244,7 @@ symbol_equal(escm *e, escm_tst *t1, escm_tst *t2, int lvl)
     return t1 == t2;
 }
 
-static int
+static void
 symbol_mark(escm *e, escm_tst *sym)
 {
     if (sym->node && sym->node->atom)

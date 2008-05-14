@@ -134,13 +134,13 @@ escm_output_close(escm_output *f)
 void
 escm_vprintf(escm_output *f, const char *format, va_list args)
 {
+#ifdef ESCM_USE_C99
     va_list va;
 
-    assert(f != NULL);
-
-#ifdef ESCM_USE_C99
     va_copy(va, args);
 #endif
+
+    assert(f != NULL);
 
     if (f->type == OUTPUT_FILE)
 	(void) vfprintf(f->d.file.fp, format, args);
