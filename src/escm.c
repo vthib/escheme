@@ -181,7 +181,8 @@ escm_shell(escm *e)
 	old = e->input, e->input = escm_input_fmng(stdin, "standard input");
 
     atom = NULL;
-    do {
+    do { /* Why not a while? Simply to avoid printing "#<eof-object>" when
+	    exiting */
 	if (atom) {
 	    escm_atom_print(e, atom);
 	    printf("\n");
@@ -191,7 +192,7 @@ escm_shell(escm *e)
 	    perror("fflush");
 	atom = escm_parse(e);
     } while (e->input->end == 0);
-
+	    
     if (!stdinp)
 	escm_input_close(e->input), e->input = old;
 }

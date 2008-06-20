@@ -25,6 +25,8 @@ struct envlist {
     escm_tstnode *node;
 
     struct envlist *next;
+
+    unsigned int private : 1;
 };
 
 static unsigned long envtype;
@@ -92,7 +94,8 @@ escm_env_new(escm *e, escm_atom *prev)
 }
 
 void
-escm_env_set(escm *e, escm_atom *atomenv, escm_atom *sym, escm_atom *atom)
+escm_env_set5(escm *e, escm_atom *atomenv, escm_atom *sym, escm_atom *atom,
+	      int private)
 {
     escm_env *env;
     struct envlist *l;
@@ -123,6 +126,7 @@ escm_env_set(escm *e, escm_atom *atomenv, escm_atom *sym, escm_atom *atom)
 		l->node = xmalloc(sizeof *l->node);
 		l->node->prev = NULL;
 	    }
+	    l->private = private;
 	    l->node->atom = atom;
 	    return;
 	}
@@ -134,36 +138,11 @@ escm_env_set(escm *e, escm_atom *atomenv, escm_atom *sym, escm_atom *atom)
     l->node->atom = atom;
     l->node->prev = NULL;
     l->next = env->list, env->list = l;
+    l->private = private;
 
     if (e->env == atomenv) {
 	l->node->prev = l->tree->node;
 	l->tree->node = l->node;
-    }
-}
-
-void
-escm_env_modify(escm *e, escm_atom *atomenv, escm_atom *sym, escm_atom *atom)
-{
-    escm_env *env;
-    struct envlist *l;
-
-    assert(atomenv != NULL);
-    assert(sym != NULL);
-
-    (void) e;
-
-    env = (escm_env *) atomenv->ptr;
-
-    if (!env->prev) {
-	escm_symbol_set(sym, atom);
-	return;
-    }
-
-    for (l = env->list; l; l = l->next) {
-	if (l->tree == escm_sym_node(sym)) {
-	    l->node->atom = atom;
-	    break;
-	}
     }
 }
 

@@ -1938,8 +1938,8 @@ dupl(escm_number *n)
     a->type = n->type, a->exact = n->exact;
 
     if (n->type == ESCM_COMPLEX) {
-	a->d.cpx.re = dupl(a->d.cpx.re);
-	a->d.cpx.im = dupl(a->d.cpx.im);
+	a->d.cpx.re = dupl(n->d.cpx.re);
+	a->d.cpx.im = dupl(n->d.cpx.im);
     } else
 	memcpy(&(a->d), &(n->d), sizeof n->d);
 

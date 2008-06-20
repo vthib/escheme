@@ -131,14 +131,15 @@ if (math)
 endif (math)
 
 add_library(escm SHARED ${FILES})
-add_executable(escheme src/main.c)
-target_link_libraries(escheme escm)
+add_executable(escheme ${FILES} src/main.c)
+#target_link_libraries(escheme escm)
 
 add_definitions(${DEFINES})
 if (NOT libmath)
   message("Math library not found, disabling math support.")
 else (NOT libmath)
   target_link_libraries(escm m)
+  target_link_libraries(escheme m)
 endif (NOT libmath)
 
 set(ESCM_SHARE_PATH "${CMAKE_INSTALL_PREFIX}/share/escheme/")
