@@ -44,6 +44,7 @@ void escm_cons_put(escm *, escm_atom **, escm_atom *);
 escm_atom *escm_cons_pop(escm *, escm_atom **);
 int escm_cons_isin(escm *, escm_atom *, escm_atom *, int);
 
+/* primitives */
 escm_atom *escm_prim_cons(escm *, escm_atom *);
 escm_atom *escm_list(escm *, escm_atom *);
 

@@ -86,6 +86,8 @@ escm_free(escm *e)
     for (atom = e->heap; atom; atom = atom->link)
 	escm_atom_free(e, atom);
 
+    escm_tst_free(e->tree);
+
     for (i = 0; i < e->ntypes; i++) {
 	if (e->types[i]->type == TYPE_BUILT && e->types[i]->d.c.fexit)
 	    e->types[i]->d.c.fexit(e, e->types[i]->d.c.dexit);
@@ -439,6 +441,9 @@ escm_gc_collect(escm *e)
 	escm_atom_mark(e, ctx->first);
 	escm_atom_mark(e, ctx->fun);
     }
+
+    /* plus those in the tree */
+    escm_tst_foreach(e->tree, escm_atom_mark, e);
 
     /* plus the garded ones */
     for (li = e->gard; li; li = li->prev)

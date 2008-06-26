@@ -526,12 +526,12 @@ static int
 cons_equal(escm *e, escm_cons *c1, escm_cons *c2, int lvl)
 {
     switch (lvl) {
+    default:
     case 0:
     case 1:
 	/* eqv? && eq?: true if same pointer */
 	return c1 == c2;
     case 2:
-    default:
 	/* equal?: recursively compare the contents of the cons */
 	for (; c1 != NULL; c1 = escm_cons_next(c1), c2 = escm_cons_next(c2)) {
 	    if (!c2)

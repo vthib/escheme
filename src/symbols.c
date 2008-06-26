@@ -32,7 +32,6 @@ static escm_atom *symbol_parse(escm *);
 static escm_atom *symbol_eval(escm *, escm_tst *);
 static void symbol_mark(escm *, escm_tst *);
 static int symbol_equal(escm *, escm_tst *, escm_tst *, int);
-static int symbol_eq_colorless(char *, char *);
 
 static inline int issymbol(int);
 
@@ -74,10 +73,7 @@ escm_symbol_tget(void)
 escm_atom *
 escm_symbol_make(escm *e, const char *str)
 {
-    escm_env *env;
-
-    env = e->env->ptr;
-    return escm_atom_new(e, symboltype, escm_tst_gettree(&env->tree, str));
+    return escm_atom_new(e, symboltype, escm_tst_gettree(&e->tree, str));
 }
 
 void
@@ -155,9 +151,9 @@ escm_string_to_symbol(escm *e, escm_atom *args)
 	return escm_symbol_make(e, escm_astr_val(str));
 #else
     return escm_symbol_make(e, escm_str_val(str));
-#endif
+#endif /* ESCM_USE_UNICODE */
 }
-#endif
+#endif /* ESCM_USE_STRINGS */
 
 escm_atom *
 escm_lookup(escm *e, escm_atom *args)
@@ -238,9 +234,8 @@ static int
 symbol_equal(escm *e, escm_tst *t1, escm_tst *t2, int lvl)
 {
     (void) e;
+    (void) lvl;
 
-    if (lvl == 3)
-	return symbol_eq_colorless(t1->symname, t2->symname);
     return t1 == t2;
 }
 
@@ -249,24 +244,6 @@ symbol_mark(escm *e, escm_tst *sym)
 {
     if (sym->node && sym->node->atom)
 	escm_atom_mark(e, sym->node->atom);
-}
-
-/* XXX: checks for symbol_type, ...? */
-static int
-symbol_eq_colorless(char *s1, char *s2)
-{
-    char *t1, *t2;
-
-    t1 = strrchr(s1, '~');
-    if (t1 && *(t1 + 1) != '0')
-	t1 = NULL;
-    t2 = strrchr(s2, '~');
-    if (t2 && *(t2 + 1) != '0')
-	t2 = NULL;
-    if (!t1 && !t2)
-	return !strcmp(s1, s2);
-    else
-	return !strncmp(s1, s2, t1 - s1);
 }
 
 static inline int

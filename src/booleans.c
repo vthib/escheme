@@ -19,10 +19,11 @@
 
 #include "escheme.h"
 
-#define ESCM_BOOL_T ((void *) 1)
-#define ESCM_BOOL_F NULL
-
 static unsigned long booleantype = 0;
+
+#define ESCM_BOOL_T ((void *) &booleantype) /* just get an non NULL value
+					       "(void *) 1" is impl-dependent */
+#define ESCM_BOOL_F NULL
 
 static void boolean_print(escm *, void *, escm_output *, int);
 static int boolean_equal(escm *, void *, void *, int);
@@ -53,24 +54,13 @@ escm_booleans_init(escm *e)
 escm_atom *
 escm_not(escm *e, escm_atom *args)
 {
-    escm_atom *a;
-
-    a = escm_cons_pop(e, &args);
-
-    if (!ESCM_ISTRUE(a))
-	return e->TRUE;
-    else
-	return e->FALSE;
+    return !ESCM_ISTRUE(escm_cons_car(args)) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
 escm_boolean_p(escm *e, escm_atom *args)
 {
-    escm_atom *a;
-
-    a = escm_cons_pop(e, &args);
-
-    return ESCM_ISBOOL(a) ? e->TRUE : e->FALSE;
+    return ESCM_ISBOOL(escm_cons_car(args)) ? e->TRUE : e->FALSE;
 }
 
 size_t
@@ -85,7 +75,7 @@ boolean_print(escm *e, void *bool, escm_output *stream, int lvl)
     (void) e;
     (void) lvl;
 
-    escm_printf(stream, "#%c", (bool == ESCM_BOOL_T) ? 't' : 'f');
+    escm_printf(stream, "#%c", (bool == NULL) ? 'f' : 't');
 }
 
 static int

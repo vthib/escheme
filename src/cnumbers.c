@@ -48,6 +48,9 @@ static void mulrat(escm *, escm_number **, escm_number *);
 static void divrat(escm *, escm_number **, escm_number *);
 
 static void addcpx(escm *, escm_number **, escm_number *);
+static void subcpx(escm *, escm_number **, escm_number *);
+static void mulcpx(escm *, escm_number **, escm_number *);
+static void divcpx(escm *, escm_number **, escm_number *);
 
 static escm_number *realtorat(double);
 static double numbertoreal(escm_number *);
@@ -1159,9 +1162,8 @@ escm_number_sub(escm *e, escm_number **dest, escm_number *src)
 	break;
     case ESCM_REAL: subreal(e, dest, src); break;
     case ESCM_RATIONAL: subrat(e, dest, src); break;
-
-	/* TODO */
     case ESCM_COMPLEX:
+	subcpx(e, dest, src);
 	(*dest)->exact &= ((*dest)->d.cpx.re->exact | (*dest)->d.cpx.im->exact);
 	break;
     }
@@ -1184,9 +1186,8 @@ escm_number_mul(escm *e, escm_number **dest, escm_number *src)
 	break;
     case ESCM_REAL: mulreal(e, dest, src); break;
     case ESCM_RATIONAL: mulrat(e, dest, src); break;
-
-	/* TODO */
     case ESCM_COMPLEX:
+	mulcpx(e, dest, src);
 	(*dest)->exact &= ((*dest)->d.cpx.re->exact | (*dest)->d.cpx.im->exact);
 	break;
     }
@@ -1209,9 +1210,8 @@ escm_number_div(escm *e, escm_number **dest, escm_number *src)
 	break;
     case ESCM_REAL: divreal(e, dest, src); break;
     case ESCM_RATIONAL: divrat(e, dest, src); break;
-
-	/* TODO */
     case ESCM_COMPLEX:
+	divcpx(e, dest, src);
 	(*dest)->exact &= ((*dest)->d.cpx.re->exact | (*dest)->d.cpx.im->exact);
 	break;
     }
@@ -1270,9 +1270,10 @@ harmonize(escm_number **destptr, escm_number **srcptr, int *freesrc)
 	case ESCM_COMPLEX:
 	    a = xcalloc(1, sizeof *a);
 	    a->type = ESCM_COMPLEX;
-	    a->d.cpx.re = dest, *destptr = NULL;
+	    a->d.cpx.re = dest;
 	    a->d.cpx.im = makeint(0);
-	    break;
+	    *destptr = a;
+	    return;
 	default:
 	    a = NULL;
 	    break;
@@ -1366,8 +1367,8 @@ mulint(escm *e, escm_number **dest, escm_number *src)
 	    escm_printf(e->errp, "number overflow.\n");
 	    return;
 	}
-    } else {
-	if ((LONG_MIN / src->d.i) > (*dest)->d.i) {
+    } else if (src->d.i < -1) {
+	if ((LONG_MIN / src->d.i) < (*dest)->d.i) {
 	    escm_printf(e->errp, "number overflow.\n");
 	    return;
 	}
@@ -1572,6 +1573,70 @@ addcpx(escm *e, escm_number **dest, escm_number *src)
 }
 
 static void
+subcpx(escm *e, escm_number **dest, escm_number *src)
+{
+    escm_number_sub(e, &(*dest)->d.cpx.re, src->d.cpx.re);
+    escm_number_sub(e, &(*dest)->d.cpx.im, src->d.cpx.im);
+}
+
+static void
+mulcpx(escm *e, escm_number **dest, escm_number *src)
+{
+    escm_number *a, *b;
+
+    a = dupl((*dest)->d.cpx.re);
+    b = dupl((*dest)->d.cpx.im);
+
+    /* real part is ac - bd */
+    escm_number_mul(e, &a, src->d.cpx.re);
+    escm_number_mul(e, &b, src->d.cpx.im);
+    escm_number_sub(e, &a, b); 
+
+    /* imaginary part is ad + bc */
+    escm_number_mul(e, &(*dest)->d.cpx.re, src->d.cpx.im);
+    escm_number_mul(e, &(*dest)->d.cpx.im, src->d.cpx.re);
+
+    /* set im part */
+    escm_number_add(e, &(*dest)->d.cpx.im, (*dest)->d.cpx.re);
+    /* set real part */
+    memcpy(&((*dest)->d.cpx.re->d), &(a->d), sizeof a->d);
+    free(a), free(b);
+}
+
+/* (a+bi)/(c+di) = [(a+bi)(c-di)]/(c*c+d*d) */
+static void
+divcpx(escm *e, escm_number **dest, escm_number *src)
+{
+    escm_number *a, *b;
+
+    a = dupl(src->d.cpx.re);
+    b = dupl(src->d.cpx.im);
+
+    escm_number_mul(e, &a, a);
+    escm_number_mul(e, &b, b);
+    escm_number_add(e, &a, b); 
+
+    switch (src->d.cpx.im->type) {
+    case ESCM_INTEGER:
+	src->d.cpx.im->d.i = -src->d.cpx.im->d.i;
+	break;
+    case ESCM_REAL:
+	src->d.cpx.im->d.real = -src->d.cpx.im->d.real;
+	break;
+    case ESCM_RATIONAL:
+	src->d.cpx.im->d.rat.n = -src->d.cpx.im->d.rat.n;
+	break;
+    default:;
+    }
+
+    escm_number_mul(e, dest, src);
+
+    escm_number_div(e, &(*dest)->d.cpx.re, a);
+    escm_number_div(e, &(*dest)->d.cpx.im, a);
+    free(a), free(b);
+}
+
+static void
 number_free(escm_number *n)
 {
     if (!n)
@@ -1625,8 +1690,8 @@ number_equal(escm *e, escm_number *n1, escm_number *n2, int lvl)
     switch (n1->type) {
     case ESCM_INTEGER: return n1->d.i == n2->d.i;
     case ESCM_REAL: return DBL_EQ(n1->d.real, n2->d.real);
-    case ESCM_RATIONAL: return DBL_EQ(n1->d.rat.n / n1->d.rat.d,
-				      n2->d.rat.n / n2->d.rat.d);
+    case ESCM_RATIONAL: return DBL_EQ(n1->d.rat.n / (double) n1->d.rat.d,
+				      n2->d.rat.n / (double) n2->d.rat.d);
     case ESCM_COMPLEX:
 	return (number_equal(e, n1->d.cpx.re, n2->d.cpx.re, lvl) &&
 		number_equal(e, n1->d.cpx.im, n2->d.cpx.im, lvl));
@@ -1728,8 +1793,8 @@ inputtonumber(escm *e, escm_input *input, int radix)
 	    goto cpxbad;
 
 	if (*p != '-' && *p != '+') {	
-	    escm_parse_print(input, e->errp, "expecting a '+' or a '-' before the "
-			     "imaginary part.\n");
+	    escm_parse_print(input, e->errp, "expecting a '+' or a '-' before "
+			     "the imaginary part.\n");
 	    number_free(cpx->d.cpx.re);
 	    goto cpxbad;
 	}

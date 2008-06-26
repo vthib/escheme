@@ -108,6 +108,7 @@ struct escm {
     escm_output *errp;
 
     escm_atom *env;
+    escm_tst *tree;
 
     unsigned char **segments;
     escm_atom *freelist;

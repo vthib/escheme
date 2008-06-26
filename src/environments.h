@@ -21,7 +21,6 @@
 
 typedef struct escm_env {
     struct envlist *list;
-    escm_tst *tree;
     escm_atom *prev;
 } escm_env;
 

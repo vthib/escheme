@@ -89,7 +89,6 @@ escm_env_new(escm *e, escm_atom *prev)
     env = xcalloc(1, sizeof *env);
     env->list = NULL;
     env->prev = prev;
-    env->tree = (prev && ESCM_ISENV(prev)) ? escm_env_val(prev)->tree : NULL;
     return escm_atom_new(e, envtype, env);
 }
 
@@ -281,18 +280,14 @@ escm_interaction_environment(escm *e, escm_atom *args)
 static void
 env_mark(escm *e, escm_env *env)
 {
+    struct envlist *l;
+
     if (!env)
 	return;
 
-    if (!env->prev)
-	escm_tst_foreach(env->tree, escm_atom_mark, e);
-    else {
-	struct envlist *l;
-
-	for (l = env->list; l; l = l->next) {
-	    if (l->node)
-		escm_atom_mark(e, l->node->atom);
-	}
+    for (l = env->list; l; l = l->next) {
+	if (l->node)
+	    escm_atom_mark(e, l->node->atom);
     }
 
     escm_atom_mark(e, env->prev);
@@ -333,9 +328,6 @@ env_free(escm_env *env)
 	free(list->node);
 	free(list);
     }
-
-    if (!env->prev) /* only the toplevel can free the tree */
-	escm_tst_free(env->tree);
 
     free(env);
 }

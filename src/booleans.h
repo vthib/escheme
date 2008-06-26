@@ -24,7 +24,7 @@
 #define ESCM_ISBOOL(x) ((x)->type == ESCM_TYPE_BOOL)
 
 #ifdef ESCM_USE_BOOLEANS
-# define ESCM_ISTRUE(x) (!x || !ESCM_ISBOOL(x) || (x)->ptr != NULL)
+# define ESCM_ISTRUE(x) (!ESCM_ISBOOL(x) || (x)->ptr != NULL)
 #endif
 
 void escm_booleans_init(escm *);
