@@ -1326,16 +1326,10 @@ makeint(long a)
 static void
 addint(escm *e, escm_number **dest, escm_number *src)
 {
-    if (src->d.i >= 0) {
-	if ((LONG_MAX - src->d.i) < (*dest)->d.i) {
-	    escm_printf(e->errp, "number overflow.\n");
-	    return;
-	}
-    } else {
-	if ((LONG_MIN - src->d.i) > (*dest)->d.i) {
-	    escm_printf(e->errp, "number overflow.\n");
-	    return;
-	}
+    if ((src->d.i >= 0) ? (LONG_MAX - src->d.i) < (*dest)->d.i
+	: (LONG_MIN - src->d.i) > (*dest)->d.i) {
+	escm_printf(e->errp, "number overflow.\n");
+	return;
     }
 
     (*dest)->d.i += src->d.i; /* XXX: bignums */
@@ -1344,16 +1338,10 @@ addint(escm *e, escm_number **dest, escm_number *src)
 static void
 subint(escm *e, escm_number **dest, escm_number *src)
 {
-    if (src->d.i >= 0) {
-	if ((LONG_MIN + src->d.i) > (*dest)->d.i) {
-	    escm_printf(e->errp, "number overflow.\n");
-	    return;
-	}
-    } else {
-	if ((LONG_MAX + src->d.i) < (*dest)->d.i) {
-	    escm_printf(e->errp, "number overflow.\n");
-	    return;
-	}
+    if ((src->d.i >= 0) ? (LONG_MIN + src->d.i) > (*dest)->d.i
+	: (LONG_MAX + src->d.i) < (*dest)->d.i) {
+	escm_printf(e->errp, "number overflow.\n");
+	return;
     }
 
     (*dest)->d.i -= src->d.i; /* XXX: bignums */
@@ -1362,16 +1350,10 @@ subint(escm *e, escm_number **dest, escm_number *src)
 static void
 mulint(escm *e, escm_number **dest, escm_number *src)
 {
-    if (src->d.i > 1) {
-	if ((LONG_MAX / src->d.i) < (*dest)->d.i) {
-	    escm_printf(e->errp, "number overflow.\n");
-	    return;
-	}
-    } else if (src->d.i < -1) {
-	if ((LONG_MIN / src->d.i) < (*dest)->d.i) {
-	    escm_printf(e->errp, "number overflow.\n");
-	    return;
-	}
+    if ((src->d.i > 1) ? (LONG_MAX / src->d.i) < (*dest)->d.i
+	: (LONG_MIN / src->d.i) < (*dest)->d.i) {
+	escm_printf(e->errp, "number overflow.\n");
+	return;
     }
 
     (*dest)->d.i *= src->d.i; /* XXX: bignums */
@@ -1411,16 +1393,11 @@ makereal(double a)
 static void
 addreal(escm *e, escm_number **dest, escm_number *src)
 {
-    if (DBL_GE(src->d.real, 0.)) {
-	if (DBL_LT((DBL_MAX - src->d.real), (*dest)->d.real)) {
-	    escm_printf(e->errp, "number overflow.\n");
-	    return;
-	}
-    } else {
-	if (DBL_GT((DBL_MIN - src->d.real), (*dest)->d.real)) {
-	    escm_printf(e->errp, "number overflow.\n");
-	    return;
-	}
+    if (DBL_GE(src->d.real, 0.) ?
+	DBL_LT((DBL_MAX - src->d.real), (*dest)->d.real) :
+	DBL_GT((DBL_MAX + src->d.real), (*dest)->d.real)) {
+	escm_printf(e->errp, "number overflow.\n");
+	return;
     }
 
     (*dest)->d.real += src->d.real; /* XXX: bigreals */
@@ -1429,16 +1406,11 @@ addreal(escm *e, escm_number **dest, escm_number *src)
 static void
 subreal(escm *e, escm_number **dest, escm_number *src)
 {
-    if (DBL_GE(src->d.real, 0.)) {
-	if (DBL_GT((DBL_MIN + src->d.real), (*dest)->d.real)) {
-	    escm_printf(e->errp, "number overflow.\n");
-	    return;
-	}
-    } else {
-	if (DBL_LT((DBL_MAX + src->d.real), (*dest)->d.real)) {
-	    escm_printf(e->errp, "number overflow.\n");
-	    return;
-	}
+    if (DBL_GE(src->d.real, 0.) ?
+	DBL_GT((DBL_MAX - src->d.real), (*dest)->d.real) :
+	DBL_LT((DBL_MAX + src->d.real), (*dest)->d.real)) {
+	escm_printf(e->errp, "number overflow.\n");
+	return;
     }
 
     (*dest)->d.real -= src->d.real;
@@ -1447,16 +1419,11 @@ subreal(escm *e, escm_number **dest, escm_number *src)
 static void
 mulreal(escm *e, escm_number **dest, escm_number *src)
 {
-    if (DBL_GT(src->d.real, 1.)) {
-	if (DBL_LT((DBL_MAX / src->d.real), (*dest)->d.real)) {
-	    escm_printf(e->errp, "number overflow.\n");
-	    return;
-	}
-    } else if (DBL_LT(src->d.real, -1.)) {
-	if (DBL_GT((DBL_MIN / src->d.real), (*dest)->d.real)) {
-	    escm_printf(e->errp, "number overflow.\n");
-	    return;
-	}
+    if (DBL_GT(src->d.real, 1.) ?
+	DBL_LT((DBL_MAX / src->d.real), (*dest)->d.real) :
+	DBL_GT((DBL_MAX * src->d.real), (*dest)->d.real)) {
+	escm_printf(e->errp, "number overflow.\n");
+	return;
     }
 
     (*dest)->d.real *= src->d.real;
@@ -1470,16 +1437,11 @@ divreal(escm *e, escm_number **dest, escm_number *src)
 	return;
     }
     if (DBL_LT(src->d.real, 1.) && DBL_GT(src->d.real, -1.)) {
-	if (DBL_GT(src->d.real, 0.)) {
-	    if (DBL_LT((DBL_MAX * src->d.real), (*dest)->d.real)) {
-		escm_printf(e->errp, "number overflow.\n");
-		return;
-	    }
-	} else {
-	    if (DBL_LT((DBL_MIN * src->d.real), (*dest)->d.real)) {
-		escm_printf(e->errp, "number overflow.\n");
-		return;
-	    }
+	if (DBL_GT(src->d.real, 0.) ?
+	    DBL_LT((DBL_MAX * src->d.real), (*dest)->d.real) :
+	    DBL_LT((DBL_MAX * -src->d.real), (*dest)->d.real)) {
+	    escm_printf(e->errp, "number overflow.\n");
+	    return;
 	}
     }
 

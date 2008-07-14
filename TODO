@@ -7,11 +7,13 @@
    - Add the ability to add (& remove?) new rules in macros
    - Grow stacks when memory full
    - Cons tailrec (cons 1 (cons 2 (cons 3)))
+   - Numbers checks overflows
 
  - Features
    - Bignums
    - Finish type implementation
    - Common Lisp Macros
+   - test library
 
  - Maybe:
    - Slashification

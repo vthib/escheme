@@ -319,8 +319,8 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
 	    escm_cons *funargs, *args;
 
 	    for (funargs = escm_cons_val(fun->d.closure.args),
-		     args = escm_cons_val(e->ctx->first); args;
-		 funargs = escm_cons_next(funargs),
+		     args = e->ctx->first ? escm_cons_val(e->ctx->first) : NULL;
+		 args; funargs = escm_cons_next(funargs),
 		     args = escm_cons_next(args)) {
 		if (!funargs) {
 		    escm_error(e, "~s: too much arguments.~%", atomfun);
