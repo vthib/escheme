@@ -218,7 +218,7 @@ runprimitive(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
 		    goto err;
 		if (!atom) {
 		    escm_error(e, "~s: ~s must return a real value.~%", atomfun,
-			       args->car);
+			       args->car);	
 		    goto err;
 		}
 	    }
@@ -289,18 +289,21 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
     } else {
 	escm_atom *atom;
 
-	if (atomargs == e->NIL)
-	    atomargs = NULL;
-	while (atomargs) {
+	while (atomargs != e->NIL) {
+	    ret = escm_cons_pop(e, &atomargs);
 	    if (!eval)
-		atom = escm_cons_pop(e, &atomargs);
+		escm_ctx_put(e, ret);
 	    else {
-		atom = escm_atom_eval(e, escm_cons_pop(e, &atomargs));
-		if (!atom || e->err == 1)
+		atom = escm_atom_eval(e, ret);
+		if (!atom) {
+		    escm_error(e, "~s: ~s must return a real value.~%", atomfun,
+			       ret);
+		    e->err = 1;
+		}
+		if (e->err == 1)
 		    goto erreval;
+		escm_ctx_put(e, atom);
 	    }
-
-	    escm_ctx_put(e, atom);
 	}
 
 	lastgarded = e->gard->atom;

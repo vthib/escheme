@@ -128,7 +128,7 @@ escm_quasiquote(escm *e, escm_atom *args)
     arg = escm_cons_pop(e, &args);
     if (!ESCM_ISCONS(arg)
 #ifdef ESCM_USE_VECTORS
-	& !ESCM_ISVECTOR(arg)
+	&& !ESCM_ISVECTOR(arg)
 #endif
 	) {
 	arg->ro = 1;
@@ -185,7 +185,7 @@ escm_define(escm *e, escm_atom *args)
 
 	escm_ctx_enter(e);
 	escm_ctx_put(e, a->cdr); /* formals */
-	while (args)
+	while (args != e->NIL)
 	    escm_ctx_put(e, escm_cons_pop(e, &args)); /* body */
 
 	proc = escm_lambda(e, escm_ctx_first(e));
@@ -473,8 +473,8 @@ escm_cond(escm *e, escm_atom *args)
 	}
 
 	if (ESCM_ISTRUE(ret)) {
-	    if (clause != NULL && ESCM_ISSYM(escm_cons_val(clause)->car) &&
-		0 == strcmp("=>", escm_sym_name(escm_cons_val(clause)->car))) {
+	    if (clause != e->NIL && ESCM_ISSYM(escm_cons_car(clause)) &&
+		0 == strcmp("=>", escm_sym_name(escm_cons_car(clause)))) {
 		escm_atom *proc;
 
 		(void) escm_cons_pop(e, &clause);
@@ -543,7 +543,7 @@ escm_and(escm *e, escm_atom *args)
 
     ret = NULL; /* make splint happy */
     while (c) {
-	if (!args) {
+	if (args == e->NIL) {
 	    e->ctx->tailrec = 1;
 	    if (!escm_tailrec(e, c))
 		return NULL;
@@ -571,7 +571,7 @@ escm_or(escm *e, escm_atom *args)
 
     ret = NULL; /* make splint happy */
     while (c) {
-	if (!args) {
+	if (args == e->NIL) {
 	    e->ctx->tailrec = 1;
 	    if (!escm_tailrec(e, c))
 		return NULL;
@@ -623,9 +623,9 @@ escm_do(escm *e, escm_atom *args)
 	varval = escm_cons_pop(e, &atom);
 	escm_assert1(varval, c->car, e, escm_gc_ungard(e, env));
 
-	if (atom) { /* assert there is nothing after the step */
+	if (atom != e->NIL) { /* assert there is nothing after the step */
 	    (void) escm_cons_pop(e, &atom);
-	    escm_assert1(atom == NULL, c->car, e, escm_gc_ungard(e, env));
+	    escm_assert1(atom == e->NIL, c->car, e, escm_gc_ungard(e, env));
 	}
 
 	atom = varval;
@@ -668,7 +668,7 @@ escm_do(escm *e, escm_atom *args)
 		atom = c->car;
 		var = escm_cons_pop(e, &atom);
 		(void) escm_cons_pop(e, &atom); /* init */
-		if (atom) { /* if there is a step */
+		if (atom != e->NIL) { /* if there is a step */
 		    varval = escm_atom_eval(e, escm_cons_pop(e, &atom));
 		    if (!varval) {
 			if (e->err != 1) {
@@ -1003,7 +1003,7 @@ named_let(escm *e, escm_atom *name, escm_atom *args)
     }
 
     escm_ctx_put(e, escm_ctx_leave(e)); /* add the formals */
-    while (args)
+    while (args != e->NIL)
 	escm_ctx_put(e, escm_cons_pop(e, &args)); /* the body */
 
     fun = escm_lambda(e, escm_ctx_leave(e));

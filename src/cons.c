@@ -112,19 +112,14 @@ escm_cons_pop(escm *e, escm_atom **cons)
 {
     escm_atom *o;
 
-    if (!*cons)
+    if (!*cons || !escm_cons_val(*cons))
 	return NULL;
-    if (!escm_cons_val(*cons)) {
-	*cons = NULL;
-	return NULL;
-    }
 
     o = escm_cons_val(*cons)->car;
     if (ESCM_ISCONS(escm_cons_val(*cons)->cdr))
-	*cons = (escm_cons_val(*cons)->cdr == e->NIL) ? NULL :
-	    escm_cons_val(*cons)->cdr;
+	*cons = escm_cons_val(*cons)->cdr;
     else
-	*cons = NULL;
+	*cons = e->NIL;
 
     return o;
 }
