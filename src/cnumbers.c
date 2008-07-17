@@ -254,7 +254,7 @@ escm_sub(escm *e, escm_atom *args)
 
     atom = escm_cons_pop(e, &args);
 
-    if (args) {
+    if (args != e->NIL) {
 	free(a);
 	escm_assert(ESCM_ISNUMBER(atom), atom, e);
 	a = dupl(atom->ptr);
@@ -297,7 +297,7 @@ escm_div(escm *e, escm_atom *args)
 
     atom = escm_cons_pop(e, &args);
 
-    if (args) {
+    if (args != e->NIL) {
 	free(a);
 	escm_assert(ESCM_ISNUMBER(atom), atom, e);
 	a = dupl(atom->ptr);

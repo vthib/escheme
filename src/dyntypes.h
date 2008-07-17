@@ -21,11 +21,11 @@
 
 void escm_dyntypes_init(escm *);
 
-escm_atom *escm_get_type(escm *, escm_atom *);
-escm_atom *escm_make_new_type(escm *, escm_atom *);
-escm_atom *escm_rep_to_data(escm *, escm_atom *);
+escm_atom *escm_prim_type(escm *, escm_atom *);
+escm_atom *escm_create_type(escm *, escm_atom *);
+escm_atom *escm_rep_to_data(escm *, escm_atom *, escm_type **);
 escm_atom *escm_data_to_rep(escm *, escm_atom *);
-escm_atom *escm_of_type_p(escm *, escm_atom *);
+escm_atom *escm_of_type_p(escm *, escm_atom *, escm_type **);
 
 escm_atom *escm_set_print(escm *, escm_atom *);
 escm_atom *escm_set_eval(escm *, escm_atom *);

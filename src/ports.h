@@ -40,17 +40,18 @@ typedef struct escm_curports escm_curports;
 
 void escm_ports_init(escm *);
 size_t escm_port_tget(void);
+void escm_port_update(escm *);
 escm_atom *escm_port_make(escm *, void *, int);
 
 escm_atom *escm_port_p(escm *, escm_atom *);
 escm_atom *escm_input_port_p(escm *, escm_atom *);
 escm_atom *escm_output_port_p(escm *, escm_atom *);
 
-escm_atom *escm_current_input_port(escm *, escm_atom *, escm_curports *);
-escm_atom *escm_current_output_port(escm *, escm_atom *, escm_curports *);
+escm_atom *escm_current_input_port(escm *, escm_atom *);
+escm_atom *escm_current_output_port(escm *, escm_atom *);
 
-escm_atom *escm_with_input_from_file(escm *, escm_atom *, escm_curports *);
-escm_atom *escm_with_output_to_file(escm *, escm_atom *, escm_curports *);
+escm_atom *escm_with_input_from_file(escm *, escm_atom *);
+escm_atom *escm_with_output_to_file(escm *, escm_atom *);
 
 escm_atom *escm_open_input_file(escm *, escm_atom *);
 escm_atom *escm_open_output_file(escm *, escm_atom *);
@@ -58,15 +59,15 @@ escm_atom *escm_open_output_file(escm *, escm_atom *);
 escm_atom *escm_close_port(escm *, escm_atom *);
 
 # ifdef ESCM_USE_PORTS
-escm_atom *escm_read(escm *, escm_atom *, escm_curports *);
-escm_atom *escm_read_char(escm *, escm_atom *, escm_curports *);
-escm_atom *escm_peek_char(escm *, escm_atom *, escm_curports *);
-escm_atom *escm_char_ready_p(escm *, escm_atom *, escm_curports *);
+escm_atom *escm_read(escm *, escm_atom *);
+escm_atom *escm_read_char(escm *, escm_atom *);
+escm_atom *escm_peek_char(escm *, escm_atom *);
+escm_atom *escm_char_ready_p(escm *, escm_atom *);
 
-escm_atom *escm_write(escm *, escm_atom *, escm_curports *);
-escm_atom *escm_display(escm *, escm_atom *, escm_curports *);
-escm_atom *escm_write_char(escm *, escm_atom *, escm_curports *);
-escm_atom *escm_newline(escm *, escm_atom *, escm_curports *);
+escm_atom *escm_write(escm *, escm_atom *);
+escm_atom *escm_display(escm *, escm_atom *);
+escm_atom *escm_write_char(escm *, escm_atom *);
+escm_atom *escm_newline(escm *, escm_atom *);
 # endif
 
 #endif /* ESCHEME_PORTS_H */

@@ -155,18 +155,7 @@ escm_bnumber_p(escm *e, escm_atom *args)
 escm_atom *
 escm_binteger_p(escm *e, escm_atom *args)
 {
-    escm_atom *arg;
-    escm_bnumber *n;
-
-    arg = escm_cons_pop(e, &args);
-    if (!ESCM_ISNUMBER(arg))
-       return e->FALSE;
-    n = arg->ptr;
-#ifdef ESCM_USE_MATH
-    return (escm_bnumber_exactp(arg)) ? e->TRUE : e->FALSE;
-#else
-    return (n->fixnum == 1) ? e->TRUE : e->FALSE;
-#endif
+    return ESCM_ISBINT(escm_cons_car(args)) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
@@ -410,7 +399,7 @@ escm_bsub(escm *e, escm_atom *params)
 
     c = escm_cons_pop(e, &params);
 
-    if (params) {
+    if (params != e->NIL) {
 	escm_assert1(ESCM_ISNUMBER(c), c, e, free(a));
 
 	memcpy(a, c->ptr, sizeof *a);
@@ -524,7 +513,7 @@ escm_bdiv(escm *e, escm_atom *params)
 
     c = escm_cons_pop(e, &params);
 
-    if (params) {
+    if (params != e->NIL) {
 	escm_assert1(ESCM_ISNUMBER(c), c, e, free(a));
 
 	memcpy(a, c->ptr, sizeof *a);

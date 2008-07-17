@@ -122,6 +122,10 @@ escm_fparse(escm *e, const char *filename)
 	e->input = save;
 	return 0;
     }
+#ifdef ESCM_USE_PORTS
+    if (escm_type_ison(ESCM_TYPE_PORT))
+	escm_port_update(e);
+#endif
     while ((atom = escm_parse(e)) != e->EOF_OBJ) {
 	if (atom) {
 	    escm_atom_print(e, atom);
@@ -130,6 +134,10 @@ escm_fparse(escm *e, const char *filename)
     }
 
     escm_input_close(e->input), e->input = save;
+#ifdef ESCM_USE_PORTS
+    if (escm_type_ison(ESCM_TYPE_PORT))
+	escm_port_update(e);
+#endif
     return 1;
 }
 
@@ -158,6 +166,10 @@ escm_sparse(escm *e, const char *str)
 	e->input = save;
 	return 0;
     }
+#ifdef ESCM_USE_PORTS
+    if (escm_type_ison(ESCM_TYPE_PORT))
+	escm_port_update(e);
+#endif
     while ((atom = escm_parse(e)) != e->EOF_OBJ) {
 	if (atom) {
 	    escm_atom_print(e, atom);
@@ -166,6 +178,10 @@ escm_sparse(escm *e, const char *str)
     }
 
     escm_input_close(e->input), e->input = save;
+#ifdef ESCM_USE_PORTS
+    if (escm_type_ison(ESCM_TYPE_PORT))
+	escm_port_update(e);
+#endif
     return 1;
 }
 
@@ -266,8 +282,11 @@ escm_parse(escm *e)
 #ifdef ESCM_USE_CHARACTERS
 	    } else {
 		if (e->types[i]->d.dyn.fparsetest) {
+		    escm_atom *args;
+
+		    args = escm_cons_make(e, escm_char_make(e, c), e->NIL);
 		    atom = escm_procedure_exec(e, e->types[i]->d.dyn.fparsetest,
-					       escm_char_make(e, c), 0);
+					       args, 0);
 		    if (ESCM_ISTRUE(atom)) {
 			escm_input_ungetc(e->input, c);
 			if (!e->types[i]->d.dyn.fparse)

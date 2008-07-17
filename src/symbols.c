@@ -76,6 +76,12 @@ escm_symbol_make(escm *e, const char *str)
     return escm_atom_new(e, symboltype, escm_tst_gettree(&e->tree, str));
 }
 
+escm_atom *
+escm_symbol_make2(escm *e, escm_tst *tst)
+{
+    return escm_atom_new(e, symboltype, tst);
+}
+
 void
 escm_symbol_set(escm_atom *sym, escm_atom *atom)
 {

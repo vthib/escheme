@@ -40,6 +40,7 @@ static struct match *bind(escm *, escm_macro *, escm_atom *, escm_atom *,
 static escm_atom *expand(escm *, escm_macro *, escm_atom *, escm_atom *,
 			 struct match *, int);
 
+static escm_atom *add_colored(escm *, escm_atom *, escm_atom *);
 static struct match *add(struct match *, escm_atom *, escm_atom *,
 			 struct match *);
 static struct match *checkup(escm *, struct match *, escm_atom *);
@@ -252,10 +253,8 @@ expand(escm *e, escm_macro *m, escm_atom *rule, escm_atom *env,
 		ret = mid->cur->a, mid->cur = mid->cur->next;
 	    } else
 		ret = mid->fst->a;
-	} else {
-	    escm_env_set(e, env, rule, escm_sym_val(rule));
-	    ret = rule;
-	}
+	} else
+	    ret = add_colored(e, env, rule);
     } else if (ESCM_ISCONS(rule)) {
 	escm_cons *c;
 
@@ -291,6 +290,27 @@ expand(escm *e, escm_macro *m, escm_atom *rule, escm_atom *env,
 retnull:
     escm_ctx_discard(e);
     return NULL;
+}
+
+static escm_atom *
+add_colored(escm *e, escm_atom *env, escm_atom *sym)
+{
+    escm_atom *ret;
+    char *buf;
+    size_t len;
+
+    if (!escm_sym_val(sym)) /* we assume this case occurs for a symbol to be
+			       bounded (e.g. 'foo' in (let ((foo bar))) ) */
+	return sym;
+
+    len = strlen(escm_sym_name(sym)) + 3;
+    buf = xmalloc(sizeof *buf * len);
+    snprintf(buf, len, "%s~0", escm_sym_name(sym));
+
+    ret = escm_symbol_make(e, buf);
+    escm_env_set(e, env, ret, escm_sym_val(sym));
+    free(buf);
+    return ret;
 }
 
 static struct match *

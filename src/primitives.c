@@ -656,7 +656,7 @@ escm_do(escm *e, escm_atom *args)
 	    goto end;
 	} else {
 	    /* execute command */
-	    if (args)
+	    if (args != e->NIL)
 		(void) begin(e, args, 0);
 
 	    /* run steps and rebound vars */
@@ -976,7 +976,7 @@ named_let(escm *e, escm_atom *name, escm_atom *args)
 
     bindings = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCONS(bindings), bindings, e);
-    if (!args) {
+    if (args == e->NIL) {
 	escm_error(e, "~s: missing body.~%", escm_fun(e));
 	escm_abort(e);
     }
@@ -1156,14 +1156,14 @@ begin(escm *e, escm_atom *args, int tailrec)
 {
     escm_atom *a, *ret;
 
-    if (!args) {
+    if (args == e->NIL) {
 	escm_error(e, "~s: no arguments given.~%", escm_fun(e));
 	escm_abort(e);
     }
 
     ret = NULL;
     for (a = escm_cons_pop(e, &args); a; a = escm_cons_pop(e, &args)) {
-	if (!args && tailrec) {
+	if (args == e->NIL && tailrec) {
 	    e->ctx->tailrec = 1;
 	    if (!escm_tailrec(e, a))
 		return NULL;

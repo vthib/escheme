@@ -145,7 +145,7 @@ escm_prim_cons(escm *e, escm_atom *args)
 {
     (void) e;
 
-    escm_cons_val(args)->cdr = escm_cons_val(escm_cons_val(args)->cdr)->car;
+    escm_cons_cdr(args) = escm_cons_car(escm_cons_cdr(args));
 
     return args;
 }
@@ -217,14 +217,14 @@ escm_set_cdr_x(escm *e, escm_atom *args)
 escm_atom *
 escm_null_p(escm *e, escm_atom *args)
 {
-    return (escm_cons_val(args)->car == e->NIL) ? e->TRUE : e->FALSE;
+    return (escm_cons_car(args) == e->NIL) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
 escm_pair_p(escm *e, escm_atom *args)
 {
-    return (ESCM_ISCONS(escm_cons_val(args)->car) &&
-	    escm_cons_val(args)->car != e->NIL) ? e->TRUE : e->FALSE;
+    return (ESCM_ISCONS(escm_cons_car(args)) &&
+	    escm_cons_car(args) != e->NIL) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
@@ -275,7 +275,7 @@ escm_append(escm *e, escm_atom *args)
     escm_atom *flist;
 
     escm_ctx_enter(e);
-    while (args != e->NIL && args) {
+    while (args != e->NIL) {
 	flist = escm_cons_pop(e, &args);
 	escm_assert(ESCM_ISCONS(flist), flist, e);
 
