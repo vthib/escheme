@@ -63,7 +63,7 @@ escm_new(void)
 }
 
 void
-escm_init(escm *e)
+escm_init(escm *e, int loadinit)
 {
     if (!e->EOF_OBJ)
 	e->EOF_OBJ = escm_atom_new(e, ESCM_TYPE_ENV, NULL);
@@ -71,7 +71,8 @@ escm_init(escm *e)
     escm_primitives_load(e);
     escm_srfi_init(e);
 
-    (void) escm_fparse(e, ESCM_SHARE_PATH "init.scm");
+    if (loadinit)
+	(void) escm_fparse(e, ESCM_SHARE_PATH "init.scm");
 }
 
 void

@@ -274,10 +274,18 @@ escm_append(escm *e, escm_atom *args)
 {
     escm_atom *flist;
 
+    if (escm_cons_cdr(args) == e->NIL)
+	return escm_cons_car(args);
+
     escm_ctx_enter(e);
     while (args != e->NIL) {
 	flist = escm_cons_pop(e, &args);
-	escm_assert(ESCM_ISCONS(flist), flist, e);
+
+	if (args == e->NIL) {
+	    e->ctx->last = flist;
+	    break;
+	} else
+	    escm_assert(ESCM_ISCONS(flist), flist, e);
 
 	escm_ctx_put_splicing(e, flist);
 	if (e->err == 1)

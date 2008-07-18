@@ -102,6 +102,12 @@ escm_primitives_load(escm *e)
     (void) escm_procedure_new(e, "gc", 0, 0, escm_gc, NULL);
     (void) escm_procedure_new(e, "backtrace", 0, 0, escm_backtrace, NULL);
 
+    (void) escm_procedure_new(e, "read-only!", 1, 1, escm_read_only_x, NULL);
+    (void) escm_procedure_new(e, "read-only?", 1, 1, escm_read_only_p, NULL);
+
+    o = escm_procedure_new(e, "assert", 1, 1, escm_prim_assert, NULL);
+    escm_proc_val(o)->d.c.quoted = 0x1;
+
     (void) escm_procedure_new(e, "set-case-sensitive!", 1, 1,
 			      escm_set_case_sensitive_x, NULL);
     (void) escm_procedure_new(e, "set-brackets-parens!", 1, 1,
@@ -422,12 +428,8 @@ escm_if(escm *e, escm_atom *args)
     a = escm_cons_pop(e, &args);
 
     test = escm_atom_eval(e, a);
-    if (!test) {
-	if (e->err != 1)
-	    escm_error(e, "~s: ~s: expression not allowed in this "
-		       "context.~%", escm_fun(e), a);
-	escm_abort(e);
-    }
+    if (e->err == 1)
+	return NULL;
 
     e->ctx->tailrec = 1;
 
@@ -939,6 +941,41 @@ escm_backtrace(escm *e, escm_atom *args)
     (void) args;
 
     escm_print_backtrace(e, e->output);
+
+    return NULL;
+}
+
+escm_atom *
+escm_read_only_x(escm *e, escm_atom *args)
+{
+    (void) e;
+
+    escm_cons_car(args)->ro = 1;
+
+    return NULL;
+}
+
+escm_atom *
+escm_read_only_p(escm *e, escm_atom *args)
+{
+    (void) e;
+
+    escm_cons_car(args)->ro ? e->TRUE : e->FALSE;
+
+    return NULL;
+}
+
+escm_atom *
+escm_prim_assert(escm *e, escm_atom *args)
+{
+    escm_atom *test, *ret;
+
+    test = escm_cons_pop(e, &args);
+    ret = escm_atom_eval(e, test);
+    if (e->err == 1)
+	return NULL;
+    if (!ESCM_ISTRUE(ret))
+	escm_error(e, "assert failed: ~s.~%", test);
 
     return NULL;
 }

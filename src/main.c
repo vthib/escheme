@@ -42,9 +42,11 @@ main(int argc, char **argv)
 {
     escm *e;
     int i;
-    unsigned int noload[MAXTYPE];
-    unsigned int casesens = 1;
-    unsigned int useascii = 0;
+    int noload[MAXTYPE];
+    int casesens = 1;
+    int useascii = 0;
+    int resume = 0;
+    int loadinit = 1;
     char *p;
 
     memset(noload, 0, sizeof noload);
@@ -71,6 +73,8 @@ main(int argc, char **argv)
 		case 'd': noload[DYNTYPE] = 1; break;
 		case 'g': casesens = 1; break;
 		case 'G': casesens = 0; break;
+		case 'r': resume = 1; break;
+		case 'S': loadinit = 0; break;
 		case 'h':
 		    usage(argv[0]);
 		    return EXIT_SUCCESS;
@@ -154,7 +158,7 @@ main(int argc, char **argv)
     e->casesensitive = casesens;
     e->backtrace = 1;
 
-    escm_init(e);
+    escm_init(e, loadinit);
 
     if (i < argc) {
 	while (i < argc) {
@@ -164,6 +168,8 @@ main(int argc, char **argv)
 	    } else
 		(void) escm_fparse(e, argv[i++]);
 	}
+	if (resume)
+	    escm_shell(e);
     } else
 	escm_shell(e);
 

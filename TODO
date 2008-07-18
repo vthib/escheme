@@ -20,3 +20,5 @@
    - Continuations
    - Recode Macro implementation
    - Clean bnumber implementation
+   - Funny variables ($fun$ for lambda names, etc) ?
+   - make null returns use a default value (eg #<undefined>) ?

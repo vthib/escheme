@@ -132,7 +132,7 @@ struct escm {
 };
 
 escm *escm_new(void);
-void escm_init(escm *);
+void escm_init(escm *, int);
 void escm_free(escm *);
 
 int escm_fparse(escm *, const char *);

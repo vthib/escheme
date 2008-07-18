@@ -35,7 +35,7 @@
 #define escm_cnumber_ival(x) (escm_cnumber_val(x)->d.i)
 #define escm_cnumber_rval(x) (escm_cnumber_val(x)->d.real)
 
-#define ESCM_ISCTRUE(x) (!ESCM_ISINT(x) || \
+#define ESCM_ISCTRUE(x) (!x || !ESCM_ISINT(x) || \
 			 (((escm_number *) (x)->ptr)->d.i != 0))
 
 #define escm_cnumber_exactp(x) (escm_cnumber_val(x)->exact)
