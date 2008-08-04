@@ -25,8 +25,8 @@ struct escm_atom {
     void *ptr;
 
     escm_atom *link;
-    escm_atom *env;
 
+    unsigned int noeval : 1;
     unsigned int marked : 1;
     unsigned int nofree : 1;
     unsigned int ro : 1;

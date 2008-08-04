@@ -960,9 +960,7 @@ escm_read_only_p(escm *e, escm_atom *args)
 {
     (void) e;
 
-    escm_cons_car(args)->ro ? e->TRUE : e->FALSE;
-
-    return NULL;
+    return escm_cons_car(args)->ro ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
@@ -1192,11 +1190,6 @@ static escm_atom *
 begin(escm *e, escm_atom *args, int tailrec)
 {
     escm_atom *a, *ret;
-
-    if (args == e->NIL) {
-	escm_error(e, "~s: no arguments given.~%", escm_fun(e));
-	escm_abort(e);
-    }
 
     ret = NULL;
     for (a = escm_cons_pop(e, &args); a; a = escm_cons_pop(e, &args)) {

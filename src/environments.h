@@ -34,13 +34,15 @@ size_t escm_env_tget(void);
 
 escm_atom *escm_env_new(escm *, escm_atom *);
 
-#define escm_env_set(e, env, sym, val) escm_env_set5(e, env, sym, val, 0)
-void escm_env_set5(escm *, escm_atom *, escm_atom *, escm_atom *, int);
+void escm_env_set(escm *, escm_atom *, escm_atom *, escm_atom *);
 
 escm_atom *escm_env_enter(escm *, escm_atom *);
 void escm_env_leave(escm *, escm_atom *);
 
 escm_atom *escm_eval(escm *, escm_atom *);
+
+escm_atom *escm_library(escm *, escm_atom *);
+escm_atom *escm_import(escm *, escm_atom *);
 
 escm_atom *escm_alpha(escm *, escm_atom *);
 escm_atom *escm_with(escm *, escm_atom *);

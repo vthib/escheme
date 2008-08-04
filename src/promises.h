@@ -23,6 +23,11 @@
 
 #define ESCM_ISPROMISE(x) ((x)->type == ESCM_TYPE_PROMISE)
 
+typedef struct escm_promise {
+    escm_atom *atom;
+    escm_atom *env;
+} escm_promise;
+
 void escm_promises_init(escm *);
 size_t escm_promise_tget(void);
 

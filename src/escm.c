@@ -84,6 +84,11 @@ escm_free(escm *e)
 
     assert(e != NULL);
 
+    for (atom = e->env; escm_env_val(atom)->prev != NULL;
+	 atom = escm_env_val(atom)->prev)
+	;
+    escm_env_leave(e, atom);
+
     for (atom = e->heap; atom; atom = atom->link)
 	escm_atom_free(e, atom);
 

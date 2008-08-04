@@ -91,7 +91,7 @@ escm_atom_mark(escm *e, escm_atom *atom)
 escm_atom *
 escm_atom_eval(escm *e, escm_atom *atom)
 {
-    escm_atom *ret, *old, *prevenv;
+    escm_atom *ret, *old;
 
     assert(e != NULL);
     if (!atom)
@@ -100,9 +100,10 @@ escm_atom_eval(escm *e, escm_atom *atom)
 	fprintf(stderr, "An atom have a unknown type.\n");
 	escm_abort(e);
     }
+    if (atom->noeval)
+	return atom;
 
     old = e->curobj, e->curobj = atom;
-    prevenv = (atom->env) ? escm_env_enter(e, atom->env) : NULL;
 
     if (e->types[atom->type]->type == TYPE_BUILT) {
 	if (e->types[atom->type]->d.c.feval)
@@ -117,8 +118,6 @@ escm_atom_eval(escm *e, escm_atom *atom)
 	    ret = atom;
     }
 
-    if (prevenv)
-	escm_env_leave(e, prevenv);
     e->curobj = old;
 
     return ret;

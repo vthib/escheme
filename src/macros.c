@@ -37,10 +37,9 @@ static unsigned long macrotype = 0;
 static int match(escm *, escm_macro *, escm_atom *, escm_atom *);
 static struct match *bind(escm *, escm_macro *, escm_atom *, escm_atom *,
 			  struct match *);
-static escm_atom *expand(escm *, escm_macro *, escm_atom *, escm_atom *,
-			 struct match *, int);
+static escm_atom *expand(escm *, escm_macro *, escm_atom *, struct match *,
+			 int);
 
-static escm_atom *add_colored(escm *, escm_atom *, escm_atom *);
 static struct match *add(struct match *, escm_atom *, escm_atom *,
 			 struct match *);
 static struct match *checkup(escm *, struct match *, escm_atom *);
@@ -166,13 +165,15 @@ match(escm *e, escm_macro *m, escm_atom *rule, escm_atom *arg)
 	return 1;
     } else if (ESCM_ISCONS(rule)) {
 	escm_atom *r, *a;
+	int nextcons;
 
 	if (!ESCM_ISCONS(arg))
 	    return 0;
 	if (rule == e->NIL)
 	    return arg == e->NIL;
 
-	if (!ESCM_ISCONS(escm_cons_cdr(rule)) &&
+	nextcons = !ESCM_ISCONS(escm_cons_cdr(rule));
+	if (nextcons &&
 	    !match(e, m, escm_cons_cdr(rule), escm_cons_cdr(arg)))
 	    return 0;
 
@@ -183,7 +184,7 @@ match(escm *e, escm_macro *m, escm_atom *rule, escm_atom *arg)
 	    return 1;
 	if (!match(e, m, r, a))
 	    return 0;
-	return match(e, m, rule, arg);
+	return (nextcons) ? 1 : match(e, m, rule, arg);
     } else
 	return escm_atom_equal(e, rule, arg, 2);
 }
@@ -235,8 +236,8 @@ bind(escm *e, escm_macro *m, escm_atom *rule, escm_atom *arg,
 }
 
 static escm_atom *
-expand(escm *e, escm_macro *m, escm_atom *rule, escm_atom *env,
-       struct match *match, int ellipsis)
+expand(escm *e, escm_macro *m, escm_atom *rule, struct match *match,
+       int ellipsis)
 {
     struct match *mid;
     escm_atom *atom;
@@ -253,8 +254,11 @@ expand(escm *e, escm_macro *m, escm_atom *rule, escm_atom *env,
 		ret = mid->cur->a, mid->cur = mid->cur->next;
 	    } else
 		ret = mid->fst->a;
-	} else
-	    ret = add_colored(e, env, rule);
+	} else {
+	    atom = escm_sym_val(rule);
+	    ret = escm_atom_new(e, atom->type, atom->ptr);
+	    ret->noeval = 1, ret->nofree = 1;
+	}
     } else if (ESCM_ISCONS(rule)) {
 	escm_cons *c;
 
@@ -264,18 +268,18 @@ expand(escm *e, escm_macro *m, escm_atom *rule, escm_atom *env,
 	    if (ESCM_ISCONS(c->cdr) && c->cdr != e->NIL &&
 		ESCM_ISSYM(escm_cons_car(c->cdr)) &&
 		strcmp(escm_sym_name(escm_cons_car(c->cdr)), "...") == 0) {
-		while ((atom = expand(e, m, c->car, env, match, 1)) != NULL)
+		while ((atom = expand(e, m, c->car, match, 1)) != NULL)
 		    escm_ctx_put(e, atom);
 		c = escm_cons_next(c);
 	    } else {
-		atom = expand(e, m, c->car, env, match, ellipsis);
+		atom = expand(e, m, c->car, match, ellipsis);
 		if (!atom) goto retnull;
 		escm_ctx_put(e, atom);
 	    }
 
 	    if (!ESCM_ISCONS(c->cdr)) {
 		e->ctx->dotted = 1;
-		atom = expand(e, m , c->cdr, env, match, ellipsis);
+		atom = expand(e, m , c->cdr, match, ellipsis);
 		if (!atom) goto retnull;
 		escm_ctx_put(e, atom);
 	    }
@@ -290,27 +294,6 @@ expand(escm *e, escm_macro *m, escm_atom *rule, escm_atom *env,
 retnull:
     escm_ctx_discard(e);
     return NULL;
-}
-
-static escm_atom *
-add_colored(escm *e, escm_atom *env, escm_atom *sym)
-{
-    escm_atom *ret;
-    char *buf;
-    size_t len;
-
-    if (!escm_sym_val(sym)) /* we assume this case occurs for a symbol to be
-			       bounded (e.g. 'foo' in (let ((foo bar))) ) */
-	return sym;
-
-    len = strlen(escm_sym_name(sym)) + 3;
-    buf = xmalloc(sizeof *buf * len);
-    snprintf(buf, len, "%s~0", escm_sym_name(sym));
-
-    ret = escm_symbol_make(e, buf);
-    escm_env_set(e, env, ret, escm_sym_val(sym));
-    free(buf);
-    return ret;
 }
 
 static struct match *
@@ -375,7 +358,7 @@ macro_exec(escm *e, escm_macro *m, escm_atom *args)
 static escm_atom *
 macro_expand(escm *e, escm_macro *m, escm_atom *args)
 {
-    escm_atom *rules, *a, *prevenv, *newenv;
+    escm_atom *rules, *a, *prevenv;
     struct match *b, *ma;
     struct node *n, *next;
 
@@ -387,9 +370,7 @@ macro_expand(escm *e, escm_macro *m, escm_atom *args)
 		ma->cur = ma->fst;
 
 	    prevenv = escm_env_enter(e, m->env);
-	    newenv = escm_env_new(e, prevenv);
-	    a = expand(e, m, escm_cons_car(escm_cons_cdr(a)), newenv, b, 0);
-	    a->env = newenv;
+	    a = expand(e, m, escm_cons_car(escm_cons_cdr(a)), b, 0);
 	    for (; b; b = ma) {
 		ma = b->prev;
 		for (n = b->fst; n; n = next)

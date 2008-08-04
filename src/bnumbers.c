@@ -342,44 +342,21 @@ escm_badd(escm *e, escm_atom *params)
 	b = ((escm_bnumber *) c->ptr);
 
 	if (a->fixnum) {
-	    if (b->fixnum) {
-		if ((b->d.ival >= 0) ? ((LONG_MAX - b->d.ival) < a->d.ival)
-		    : ((LONG_MIN - b->d.ival) > a->d.ival)) {
-		    escm_error(e, "~s: number overflow.~%", escm_fun(e));
-		    free(a);
-		    escm_abort(e);
-		}
-
+	    if (b->fixnum)
 		a->d.ival += b->d.ival;
-	    } else {
+	    else {
 		long tmp;
 
 		tmp = a->d.ival;
 		a->d.rval = (double) tmp;
-		if (DBL_LT((DBL_MAX - b->d.rval), a->d.rval)) {
-		    escm_error(e, "~s: number overflow.~%", escm_fun(e));
-		    free(a);
-		    escm_abort(e);
-		}
 		a->d.rval += b->d.rval;
 		a->fixnum = 0;
 	    }
 	} else {
-	    if (b->fixnum) {
-		if (DBL_LT((DBL_MAX - b->d.ival), a->d.rval)) {
-		    escm_error(e, "~s: number overflow.~%", escm_fun(e));
-		    free(a);
-		    escm_abort(e);
-		}
+	    if (b->fixnum)
 		a->d.rval += b->d.ival;
-	    } else {
-		if (DBL_LT((DBL_MAX - b->d.rval), a->d.rval)) {
-		    escm_error(e, "~s: number overflow.~%", escm_fun(e));
-		    free(a);
-		    escm_abort(e);
-		}
+	    else
 		a->d.rval += b->d.rval;
-	    }
 	}
 
 	c = escm_cons_pop(e, &params);
@@ -412,14 +389,9 @@ escm_bsub(escm *e, escm_atom *params)
 	b = ((escm_bnumber *) c->ptr);
 
 	if (a->fixnum) {
-	    if (b->fixnum) {
-		if ((LONG_MIN + b->d.ival) > a->d.ival) {
-		    escm_error(e, "~s: number underflow.~%", escm_fun(e));
-		    free(a);
-		    escm_abort(e);
-		}
+	    if (b->fixnum)
 		a->d.ival -= b->d.ival;
-	    } else {
+	    else {
 		a->d.rval = ((double) a->d.ival) - b->d.rval;
 		a->fixnum = 0;
 	    }
@@ -458,42 +430,21 @@ escm_bmul(escm *e, escm_atom *params)
 	}
 
 	if (a->fixnum) {
-	    if (b->fixnum) {
-		if ((LONG_MAX / b->d.ival) < a->d.ival) {
-		    escm_error(e, "~s: number overflow.~%", escm_fun(e));
-		    free(a);
-		    escm_abort(e);
-		}
+	    if (b->fixnum)
 		a->d.ival *= b->d.ival;
-	    } else {
+	    else {
 		long tmp;
 
 		tmp = a->d.ival;
 		a->d.rval = (double) tmp;
-		if (DBL_LT((DBL_MAX / b->d.rval), a->d.rval)) {
-		    escm_error(e, "~s: number overflow.~%", escm_fun(e));
-		    free(a);
-		    escm_abort(e);
-		}
 		a->d.rval *= b->d.rval;
 		a->fixnum = 0;
 	    }
 	} else {
-	    if (b->fixnum) {
-		if (DBL_LT((DBL_MAX / b->d.ival), a->d.rval)) {
-		    escm_error(e, "~s: number overflow.~%", escm_fun(e));
-		    free(a);
-		    escm_abort(e);
-		}
+	    if (b->fixnum)
 		a->d.rval *= b->d.ival;
-	    } else {
-		if (DBL_LT((DBL_MAX / b->d.rval), a->d.rval)) {
-		    escm_error(e, "~s: number overflow.~%", escm_fun(e));
-		    free(a);
-		    escm_abort(e);
-		}
+	    else
 		a->d.rval *= b->d.rval;
-	    }
 	}
 
 	c = escm_cons_pop(e, &params);

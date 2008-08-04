@@ -127,4 +127,9 @@
 (define let-syntax let)
 (define letrec-syntax letrec)
 
-;; ALPHAS
+(define-syntax define-macro
+  (syntax-rules ()
+    ((define-macro (name . args) body)
+     (define name (lambda args (apply begin body))))
+    ((define-macro name (lambda args body))
+     (define name (lambda args (apply begin body))))))

@@ -25,8 +25,6 @@ struct envlist {
     escm_tstnode *node;
 
     struct envlist *next;
-
-    unsigned int private : 1;
 };
 
 static unsigned long envtype;
@@ -37,6 +35,7 @@ static void env_print(escm *, escm_env *, escm_output *, int);
 
 static escm_atom *env_enter(escm *, escm_atom *);
 static void enterrec(escm_atom *, int);
+static void env_import(escm *, escm_atom *);
 
 void
 escm_environments_init(escm *e)
@@ -66,11 +65,16 @@ escm_env_addprimitives(escm *e)
 			      escm_null_environment, NULL);
     (void) escm_procedure_new(e, "interaction-environment", 0, 0,
 			      escm_interaction_environment, NULL);
+
     o = escm_procedure_new(e, "alpha", 0, -1, escm_alpha, NULL);
-    escm_proc_val(o)->d.c.quoted = 0x3;
+    escm_proc_val(o)->d.c.quoted = 0x1;
 
     o = escm_procedure_new(e, "with", 2, -1, escm_with, NULL);
     escm_proc_val(o)->d.c.quoted = 0x6;
+
+    o = escm_procedure_new(e, "library", 1, -1, escm_library, NULL);
+    escm_proc_val(o)->d.c.quoted = 0x3;
+    (void) escm_procedure_new(e, "import", 0, -1, escm_import, NULL);
 }
 
 size_t
@@ -93,8 +97,7 @@ escm_env_new(escm *e, escm_atom *prev)
 }
 
 void
-escm_env_set5(escm *e, escm_atom *atomenv, escm_atom *sym, escm_atom *atom,
-	      int private)
+escm_env_set(escm *e, escm_atom *atomenv, escm_atom *sym, escm_atom *atom)
 {
     escm_env *env;
     struct envlist *l;
@@ -125,7 +128,6 @@ escm_env_set5(escm *e, escm_atom *atomenv, escm_atom *sym, escm_atom *atom,
 		l->node = xmalloc(sizeof *l->node);
 		l->node->prev = NULL;
 	    }
-	    l->private = private;
 	    l->node->atom = atom;
 	    return;
 	}
@@ -137,7 +139,6 @@ escm_env_set5(escm *e, escm_atom *atomenv, escm_atom *sym, escm_atom *atom,
     l->node->atom = atom;
     l->node->prev = NULL;
     l->next = env->list, env->list = l;
-    l->private = private;
 
     if (e->env == atomenv) {
 	l->node->prev = l->tree->node;
@@ -179,6 +180,67 @@ escm_eval(escm *e, escm_atom *args)
 	e->env = prev;
 
     return expr;
+}
+
+escm_atom *
+escm_library(escm *e, escm_atom *args)
+{
+    escm_atom *a, *export, *name, *env, *prevenv;
+
+    export = e->NIL;
+
+    a = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISCONS(a) && a != e->NIL, a, e);
+
+    name = escm_cons_car(a);
+    escm_assert(ESCM_ISSYM(name), name, e);
+
+    a = escm_cons_car(args);
+    if (ESCM_ISCONS(a) && a != e->NIL && ESCM_ISSYM(escm_cons_car(a)) &&
+	strcmp(escm_sym_name(escm_cons_car(a)), "export") == 0) {
+	export = escm_cons_pop(e, &args);
+	export = escm_cons_cdr(export); /* skip 'export' symbol */
+	a = escm_cons_car(args);
+    }
+
+    prevenv = e->env;
+
+    if (ESCM_ISCONS(a) && a != e->NIL && ESCM_ISSYM(escm_cons_car(a)) &&
+	strcmp(escm_sym_name(escm_cons_car(a)), "import") == 0) {
+	(void) escm_cons_pop(e, &a);
+	escm_import(e, a);
+    }
+
+    (void) escm_env_enter(e, escm_env_new(e, e->env));
+    escm_begin(e, args);
+
+    if (escm_env_val(e->env)->list == NULL)
+	e->env = escm_env_val(e->env)->prev;
+
+    env = escm_env_new(e, e->env);
+
+    while ((a = escm_cons_pop(e, &export)) != NULL) {
+	escm_assert1(ESCM_ISSYM(a), a, e, escm_env_leave(e, prevenv));
+	escm_env_set(e, env, a, escm_sym_val(a));
+    }
+
+    escm_env_leave(e, prevenv);
+    escm_env_set(e, e->env, name, env);
+
+    return NULL;
+}
+
+escm_atom *
+escm_import(escm *e, escm_atom *args)
+{
+    escm_atom *env;
+
+    while ((env = escm_cons_pop(e, &args)) != NULL) {
+	escm_assert(ESCM_ISENV(env), env, e);
+	env_import(e, env);
+    }
+
+    return NULL;
 }
 
 escm_atom *
@@ -385,4 +447,20 @@ enterrec(escm_atom *atom, int onlyclean)
 	}
     }
 }
+
+static void
+env_import(escm *e, escm_atom *atomenv)
+{
+    escm_env *env;
+    struct envlist *l;
+
+    for (env = atomenv->ptr; env != e->env->ptr; env = env->prev->ptr) {
+	for (l = env->list; l; l = l->next) {
+	    l->node->prev = l->tree->node;
+	    l->tree->node = l->node;
+	}
+    }
+    e->env = atomenv;
+}
+
 
