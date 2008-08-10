@@ -32,6 +32,7 @@
 
 static unsigned char *alloc_seg(escm *);
 static escm_atom *enterin(escm *, const char *);
+static inline escm_atom *parse(escm *, unsigned long);
 
 escm *
 escm_new(void)
@@ -95,7 +96,7 @@ escm_free(escm *e)
     escm_tst_free(e->tree);
 
     for (i = 0; i < e->ntypes; i++) {
-        if (e->types[i]->type == TYPE_BUILT && e->types[i]->d.c.fexit)
+        if (e->types[i]->dtype == TYPE_BUILT && e->types[i]->d.c.fexit)
             e->types[i]->d.c.fexit(e, e->types[i]->d.c.dexit);
         free(e->types[i]);
     }
@@ -280,38 +281,39 @@ escm_parse(escm *e)
     } else {
         atom = NULL;
         for (i = 0; i < e->ntypes && !atom; i++) {
-            if (e->types[i]->type == TYPE_BUILT) {
-                if (e->types[i]->d.c.fparsetest) {
-                    if (e->types[i]->d.c.fparsetest(e, c)) {
+            switch (e->types[i]->parsetesttype) {
+            case TYPE_BUILT:
+                if (e->types[i]->parsetest.fparsetest) {
+                    if (e->types[i]->parsetest.fparsetest(e, c)) {
                         escm_input_ungetc(e->input, c);
-                        if (!e->types[i]->d.c.fparse)
-                            continue;
-                        atom = e->types[i]->d.c.fparse(e);
-                        break;
+                        atom = parse(e, i);
                     }
                 }
+                break;
 #ifdef ESCM_USE_CHARACTERS
-            } else {
-                if (e->types[i]->d.dyn.fparsetest) {
+            case TYPE_DYN:
+                if (e->types[i]->parsetest.pparsetest) {
                     escm_atom *args;
 
                     args = escm_cons_make(e, escm_char_make(e, c), e->NIL);
-                    atom = escm_procedure_exec(e, e->types[i]->d.dyn.fparsetest,
-                                               args, 0);
-                    if (ESCM_ISTRUE(e, atom)) {
+                    atom =
+                        escm_procedure_exec(e,
+                                            e->types[i]->parsetest.pparsetest,
+                                            args, 0);
+                    if (atom && ESCM_ISTRUE(e, atom)) {
                         escm_input_ungetc(e->input, c);
-                        if (!e->types[i]->d.dyn.fparse)
-                            continue;
-                        atom = escm_procedure_exec(e, e->types[i]->d.dyn.fparse,
-                                                   e->NIL, 0);
-                        break;
-                    }
+                        atom = parse(e, i);
+                    } else
+                        atom = NULL;
                 }
 #endif
+            default:
+                break;
             }
         }
         if (i >= e->ntypes) {
-            escm_parse_print(e->input, e->errp, "unknown character `%c'.\n", c);
+            escm_parse_print(e->input, e->errp, "unknown character `%c'.\n",
+                             c);
             escm_abort(e);
         }
     }
@@ -483,12 +485,18 @@ escm_gc_collect(escm *e)
 
     /* plus the possible dynamic-types procedures */
     for (i = 0; i < e->ntypes; i++) {
-        if (e->types[i]->type == TYPE_DYN) {
-            escm_atom_mark(e, e->types[i]->d.dyn.fequal);
-            escm_atom_mark(e, e->types[i]->d.dyn.feval);
-            escm_atom_mark(e, e->types[i]->d.dyn.fparsetest);
-            escm_atom_mark(e, e->types[i]->d.dyn.fparse);
-        }
+        if (e->types[i]->printtype == TYPE_DYN)
+            escm_atom_mark(e, e->types[i]->print.pprint);
+        if (e->types[i]->equaltype == TYPE_DYN)
+            escm_atom_mark(e, e->types[i]->equal.pequal);
+        if (e->types[i]->parsetesttype == TYPE_DYN)
+            escm_atom_mark(e, e->types[i]->parsetest.pparsetest);
+        if (e->types[i]->parsetype == TYPE_DYN)
+            escm_atom_mark(e, e->types[i]->parse.pparse);
+        if (e->types[i]->evaltype == TYPE_DYN)
+            escm_atom_mark(e, e->types[i]->eval.peval);
+        if (e->types[i]->exectype == TYPE_DYN)
+            escm_atom_mark(e, e->types[i]->exec.pexec);
     }
 
     escm_atom_mark(e, e->env);
@@ -694,4 +702,20 @@ enterin(escm *e, const char *name)
     }
     escm_ctx_put(e, atom);
     return escm_ctx_leave(e);
+}
+
+static inline escm_atom *
+parse(escm *e, unsigned long i)
+{
+    switch (e->types[i]->parsetype) {
+    case TYPE_BUILT:
+        return (e->types[i]->parse.fparse)
+            ? e->types[i]->parse.fparse(e)
+            : NULL;
+    case TYPE_DYN:
+        return (e->types[i]->parse.pparse)
+            ? escm_procedure_exec(e, e->types[i]->parse.pparse, e->NIL, 0)
+            : NULL;
+    }
+    return NULL;
 }

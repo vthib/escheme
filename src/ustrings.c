@@ -39,10 +39,10 @@ escm_ustrings_init(escm *e)
 
     t = xcalloc(1, sizeof *t);
     t->ffree = (Escm_Fun_Free) ustring_free;
-    t->d.c.fprint = (Escm_Fun_Print) ustring_print;
-    t->d.c.fequal = (Escm_Fun_Equal) ustring_equal;
-    t->d.c.fparsetest = ustring_parsetest;
-    t->d.c.fparse = ustring_parse;
+    t->print.fprint = (Escm_Fun_Print) ustring_print;
+    t->equal.fequal = (Escm_Fun_Equal) ustring_equal;
+    t->parsetest.fparsetest = ustring_parsetest;
+    t->parse.fparse = ustring_parse;
 
     ustringtype = escm_type_add(e, t);
 

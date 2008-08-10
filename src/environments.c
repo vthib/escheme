@@ -44,7 +44,7 @@ escm_environments_init(escm *e)
     t = xcalloc(1, sizeof *t);
     t->fmark = (Escm_Fun_Mark) env_mark;
     t->ffree = (Escm_Fun_Free) env_free;
-    t->d.c.fprint = (Escm_Fun_Print) env_print;
+    t->print.fprint = (Escm_Fun_Print) env_print;
 
     envtype = escm_type_add(e, t);
 }

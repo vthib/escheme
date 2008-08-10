@@ -36,10 +36,10 @@ escm_astrings_init(escm *e)
 
     t = xcalloc(1, sizeof *t);
     t->ffree = (Escm_Fun_Free) astring_free;
-    t->d.c.fprint = (Escm_Fun_Print) astring_print;
-    t->d.c.fequal = (Escm_Fun_Equal) astring_equal;
-    t->d.c.fparsetest = astring_parsetest;
-    t->d.c.fparse = astring_parse;
+    t->print.fprint = (Escm_Fun_Print) astring_print;
+    t->equal.fequal = (Escm_Fun_Equal) astring_equal;
+    t->parsetest.fparsetest = astring_parsetest;
+    t->parse.fparse = astring_parse;
 
     astringtype = escm_type_add(e, t);
 

@@ -28,9 +28,10 @@ escm_atom *escm_data_to_rep(escm *, escm_atom *);
 escm_atom *escm_of_type_p(escm *, escm_atom *, escm_type **);
 
 escm_atom *escm_set_print(escm *, escm_atom *);
-escm_atom *escm_set_eval(escm *, escm_atom *);
 escm_atom *escm_set_equal(escm *, escm_atom *);
 escm_atom *escm_set_parse_p(escm *, escm_atom *);
 escm_atom *escm_set_parse(escm *, escm_atom *);
+escm_atom *escm_set_eval(escm *, escm_atom *);
+escm_atom *escm_set_exec(escm *, escm_atom *);
 
 #endif /* ESCHEME_DYNTYPES_H */

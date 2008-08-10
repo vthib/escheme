@@ -105,17 +105,18 @@ escm_atom_eval(escm *e, escm_atom *atom)
 
     old = e->curobj, e->curobj = atom;
 
-    if (e->types[atom->type]->type == TYPE_BUILT) {
-        if (e->types[atom->type]->d.c.feval)
-            ret = e->types[atom->type]->d.c.feval(e, atom->ptr);
-        else
-            ret = atom;
-    } else {
-        if (e->types[atom->type]->d.dyn.feval)
-            ret = escm_procedure_exec(e, e->types[atom->type]->d.dyn.feval,
-                                      escm_cons_make(e, atom, e->NIL), 0);
-        else
-            ret = atom;
+    switch (e->types[atom->type]->evaltype) {
+    case TYPE_BUILT:
+        ret = (e->types[atom->type]->eval.feval)
+            ? e->types[atom->type]->eval.feval(e, atom->ptr)
+            : atom;
+        break;
+    case TYPE_DYN:
+        ret = (e->types[atom->type]->eval.peval)
+            ? escm_procedure_exec(e, e->types[atom->type]->eval.peval,
+                                  escm_cons_make(e, atom, e->NIL), 0)
+            : atom;
+        break;
     }
 
     e->curobj = old;
@@ -137,17 +138,20 @@ escm_atom_exec(escm *e, escm_atom *atom, escm_atom *args)
     }
 
     old = e->curobj, e->curobj = atom;
-    if (e->types[atom->type]->type == TYPE_BUILT) {
-        if (e->types[atom->type]->d.c.fexec)
-            ret = e->types[atom->type]->d.c.fexec(e, atom->ptr, args);
+    switch (e->types[atom->type]->exectype) {
+    case TYPE_BUILT:
+        if (e->types[atom->type]->exec.fexec)
+            ret = e->types[atom->type]->exec.fexec(e, atom->ptr, args);
         else
             goto noexec;
-    } else {
-        if (e->types[atom->type]->d.dyn.fexec)
-            ret = escm_procedure_exec(e, e->types[atom->type]->d.dyn.fexec,
+        break;
+    case TYPE_DYN:
+        if (e->types[atom->type]->exec.pexec)
+            ret = escm_procedure_exec(e, e->types[atom->type]->exec.pexec,
                                       escm_cons_make(e, atom, args), 0);
         else
             goto noexec;
+        break;
     }
     e->curobj = old;
 
@@ -174,29 +178,33 @@ escm_atom_print4(escm *e, escm_atom *atom, escm_output *stream, int lvl)
     }
 
     old = e->curobj, e->curobj = atom;
-    if (e->types[atom->type]->type == TYPE_BUILT) {
-        if (!e->types[atom->type]->d.c.fprint)
+    switch (e->types[atom->type]->printtype) {
+    case TYPE_BUILT:
+        if (!e->types[atom->type]->print.fprint)
             opaque(atom, stream);
         else
-            e->types[atom->type]->d.c.fprint(e, atom->ptr, stream, lvl);
-#if defined ESCM_USE_PORTS && defined ESCM_USE_NUMBERS
-    } else {
-        if (!e->types[atom->type]->d.dyn.fprint)
+            e->types[atom->type]->print.fprint(e, atom->ptr, stream, lvl);
+        break;
+    case TYPE_DYN:
+        if (!e->types[atom->type]->print.pprint)
             opaque(atom, stream);
         else {
             escm_atom *a;
 
             escm_ctx_enter(e);
             escm_ctx_put(e, atom);
+#ifdef ESCM_USE_PORTS
             a = escm_port_make(e, stream, 0);
             escm_port_val(a)->nofree = 1;
             escm_ctx_put(e, a);
+#endif
+#ifdef ESCM_USE_NUMBERS
             escm_ctx_put(e, escm_int_make(e, (long) lvl));
-
-            (void) escm_procedure_exec(e, e->types[atom->type]->d.dyn.fprint,
+#endif
+            (void) escm_procedure_exec(e, e->types[atom->type]->print.pprint,
                                        escm_ctx_leave(e), 0);
         }
-#endif
+        break;
     }
     e->curobj = old;
 }
@@ -216,19 +224,23 @@ escm_atom_equal(escm *e, escm_atom *o1, escm_atom *o2, int lvl)
     if (o1->ptr == o2->ptr)
         return 1;
 
-    if (e->types[o1->type]->type == TYPE_DYN) {
+    switch (e->types[o1->type]->equaltype) {
+    case TYPE_BUILT:
+        if (!e->types[o1->type]->equal.fequal)
+            return 0;
+        return e->types[o1->type]->equal.fequal(e, o1->ptr, o2->ptr, lvl);
+    case TYPE_DYN:
+    {
         escm_atom *a;
 
-        if (!e->types[o1->type]->d.dyn.fequal)
+        if (!e->types[o1->type]->equal.pequal)
             return 0;
         a = escm_cons_make(e, o1, escm_cons_make(e, o2, e->NIL));
-        a = escm_procedure_exec(e, e->types[o1->type]->d.dyn.fequal, a, 0);
+        a = escm_procedure_exec(e, e->types[o1->type]->equal.pequal, a, 0);
         return ESCM_ISTRUE(e, a) ? 1 : 0;
-    } else {
-        if (!e->types[o1->type]->d.c.fequal)
-            return 0;
-        return e->types[o1->type]->d.c.fequal(e, o1->ptr, o2->ptr, lvl);
     }
+    }
+    return 0;
 }
 
 static inline void

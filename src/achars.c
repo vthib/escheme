@@ -35,10 +35,10 @@ escm_achars_init(escm *e)
     escm_type *t;
 
     t = xcalloc(1, sizeof *t);
-    t->d.c.fprint = (Escm_Fun_Print) achar_print;
-    t->d.c.fequal = (Escm_Fun_Equal) achar_equal;
-    t->d.c.fparsetest = achar_parsetest;
-    t->d.c.fparse = achar_parse;
+    t->print.fprint = (Escm_Fun_Print) achar_print;
+    t->equal.fequal = (Escm_Fun_Equal) achar_equal;
+    t->parsetest.fparsetest = achar_parsetest;
+    t->parse.fparse = achar_parse;
 
     achartype = escm_type_add(e, t);
 

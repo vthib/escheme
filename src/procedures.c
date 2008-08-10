@@ -40,8 +40,8 @@ escm_procedures_init(escm *e)
     t = xcalloc(1, sizeof *t);
     t->fmark = (Escm_Fun_Mark) procedure_mark;
     t->ffree = (Escm_Fun_Free) procedure_free;
-    t->d.c.fprint = (Escm_Fun_Print) procedure_print;
-    t->d.c.fexec = (Escm_Fun_Exec) procedure_exec;
+    t->print.fprint = (Escm_Fun_Print) procedure_print;
+    t->exec.fexec = (Escm_Fun_Exec) procedure_exec;
 
     proctype = escm_type_add(e, t);
 

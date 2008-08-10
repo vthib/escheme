@@ -48,41 +48,67 @@
         }                                                               \
     } while(0)
 
-enum { TYPE_BUILT, TYPE_DYN };
+enum { TYPE_BUILT, TYPE_DYN, TYPE_REC };
 
 struct escm_type {
     Escm_Fun_Mark fmark;
     Escm_Fun_Free ffree;
 
     union {
+        Escm_Fun_Print fprint;
+        escm_atom *pprint;
+    } print;
+
+    union {
+        Escm_Fun_Equal fequal;
+        escm_atom *pequal;
+    } equal;
+
+    /* those two functions needs to be not null if only it add a new
+       syntax to the parser */
+    union {
+        Escm_Fun_Parsetest fparsetest;
+        escm_atom *pparsetest;
+    } parsetest;
+
+    union {
+        Escm_Fun_Parse fparse;
+        escm_atom *pparse;
+    } parse;
+
+    union {
+        Escm_Fun_Eval feval;
+        escm_atom *peval;
+    } eval;
+
+    union {
+        Escm_Fun_Exec fexec;
+        escm_atom *pexec;
+    } exec;
+
+    union {
         struct {
-            Escm_Fun_Print fprint;
-            Escm_Fun_Equal fequal;
-
-            /* those two functions needs to be not null if only it add a new
-               syntax to the parser */
-            Escm_Fun_Parsetest fparsetest;
-            Escm_Fun_Parse fparse;
-
-            Escm_Fun_Eval feval;
-            Escm_Fun_Exec fexec;
-
             Escm_Fun_Exit fexit;
             void *dexit;
         } c;
         struct {
-            escm_atom *fprint;
-            escm_atom *fequal;
-            escm_atom *fparsetest;
-            escm_atom *fparse;
-            escm_atom *feval;
-            escm_atom *fexec;
-
             unsigned long basetype;
         } dyn;
+        struct {
+            escm_atom *members;
+            char *name;
+
+            unsigned long parenttype;
+        } rec;
     } d;
 
-    unsigned int type : 1;
+    unsigned int dtype : 2;
+    unsigned int printtype : 1;
+    unsigned int equaltype : 1;
+    unsigned int parsetesttype : 1;
+    unsigned int parsetype : 1;
+    unsigned int evaltype : 1;
+    unsigned int exectype : 1;
 };
 
 struct escm_context {

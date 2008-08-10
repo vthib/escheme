@@ -59,7 +59,7 @@ escm_create_type(escm *e, escm_atom *args)
     }
 
     t = xcalloc(1, sizeof *t);
-    t->type = TYPE_DYN;
+    t->dtype = TYPE_DYN;
     t->d.dyn.basetype = i;
     t->fmark = (Escm_Fun_Mark) escm_atom_mark;
  
@@ -101,7 +101,7 @@ escm_data_to_rep(escm *e, escm_atom *args)
     escm_atom *atom;
 
     atom = escm_cons_pop(e, &args);
-    if (e->types[atom->type]->type != TYPE_DYN) {
+    if (e->types[atom->type]->dtype != TYPE_DYN) {
         escm_error(e, "~s: expect an argument of dynamic type, not ~s.~%",
                    escm_fun(e), atom);
         escm_abort(e);
@@ -133,35 +133,10 @@ escm_set_print(escm *e, escm_atom *args)
         escm_error(e, "~s: ~s is not a type.~%", escm_fun(e), type);
         escm_abort(e);
     }
-    if (e->types[escm_number_ival(type)]->type != TYPE_DYN) {
-        escm_error(e, "~s: given type must be a dynamic type.~%", escm_fun(e));
-        escm_abort(e);
-    }
 
     proc = escm_cons_pop(e, &args);
-    e->types[escm_number_ival(type)]->d.dyn.fprint = proc;
-    return NULL;
-}
-
-escm_atom *
-escm_set_eval(escm *e, escm_atom *args)
-{
-    escm_atom *type, *proc;
-
-    type = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISINT(type), type, e);
-    if (escm_number_ival(type) < 0 ||
-        (unsigned long) escm_number_ival(type) >= e->ntypes) {
-        escm_error(e, "~s: ~s is not a type.~%", escm_fun(e), type);
-        escm_abort(e);
-    }
-    if (e->types[escm_number_ival(type)]->type != TYPE_DYN) {
-        escm_error(e, "~s: given type must be a dynamic type.~%", escm_fun(e));
-        escm_abort(e);
-    }
-
-    proc = escm_cons_pop(e, &args);
-    e->types[escm_number_ival(type)]->d.dyn.feval = proc;
+    e->types[escm_number_ival(type)]->print.pprint = proc;
+    e->types[escm_number_ival(type)]->printtype = TYPE_DYN;
     return NULL;
 }
 
@@ -177,13 +152,10 @@ escm_set_equal(escm *e, escm_atom *args)
         escm_error(e, "~s: ~s is not a type.~%", escm_fun(e), type);
         escm_abort(e);
     }
-    if (e->types[escm_number_ival(type)]->type != TYPE_DYN) {
-        escm_error(e, "~s: given type must be a dynamic type.~%", escm_fun(e));
-        escm_abort(e);
-    }
 
     proc = escm_cons_pop(e, &args);
-    e->types[escm_number_ival(type)]->d.dyn.fequal = proc;
+    e->types[escm_number_ival(type)]->equal.pequal = proc;
+    e->types[escm_number_ival(type)]->equaltype = TYPE_DYN;
     return NULL;
 }
 
@@ -199,13 +171,10 @@ escm_set_parse_p(escm *e, escm_atom *args)
         escm_error(e, "~s: ~s is not a type.~%", escm_fun(e), type);
         escm_abort(e);
     }
-    if (e->types[escm_number_ival(type)]->type != TYPE_DYN) {
-        escm_error(e, "~s: given type must be a dynamic type.~%", escm_fun(e));
-        escm_abort(e);
-    }
 
     proc = escm_cons_pop(e, &args);
-    e->types[escm_number_ival(type)]->d.dyn.fparsetest = proc;
+    e->types[escm_number_ival(type)]->parsetest.pparsetest = proc;
+    e->types[escm_number_ival(type)]->parsetesttype = TYPE_DYN;
     return NULL;
 }
 
@@ -221,12 +190,47 @@ escm_set_parse(escm *e, escm_atom *args)
         escm_error(e, "~s: ~s is not a type.~%", escm_fun(e), type);
         escm_abort(e);
     }
-    if (e->types[escm_number_ival(type)]->type != TYPE_DYN) {
-        escm_error(e, "~s: given type must be a dynamic type.~%", escm_fun(e));
+
+    proc = escm_cons_pop(e, &args);
+    e->types[escm_number_ival(type)]->parse.pparse = proc;
+    e->types[escm_number_ival(type)]->parsetype = TYPE_DYN;
+    return NULL;
+}
+
+escm_atom *
+escm_set_eval(escm *e, escm_atom *args)
+{
+    escm_atom *type, *proc;
+
+    type = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISINT(type), type, e);
+    if (escm_number_ival(type) < 0 ||
+        (unsigned long) escm_number_ival(type) >= e->ntypes) {
+        escm_error(e, "~s: ~s is not a type.~%", escm_fun(e), type);
         escm_abort(e);
     }
 
     proc = escm_cons_pop(e, &args);
-    e->types[escm_number_ival(type)]->d.dyn.fparse = proc;
+    e->types[escm_number_ival(type)]->eval.peval = proc;
+    e->types[escm_number_ival(type)]->evaltype = TYPE_DYN;
+    return NULL;
+}
+
+escm_atom *
+escm_set_exec(escm *e, escm_atom *args)
+{
+    escm_atom *type, *proc;
+
+    type = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISINT(type), type, e);
+    if (escm_number_ival(type) < 0 ||
+        (unsigned long) escm_number_ival(type) >= e->ntypes) {
+        escm_error(e, "~s: ~s is not a type.~%", escm_fun(e), type);
+        escm_abort(e);
+    }
+
+    proc = escm_cons_pop(e, &args);
+    e->types[escm_number_ival(type)]->exec.pexec = proc;
+    e->types[escm_number_ival(type)]->exectype = TYPE_DYN;
     return NULL;
 }

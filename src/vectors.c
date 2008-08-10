@@ -38,10 +38,10 @@ escm_vectors_init(escm *e)
     t = xcalloc(1, sizeof *t);
     t->fmark = (Escm_Fun_Mark) vector_mark;
     t->ffree = (Escm_Fun_Free) vector_free;
-    t->d.c.fprint = (Escm_Fun_Print) vector_print;
-    t->d.c.fequal = (Escm_Fun_Equal) vector_equal;
-    t->d.c.fparsetest = vector_parsetest;
-    t->d.c.fparse = vector_parse;
+    t->print.fprint = (Escm_Fun_Print) vector_print;
+    t->equal.fequal = (Escm_Fun_Equal) vector_equal;
+    t->parsetest.fparsetest = vector_parsetest;
+    t->parse.fparse = vector_parse;
 
     vectortype = escm_type_add(e, t);
 

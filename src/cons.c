@@ -41,11 +41,11 @@ escm_cons_init(escm *e)
     t = xcalloc(1, sizeof *t);
     t->fmark = (Escm_Fun_Mark) cons_mark;
     t->ffree = (Escm_Fun_Free) free;
-    t->d.c.fprint = (Escm_Fun_Print) cons_print;
-    t->d.c.fequal = (Escm_Fun_Equal) cons_equal;
-    t->d.c.fparsetest = cons_parsetest;
-    t->d.c.fparse = cons_parse;
-    t->d.c.feval = (Escm_Fun_Eval) cons_eval;
+    t->print.fprint = (Escm_Fun_Print) cons_print;
+    t->equal.fequal = (Escm_Fun_Equal) cons_equal;
+    t->parsetest.fparsetest = cons_parsetest;
+    t->parse.fparse = cons_parse;
+    t->eval.feval = (Escm_Fun_Eval) cons_eval;
 
     constype = escm_type_add(e, t);
 

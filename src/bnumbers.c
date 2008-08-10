@@ -46,10 +46,10 @@ escm_bnumbers_init(escm *e)
 
     t = xcalloc(1, sizeof *t);
     t->ffree = (Escm_Fun_Free) free;
-    t->d.c.fprint = (Escm_Fun_Print) number_print;
-    t->d.c.fequal = (Escm_Fun_Equal) number_equal;
-    t->d.c.fparsetest = number_parsetest;
-    t->d.c.fparse = number_parse;
+    t->print.fprint = (Escm_Fun_Print) number_print;
+    t->equal.fequal = (Escm_Fun_Equal) number_equal;
+    t->parsetest.fparsetest = number_parsetest;
+    t->parse.fparse = number_parse;
 
     bnumbertype = escm_type_add(e, t);
 

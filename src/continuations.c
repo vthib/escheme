@@ -34,8 +34,8 @@ escm_continuations_init(escm *e)
 
     t = xcalloc(1, sizeof *t);
     t->ffree = (Escm_Fun_Free) continuation_free;
-    t->d.c.fprint = (Escm_Fun_Print) continuation_print;
-    t->d.c.fexec = (Escm_Fun_Exec) continuation_exec;
+    t->print.fprint = (Escm_Fun_Print) continuation_print;
+    t->exec.fexec = (Escm_Fun_Exec) continuation_exec;
 
     continuationtype = escm_type_add(e, t);
 

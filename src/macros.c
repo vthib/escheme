@@ -58,8 +58,8 @@ escm_macros_init(escm *e)
     t = xcalloc(1, sizeof *t);
     t->fmark = (Escm_Fun_Mark) macro_mark;
     t->ffree = (Escm_Fun_Free) free;
-    t->d.c.fprint = (Escm_Fun_Print) macro_print;
-    t->d.c.fexec = (Escm_Fun_Exec) macro_exec;
+    t->print.fprint = (Escm_Fun_Print) macro_print;
+    t->exec.fexec = (Escm_Fun_Exec) macro_exec;
 
     macrotype = escm_type_add(e, t);
 

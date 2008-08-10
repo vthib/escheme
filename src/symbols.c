@@ -42,11 +42,11 @@ escm_symbols_init(escm *e)
     escm_atom *a;
 
     t = xcalloc(1, sizeof *t);
-    t->d.c.fprint = (Escm_Fun_Print) symbol_print;
-    t->d.c.fparsetest = symbol_parsetest;
-    t->d.c.fparse = symbol_parse;
-    t->d.c.feval = (Escm_Fun_Eval) symbol_eval;
-    t->d.c.fequal = (Escm_Fun_Equal) symbol_equal;
+    t->print.fprint = (Escm_Fun_Print) symbol_print;
+    t->parsetest.fparsetest = symbol_parsetest;
+    t->parse.fparse = symbol_parse;
+    t->eval.feval = (Escm_Fun_Eval) symbol_eval;
+    t->equal.fequal = (Escm_Fun_Equal) symbol_equal;
     t->fmark = (Escm_Fun_Mark) symbol_mark;
 
     symboltype = escm_type_add(e, t);

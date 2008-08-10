@@ -41,7 +41,7 @@ escm_ports_init(escm *e)
 
     t = xcalloc(1, sizeof *t);
     t->ffree = (Escm_Fun_Free) port_free;
-    t->d.c.fprint = (Escm_Fun_Print) port_print;
+    t->print.fprint = (Escm_Fun_Print) port_print;
     t->d.c.fexit = (Escm_Fun_Exit) port_exit;
 
     porttype = escm_type_add(e, t);
