@@ -298,7 +298,7 @@ escm_parse(escm *e)
                     args = escm_cons_make(e, escm_char_make(e, c), e->NIL);
                     atom = escm_procedure_exec(e, e->types[i]->d.dyn.fparsetest,
                                                args, 0);
-                    if (ESCM_ISTRUE(atom)) {
+                    if (ESCM_ISTRUE(e, atom)) {
                         escm_input_ungetc(e->input, c);
                         if (!e->types[i]->d.dyn.fparse)
                             continue;

@@ -26,22 +26,26 @@
 
 #define escm_abort(e) do { (e)->err = 1; return NULL; } while(0)
 
-#define escm_assert(test, atom, e)                                        \
+#define ESCM_ISTRUE(e, a) ((a) != (e)->FALSE)
+
+#define escm_assert(test, atom, e)                                      \
     do {                                                                \
-        if (!(test)) {                                                        \
-            escm_error((e), "~s: ~s: wrong argument.~%", escm_fun(e), (atom)); \
-            escm_abort(e);                                                \
-        }                                                                \
+        if (!(test)) {                                                  \
+            escm_error((e), "~s: ~s: wrong argument.~%", escm_fun(e),   \
+                       (atom));                                         \
+            escm_abort(e);                                              \
+        }                                                               \
     } while(0)
 
 /* Okay, this is ugly, but there is no other solution */
-#define escm_assert1(test, atom, e, st)                                        \
+#define escm_assert1(test, atom, e, st)                                 \
     do {                                                                \
-        if (!(test)) {                                                        \
-            escm_error((e), "~s: ~s: wrong argument.~%", escm_fun(e), (atom)); \
-            st;                                                                \
-            escm_abort(e);                                                \
-        }                                                                \
+        if (!(test)) {                                                  \
+            escm_error((e), "~s: ~s: wrong argument.~%", escm_fun(e),   \
+                       (atom));                                         \
+            st;                                                         \
+            escm_abort(e);                                              \
+        }                                                               \
     } while(0)
 
 enum { TYPE_BUILT, TYPE_DYN };

@@ -21,8 +21,8 @@
 
 static unsigned long booleantype = 0;
 
-#define ESCM_BOOL_T ((void *) &booleantype) /* just get an non NULL value
-                                               "(void *) 1" is impl-dependent */
+/* just get an non NULL value, "(void *) 1" is impl-dependent */
+#define ESCM_BOOL_T ((void *) &booleantype)
 #define ESCM_BOOL_F NULL
 
 static void boolean_print(escm *, void *, escm_output *, int);
@@ -54,7 +54,7 @@ escm_booleans_init(escm *e)
 escm_atom *
 escm_not(escm *e, escm_atom *args)
 {
-    return !ESCM_ISTRUE(escm_cons_car(args)) ? e->TRUE : e->FALSE;
+    return !ESCM_ISTRUE(e, escm_cons_car(args)) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *

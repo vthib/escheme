@@ -50,10 +50,6 @@
 # define ESCM_USE_NUMBERS
 #endif
 
-#if !defined ESCM_USE_BOOLEANS && !defined ESCM_USE_NUMBERS
-# error "At least one of the boolean and number types need to be activated."
-#endif
-
 /* typedefs */
 
 #if __WORDSIZE == 64

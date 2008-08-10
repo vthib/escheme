@@ -437,7 +437,7 @@ escm_if(escm *e, escm_atom *args)
 
     e->ctx->tailrec = 1;
 
-    if (ESCM_ISTRUE(test)) {
+    if (ESCM_ISTRUE(e, test)) {
         a = escm_cons_pop(e, &args);
         if (!escm_tailrec(e, a))
             return NULL;
@@ -478,7 +478,7 @@ escm_cond(escm *e, escm_atom *args)
             escm_abort(e);
         }
 
-        if (ESCM_ISTRUE(ret)) {
+        if (ESCM_ISTRUE(e, ret)) {
             if (clause != e->NIL && ESCM_ISSYM(escm_cons_car(clause)) &&
                 0 == strcmp("=>", escm_sym_name(escm_cons_car(clause)))) {
                 escm_atom *proc;
@@ -557,7 +557,7 @@ escm_and(escm *e, escm_atom *args)
         ret = escm_atom_eval(e, c);
         if (e->err == 1)
             return NULL;
-        if (!ESCM_ISTRUE(ret))
+        if (!ESCM_ISTRUE(e, ret))
             return ret;
 
         c = escm_cons_pop(e, &args);
@@ -585,7 +585,7 @@ escm_or(escm *e, escm_atom *args)
         ret = escm_atom_eval(e, c);
         if (e->err == 1)
             return NULL;
-        if (!ret || ESCM_ISTRUE(ret))
+        if (!ret || ESCM_ISTRUE(e, ret))
             return ret; /* true value (or null) */
 
         c = escm_cons_pop(e, &args);
@@ -654,7 +654,7 @@ escm_do(escm *e, escm_atom *args)
     /* now iterate */
     for (;;) {
         atom = escm_atom_eval(e, escm_cons_val(test)->car);
-        if (ESCM_ISTRUE(atom)) {
+        if (ESCM_ISTRUE(e, atom)) {
             if (escm_cons_val(test)->cdr != e->NIL)
                 ret = begin(e, escm_cons_val(test)->cdr, 1);
             else
@@ -976,7 +976,7 @@ escm_prim_assert(escm *e, escm_atom *args)
     ret = escm_atom_eval(e, test);
     if (e->err == 1)
         return NULL;
-    if (!ESCM_ISTRUE(ret))
+    if (!ESCM_ISTRUE(e, ret))
         escm_error(e, "assert failed: ~s.~%", test);
 
     return NULL;
@@ -985,7 +985,7 @@ escm_prim_assert(escm *e, escm_atom *args)
 escm_atom *
 escm_set_case_sensitive_x(escm *e, escm_atom *args)
 {
-    e->casesensitive = ESCM_ISTRUE(escm_cons_car(args));
+    e->casesensitive = ESCM_ISTRUE(e, escm_cons_car(args));
 
     return NULL;
 }
@@ -993,7 +993,7 @@ escm_set_case_sensitive_x(escm *e, escm_atom *args)
 escm_atom *
 escm_set_brackets_parens_x(escm *e, escm_atom *args)
 {
-    e->brackets = ESCM_ISTRUE(escm_cons_car(args));
+    e->brackets = ESCM_ISTRUE(e, escm_cons_car(args));
 
     return NULL;
 }
@@ -1001,7 +1001,7 @@ escm_set_brackets_parens_x(escm *e, escm_atom *args)
 escm_atom *
 escm_set_print_backtrace_x(escm *e, escm_atom *args)
 {
-    e->backtrace = ESCM_ISTRUE(escm_cons_car(args));
+    e->backtrace = ESCM_ISTRUE(e, escm_cons_car(args));
 
     return NULL;
 }

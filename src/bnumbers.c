@@ -53,18 +53,6 @@ escm_bnumbers_init(escm *e)
 
     bnumbertype = escm_type_add(e, t);
 
-    if (!escm_type_ison(ESCM_TYPE_BOOL)) {
-        escm_bnumber *n;
-
-        n = xmalloc(sizeof *n);
-        n->fixnum = 1, n->d.ival = 0;
-        e->FALSE = escm_atom_new(e, bnumbertype, n);
-
-        n = xmalloc(sizeof *n);
-        n->fixnum = 1, n->d.ival = 1;
-        e->TRUE = escm_atom_new(e, bnumbertype, n);
-    }
-
     (void) escm_procedure_new(e, "number?", 1, 1, escm_bnumber_p, NULL);
     (void) escm_procedure_new(e, "integer?", 1, 1, escm_binteger_p, NULL);
     (void) escm_procedure_new(e, "real?", 1, 1, escm_breal_p, NULL);

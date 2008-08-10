@@ -51,6 +51,11 @@ escm_symbols_init(escm *e)
 
     symboltype = escm_type_add(e, t);
 
+    /* default values of e->TRUE. Will be overwritten if booleans are
+       enabled */
+    e->TRUE = escm_symbol_make(e, "t");
+    escm_env_set(e, e->env, e->TRUE, e->TRUE);
+
     (void) escm_procedure_new(e, "symbol?", 1, 1, escm_symbol_p, NULL);
 
 #ifdef ESCM_USE_STRINGS

@@ -29,8 +29,6 @@
 #define escm_bnumber_ival(x) (((escm_bnumber *) (x)->ptr)->d.ival)
 #define escm_bnumber_rval(x) (((escm_bnumber *) (x)->ptr)->d.rval)
 
-#define ESCM_ISBTRUE(x) (!x || !ESCM_ISBINT(x) || escm_bnumber_ival(x) != 0)
-
 typedef struct escm_bnumber {
     union {
         long ival;

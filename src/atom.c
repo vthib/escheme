@@ -223,7 +223,7 @@ escm_atom_equal(escm *e, escm_atom *o1, escm_atom *o2, int lvl)
             return 0;
         a = escm_cons_make(e, o1, escm_cons_make(e, o2, e->NIL));
         a = escm_procedure_exec(e, e->types[o1->type]->d.dyn.fequal, a, 0);
-        return ESCM_ISTRUE(a) ? 1 : 0;
+        return ESCM_ISTRUE(e, a) ? 1 : 0;
     } else {
         if (!e->types[o1->type]->d.c.fequal)
             return 0;

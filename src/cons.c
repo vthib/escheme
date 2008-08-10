@@ -51,6 +51,10 @@ escm_cons_init(escm *e)
 
     e->NIL = escm_atom_new(e, constype, NULL);
 
+    /* default values of e->FALSE. Will be overwritten if booleans are
+       enabled */
+    e->FALSE = e->NIL;
+
     (void) escm_procedure_new(e, "cons", 2, 2, escm_prim_cons, NULL);
     (void) escm_procedure_new(e, "list", 0, -1, escm_list, NULL);
 

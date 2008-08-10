@@ -29,9 +29,6 @@
 # define ESCM_ISREAL ESCM_ISBREAL
 # define escm_number_ival escm_bnumber_ival
 # define escm_number_rval escm_bnumber_rval
-# ifdef ESCM_INTBOOL
-#  define ESCM_ISTRUE ESCM_ISBTRUE
-# endif
 # define escm_int_make escm_bint_make
 # define escm_real_make escm_breal_make
 
@@ -45,9 +42,6 @@
 # define ESCM_ISREAL ESCM_ISCREAL
 # define escm_number_ival escm_cnumber_ival
 # define escm_number_rval escm_cnumber_rval
-# ifdef ESCM_INTBOOL
-#  define ESCM_ISTRUE ESCM_ISCTRUE
-# endif
 # define escm_int_make(e, l) escm_cint_make(e, l, 1)
 # define escm_real_make escm_creal_make
 
@@ -69,11 +63,6 @@
 # define escm_number_rval(x)                                                \
     ((escm_type_ison(ESCM_TYPE_CNUMBER)) ? escm_cnumber_rval(x) :        \
      escm_bnumber_rval(x))
-
-# ifdef ESCM_INTBOOL
-#  define ESCM_ISTRUE(x) \
-    ((escm_type_ison(ESCM_TYPE_CNUMBER)) ? ESCM_ISCTRUE(x) : ESCM_ISBTRUE(x))
-# endif
 
 # define escm_int_make(e, i) \
     ((escm_type_ison(ESCM_TYPE_CNUMBER)) ? escm_cint_make(e, i, 1) :        \

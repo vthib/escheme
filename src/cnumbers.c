@@ -91,11 +91,6 @@ escm_cnumbers_init(escm *e)
 
     numbertype = escm_type_add(e, t);
 
-    if (!escm_type_ison(ESCM_TYPE_BOOL)) {
-        e->FALSE = makeatom(e, makeint(0));
-        e->TRUE = makeatom(e, makeint(1));
-    }
-
     (void) escm_procedure_new(e, "number?", 1, 1, (Escm_Fun_Prim) escm_number_p,
                               (void *) (ESCM_COMPLEX + 1));
     (void) escm_procedure_new(e, "integer?", 1, 1, (Escm_Fun_Prim)escm_number_p,
