@@ -39,28 +39,28 @@
 
 (define (max x . next)
   (letrec ((maxrec
-	    (lambda (x list)
-	      (if (null? list) x (maxrec
-				  (if (> x (car list)) x (car list))
-				  (cdr list))))))
+            (lambda (x list)
+              (if (null? list) x (maxrec
+                                  (if (> x (car list)) x (car list))
+                                  (cdr list))))))
     (maxrec x next)))
 
 (define (min x . next)
   (letrec ((minrec
-	    (lambda (x list)
-	      (if (null? list) x (minrec
-				  (if (< x (car list)) x (car list))
-				  (cdr list))))))
+            (lambda (x list)
+              (if (null? list) x (minrec
+                                  (if (< x (car list)) x (car list))
+                                  (cdr list))))))
     (minrec x next)))
 
 ;; Ports primitives
 (define (call-with-input-file string proc)
   (let* ((port (open-input-file string))
-	 (ret (proc port)))
+         (ret (proc port)))
     (begin (close-input-port port) ret)))
 (define (call-with-output-file string proc)
   (let* ((port (open-output-file string))
-	 (ret (proc port)))
+         (ret (proc port)))
     (begin (close-output-port port) ret)))
 
 ; srfi 28
@@ -80,7 +80,7 @@
                           (begin
                             (display (car objects) buffer)
                             (loop (cddr format-list) (cdr objects)))))
-		     ((#\s)
+                     ((#\s)
                       (if (null? objects)
                           (error 'format "No value for escape sequence")
                           (begin
@@ -102,27 +102,27 @@
        (len (string-length format)))
       ((>= i len))
     (if (char=? (string-ref format i) #\~)
-	(if (= (+ i 1) len)
-	    (error 'printf format " cannot end with a ~")
-	    (begin (set! i (+ i 1))
-		   (case (string-ref format i)
-		     ((#\~) (write-char #\~))
-		     ((#\a)
-		      (if (null? args)
-			  (error 'printf "Missing value for escape sequence.")
-			  (begin
-			    (display (car args))
-			    (set! args (cdr args)))))
-		     ((#\s)
-		      (if (null? args)
-			  (error 'printf "Missing value for escape sequence.")
-			  (begin
-			    (write (car args))
-			    (set! args (cdr args)))))
-		     ((#\% #\n) (write-char #\newline))
-		     (else (error 'printf "unknown escape code ~"
-				  (string-ref format i))))))
-	(write-char (string-ref format i)))))
+        (if (= (+ i 1) len)
+            (error 'printf format " cannot end with a ~")
+            (begin (set! i (+ i 1))
+                   (case (string-ref format i)
+                     ((#\~) (write-char #\~))
+                     ((#\a)
+                      (if (null? args)
+                          (error 'printf "Missing value for escape sequence.")
+                          (begin
+                            (display (car args))
+                            (set! args (cdr args)))))
+                     ((#\s)
+                      (if (null? args)
+                          (error 'printf "Missing value for escape sequence.")
+                          (begin
+                            (write (car args))
+                            (set! args (cdr args)))))
+                     ((#\% #\n) (write-char #\newline))
+                     (else (error 'printf "unknown escape code ~"
+                                  (string-ref format i))))))
+        (write-char (string-ref format i)))))
 
 (define let-syntax let)
 (define letrec-syntax letrec)
@@ -133,3 +133,6 @@
      (define name (lambda args (apply begin body))))
     ((define-macro name (lambda args body))
      (define name (lambda args (apply begin body))))))
+(define (test name x y) (if (equal? x y)
+                            (printf "~s: passed.~%" name)
+                            (error name y " expected, got " x)))

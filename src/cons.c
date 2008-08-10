@@ -113,13 +113,13 @@ escm_cons_pop(escm *e, escm_atom **cons)
     escm_atom *o;
 
     if (!*cons || !escm_cons_val(*cons))
-	return NULL;
+        return NULL;
 
     o = escm_cons_val(*cons)->car;
     if (ESCM_ISCONS(escm_cons_val(*cons)->cdr))
-	*cons = escm_cons_val(*cons)->cdr;
+        *cons = escm_cons_val(*cons)->cdr;
     else
-	*cons = e->NIL;
+        *cons = e->NIL;
 
     return o;
 }
@@ -130,11 +130,11 @@ escm_cons_isin(escm *e, escm_atom *cons, escm_atom *elem, int lvl)
     escm_atom *a;
 
     if (!ESCM_ISCONS(cons))
-	return 0;
+        return 0;
 
     for (a = escm_cons_pop(e, &cons); a; a = escm_cons_pop(e, &cons)) {
-	if (escm_atom_equal(e, a, elem, lvl))
-	    return 1;
+        if (escm_atom_equal(e, a, elem, lvl))
+            return 1;
     }
 
     return 0;
@@ -178,8 +178,8 @@ escm_set_car_x(escm *e, escm_atom *args)
     escm_assert(ESCM_ISCONS(o) && escm_cons_val(o) != NULL, o, e);
 
     if (o->ro == 1) {
-	escm_error(e, "~s: Can't modify ~s: immutable cons.~%", escm_fun(e), o);
-	escm_abort(e);
+        escm_error(e, "~s: Can't modify ~s: immutable cons.~%", escm_fun(e), o);
+        escm_abort(e);
     }
 
     escm_cons_val(o)->car = escm_cons_pop(e, &args);
@@ -206,8 +206,8 @@ escm_set_cdr_x(escm *e, escm_atom *args)
     escm_assert(ESCM_ISCONS(o) && escm_cons_val(o) != NULL, o, e);
 
     if (o->ro == 1) {
-	escm_error(e, "~s: Can't modify ~s: immutable cons.~%", escm_fun(e), o);
-	escm_abort(e);
+        escm_error(e, "~s: Can't modify ~s: immutable cons.~%", escm_fun(e), o);
+        escm_abort(e);
     }
 
     escm_cons_val(o)->cdr = escm_cons_pop(e, &args);
@@ -224,7 +224,7 @@ escm_atom *
 escm_pair_p(escm *e, escm_atom *args)
 {
     return (ESCM_ISCONS(escm_cons_car(args)) &&
-	    escm_cons_car(args) != e->NIL) ? e->TRUE : e->FALSE;
+            escm_cons_car(args) != e->NIL) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
@@ -237,32 +237,32 @@ escm_list_p(escm *e, escm_atom *args)
     arg = escm_cons_pop(e, &args);
 
     if (!ESCM_ISCONS(arg))
-	res = 0;
+        res = 0;
     else {
-	res = 1;
+        res = 1;
 
 #if ESCM_CIRCULAR_LIST >= 1
-	arg->marked = 1; /* mark all atoms to check circular lists */
+        arg->marked = 1; /* mark all atoms to check circular lists */
 #endif
-	for (c = escm_cons_val(arg), end = c; c; c = escm_cons_next(c),
-		 end = c) {
-	    if (!ESCM_ISCONS(c->cdr)
+        for (c = escm_cons_val(arg), end = c; c; c = escm_cons_next(c),
+                 end = c) {
+            if (!ESCM_ISCONS(c->cdr)
 #if ESCM_CIRCULAR_LIST >= 1
-		|| c->cdr->marked == 1
+                || c->cdr->marked == 1
 #endif
-		) {
-		res = 0;
-		break;
-	    }
+                ) {
+                res = 0;
+                break;
+            }
 #if ESCM_CIRCULAR_LIST >= 1
-	    c->cdr->marked = 1;
+            c->cdr->marked = 1;
 #endif
-	}
+        }
 
 #if ESCM_CIRCULAR_LIST >= 1
-	arg->marked = 0;
-	for (c = escm_cons_val(arg); c != end; c = escm_cons_next(c))
-	    c->cdr->marked = 0;
+        arg->marked = 0;
+        for (c = escm_cons_val(arg); c != end; c = escm_cons_next(c))
+            c->cdr->marked = 0;
 #endif
     }
 
@@ -274,22 +274,32 @@ escm_append(escm *e, escm_atom *args)
 {
     escm_atom *flist;
 
-    if (escm_cons_cdr(args) == e->NIL)
-	return escm_cons_car(args);
-
     escm_ctx_enter(e);
     while (args != e->NIL) {
-	flist = escm_cons_pop(e, &args);
+        flist = escm_cons_pop(e, &args);
 
-	if (args == e->NIL) {
-	    e->ctx->last = flist;
-	    break;
-	} else
-	    escm_assert(ESCM_ISCONS(flist), flist, e);
+        if (args != e->NIL) {
+            escm_assert1(ESCM_ISCONS(flist), flist, e, escm_ctx_discard(e));
 
-	escm_ctx_put_splicing(e, flist);
-	if (e->err == 1)
-	    return NULL;
+            escm_ctx_put_splicing(e, flist);
+            if (e->err == 1) {
+                escm_ctx_discard(e);
+                return NULL;
+            }
+        } else {
+            if (!e->ctx->first) {
+                escm_ctx_discard(e);
+                return flist;
+            } else {
+                if (!ESCM_ISCONS(e->ctx->last)) {
+                    escm_error(e, "~s: could not append to an improper "
+                               "list.~%", escm_fun(e));
+                    escm_ctx_discard(e);
+                    escm_abort(e);
+                }
+                escm_cons_cdr(e->ctx->last) = flist;
+            }
+        }
     }
 
     return escm_ctx_leave(e);
@@ -306,12 +316,12 @@ escm_reverse(escm *e, escm_atom *args)
 
     new = e->NIL;
     for (c = escm_cons_val(arg); c; c = escm_cons_next(c)) {
-	if (!ESCM_ISCONS(c->cdr)) {
-	    escm_atom_printerr(e, arg);
-	    escm_error(e, "~s: ~s: improper list.~%", escm_fun(e), arg);
-	    escm_abort(e);
-	}
-	new = escm_cons_make(e, c->car, new);
+        if (!ESCM_ISCONS(c->cdr)) {
+            escm_atom_printerr(e, arg);
+            escm_error(e, "~s: ~s: improper list.~%", escm_fun(e), arg);
+            escm_abort(e);
+        }
+        new = escm_cons_make(e, c->car, new);
     }
 
     return new;
@@ -326,8 +336,8 @@ escm_length(escm *e, escm_atom *args)
     long n;
 
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-	escm_error(e, "~s: number type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: number type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     arg = escm_cons_pop(e, &args);
@@ -339,34 +349,34 @@ escm_length(escm *e, escm_atom *args)
     arg->marked = 1; /* mark all atoms to check circular lists */
 #endif
     for (c = escm_cons_val(arg), end = c; c; c = escm_cons_next(c),
-	     end = c) {
-	if (!ESCM_ISCONS(c->cdr)
+             end = c) {
+        if (!ESCM_ISCONS(c->cdr)
 #if ESCM_CIRCULAR_LIST >= 1
-	    || (c->cdr->marked == 1)
+            || (c->cdr->marked == 1)
 #endif
-	    ) {
-	    escm_error(e, "~s: Can't compute the length of a non proper "
-		       "list.~%", escm_fun(e));
-	    e->err = 1;
+            ) {
+            escm_error(e, "~s: Can't compute the length of a non proper "
+                       "list.~%", escm_fun(e));
+            e->err = 1;
 #if ESCM_CIRCULAR_LIST >= 1
-	    break;
+            break;
 #else
-	    return NULL;
+            return NULL;
 #endif
-	}
+        }
 #if ESCM_CIRCULAR_LIST >= 1
-	c->cdr->marked = 1;
+        c->cdr->marked = 1;
 #endif
-	n++;
+        n++;
     }
 
 #if ESCM_CIRCULAR_LIST >= 1
     arg->marked = 0;
     for (c = escm_cons_val(arg); c != end; c = escm_cons_next(c))
-	c->cdr->marked = 0;
+        c->cdr->marked = 0;
 
     if (end != NULL)
-	return NULL;
+        return NULL;
 #endif
 
     return escm_int_make(e, n);
@@ -379,8 +389,8 @@ escm_list_tail(escm *e, escm_atom *args)
     long k;
 
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-	escm_error(e, "~s: number type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: number type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     list = escm_cons_pop(e, &args);
@@ -394,16 +404,16 @@ escm_list_tail(escm *e, escm_atom *args)
     atom = list;
 
     for (; k > 0; k--) {
-	if (atom == e->NIL || !atom) {
-	    escm_error(e, "list-tail: index ~s is too large for the list ~s.~%",
-		       ka, list);
-	    return NULL;
-	}
-	if (!ESCM_ISCONS(atom)) {
-	    escm_error(e, "~s: improper list.~%", list);
-	    escm_abort(e);
-	}
-	atom = escm_cons_val(atom)->cdr;
+        if (atom == e->NIL || !atom) {
+            escm_error(e, "list-tail: index ~s is too large for the list ~s.~%",
+                       ka, list);
+            return NULL;
+        }
+        if (!ESCM_ISCONS(atom)) {
+            escm_error(e, "~s: improper list.~%", list);
+            escm_abort(e);
+        }
+        atom = escm_cons_val(atom)->cdr;
     }
 
     return atom;
@@ -415,16 +425,16 @@ escm_list_ref(escm *e, escm_atom *args)
     escm_atom *sublist;
 
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-	escm_error(e, "~s: number type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: number type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     sublist = escm_list_tail(e, args);
     if (!sublist)
-	return NULL;
-    if (sublist == e->NIL) {
-	escm_error(e, "~s: index too large.~%", escm_fun(e));
-	escm_abort(e);
+        return NULL;
+    if (!ESCM_ISCONS(sublist) || sublist == e->NIL) {
+        escm_error(e, "~s: index too large.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     return escm_cons_val(sublist)->car;
@@ -471,7 +481,7 @@ static void
 cons_mark(escm *e, escm_cons *cons)
 {
     if (!cons)
-	return;
+        return;
 
     escm_atom_mark(e, cons->car);
     escm_atom_mark(e, cons->cdr);
@@ -488,28 +498,28 @@ cons_print(escm *e, escm_cons *cons, escm_output *stream, int lvl)
 
     e->curobj->marked = 1; /* mark all atoms to check circular lists */
     for (c = cons, end = c; c; c = escm_cons_next(c), end = c) {
-	escm_atom_print4(e, c->car, stream, lvl);
-	if (!ESCM_ISCONS(c->cdr)) {
-	    fprintf(stream, " . ");
-	    escm_atom_print4(e, c->cdr, stream, lvl);
-	    break;
-	} else if (c->cdr->marked == 1) {
-	    escm_printf(stream, " #");
-	    break;
-	} else if (c->cdr != e->NIL)
-	    escm_printf(stream, " ");
-	c->cdr->marked = 1;
+        escm_atom_print4(e, c->car, stream, lvl);
+        if (!ESCM_ISCONS(c->cdr)) {
+            fprintf(stream, " . ");
+            escm_atom_print4(e, c->cdr, stream, lvl);
+            break;
+        } else if (c->cdr->marked == 1) {
+            escm_printf(stream, " #");
+            break;
+        } else if (c->cdr != e->NIL)
+            escm_printf(stream, " ");
+        c->cdr->marked = 1;
     }
 
     e->curobj->marked = 0;
     if (cons == end)
-	escm_putc(stream, '0');
+        escm_putc(stream, '0');
     else {
-	for (i = 1, c = cons; c != end; c = escm_cons_next(c), i++) {
-	    if (end && ESCM_ISCONS(c->cdr) && escm_cons_val(c->cdr) == end)
-		escm_printf(stream, "%ld", i);
-	    c->cdr->marked = 0;
-	}
+        for (i = 1, c = cons; c != end; c = escm_cons_next(c), i++) {
+            if (end && ESCM_ISCONS(c->cdr) && escm_cons_val(c->cdr) == end)
+                escm_printf(stream, "%ld", i);
+            c->cdr->marked = 0;
+        }
     }
 #else
     (void) lvl;
@@ -517,13 +527,13 @@ cons_print(escm *e, escm_cons *cons, escm_output *stream, int lvl)
     escm_putc(stream, '(');
 
     for (; cons != NULL; cons = escm_cons_next(cons)) {
-	escm_atom_print4(e, cons->car, stream, lvl);
-	if (!ESCM_ISCONS(cons->cdr)) {
-	    escm_printf(stream, " . ");
-	    escm_atom_print4(e, cons->cdr, stream, lvl);
-	    break;
-	} else if (cons->cdr != e->NIL)
-	    escm_putc(stream, ' ');
+        escm_atom_print4(e, cons->car, stream, lvl);
+        if (!ESCM_ISCONS(cons->cdr)) {
+            escm_printf(stream, " . ");
+            escm_atom_print4(e, cons->cdr, stream, lvl);
+            break;
+        } else if (cons->cdr != e->NIL)
+            escm_putc(stream, ' ');
     }
 #endif
     escm_putc(stream, ')');
@@ -536,20 +546,20 @@ cons_equal(escm *e, escm_cons *c1, escm_cons *c2, int lvl)
     default:
     case 0:
     case 1:
-	/* eqv? && eq?: true if same pointer */
-	return c1 == c2;
+        /* eqv? && eq?: true if same pointer */
+        return c1 == c2;
     case 2:
-	/* equal?: recursively compare the contents of the cons */
-	for (; c1 != NULL; c1 = escm_cons_next(c1), c2 = escm_cons_next(c2)) {
-	    if (!c2)
-		return 0;
-	    if (!escm_atom_equal(e, c1->car, c2->car, 2))
-		return 0;
-	    if (!ESCM_ISCONS(c1->cdr))
-		return (ESCM_ISCONS(c2->cdr)) ? 0 :
-		    escm_atom_equal(e, c1->cdr, c2->cdr, 2);
-	}
-	return !c2;
+        /* equal?: recursively compare the contents of the cons */
+        for (; c1 != NULL; c1 = escm_cons_next(c1), c2 = escm_cons_next(c2)) {
+            if (!c2)
+                return 0;
+            if (!escm_atom_equal(e, c1->car, c2->car, 2))
+                return 0;
+            if (!ESCM_ISCONS(c1->cdr))
+                return (ESCM_ISCONS(c2->cdr)) ? 0 :
+                    escm_atom_equal(e, c1->cdr, c2->cdr, 2);
+        }
+        return !c2;
     }
 }
 
@@ -574,30 +584,30 @@ cons_parse(escm *e)
     escm_ctx_enter(e);
 
     for (;;) {
-	do {
-	    c = escm_input_getc(e->input);
-	    if (e->brackets == 1 && (c == ')' || c == ']')) {
-		if ((open == '(' && c == ']') || (open == '[' && c == ')')) {
-		    escm_parse_print(e->input, e->errp,
-				     "expecting a '%c' to close a '%c'.\n",
-				     (open == '(') ? ')' : ']', open);
-		    escm_ctx_discard(e);
-		    escm_abort(e);
-		}
-		goto end;
-	    } else if (e->brackets == 0 && c == ')')
-		goto end;
-	    else if (!isspace(c))
-		escm_input_ungetc(e->input, c);
-	} while (isspace(c));
+        do {
+            c = escm_input_getc(e->input);
+            if (e->brackets == 1 && (c == ')' || c == ']')) {
+                if ((open == '(' && c == ']') || (open == '[' && c == ')')) {
+                    escm_parse_print(e->input, e->errp,
+                                     "expecting a '%c' to close a '%c'.\n",
+                                     (open == '(') ? ')' : ']', open);
+                    escm_ctx_discard(e);
+                    escm_abort(e);
+                }
+                goto end;
+            } else if (e->brackets == 0 && c == ')')
+                goto end;
+            else if (!isspace(c))
+                escm_input_ungetc(e->input, c);
+        } while (isspace(c));
 
-	atom = escm_parse(e);
-	if (e->err != 0 || atom == e->EOF_OBJ) {
-	    escm_ctx_discard(e);
-	    return NULL;
-	}
-	if (atom)
-	    escm_ctx_put(e, atom);
+        atom = escm_parse(e);
+        if (e->err != 0 || atom == e->EOF_OBJ) {
+            escm_ctx_discard(e);
+            return NULL;
+        }
+        if (atom)
+            escm_ctx_put(e, atom);
     }
 
 end:
@@ -612,17 +622,17 @@ cons_eval(escm *e, escm_cons *cons)
     escm_atom *atomfun;
 
     if (!cons) {
-	escm_error(e, "~s: object isn't applicable.~%", e->NIL);
-	escm_abort(e);
+        escm_error(e, "~s: object isn't applicable.~%", e->NIL);
+        escm_abort(e);
     }
 
     atomfun = escm_atom_eval(e, cons->car);
     if (e->err == 1)
-	return NULL;
+        return NULL;
     if (!atomfun) {
-	escm_error(e, "~s: expression do not yield an applicable value.~%",
-		   cons->car);
-	escm_abort(e);
+        escm_error(e, "~s: expression do not yield an applicable value.~%",
+                   cons->car);
+        escm_abort(e);
     }
 
     return escm_atom_exec(e, atomfun, cons->cdr);
@@ -638,9 +648,9 @@ member(escm *e, escm_atom *args, int lvl)
     escm_assert(ESCM_ISCONS(list), list, e);
 
     for (c = list; c != e->NIL; c = ESCM_ISCONS(escm_cons_cdr(c)) ?
-	     escm_cons_cdr(c) : e->NIL) {
-	if (escm_atom_equal(e, escm_cons_car(c), elem, lvl))
-	    return c;
+             escm_cons_cdr(c) : e->NIL) {
+        if (escm_atom_equal(e, escm_cons_car(c), elem, lvl))
+            return c;
     }
 
     return e->FALSE;
@@ -656,12 +666,12 @@ assoc(escm *e, escm_atom *args, int lvl)
     escm_assert(ESCM_ISCONS(list), list, e);
 
     for (c = escm_cons_pop(e, &list); c; c = escm_cons_pop(e, &list)) {
-	if (!ESCM_ISCONS(c)) {
-	    escm_error(e, "~s: ~s is not a c.~%", escm_fun(e), c);
-	    escm_abort(e);
-	}
-	if (escm_atom_equal(e, escm_cons_car(c), elem, lvl))
-	    return c;
+        if (!ESCM_ISCONS(c)) {
+            escm_error(e, "~s: ~s is not a c.~%", escm_fun(e), c);
+            escm_abort(e);
+        }
+        if (escm_atom_equal(e, escm_cons_car(c), elem, lvl))
+            return c;
     }
 
     return e->FALSE;

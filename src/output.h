@@ -26,20 +26,20 @@ enum { OUTPUT_FILE, OUTPUT_STR };
 
 struct escm_output {
     union {
-	struct {
-	    char *name;
-	    FILE *fp;
-	} file;
-	struct {
+        struct {
+            char *name;
+            FILE *fp;
+        } file;
+        struct {
 #ifdef ESCM_USE_UNICODE
-	    wchar_t *str;
-	    wchar_t *cur;
+            wchar_t *str;
+            wchar_t *cur;
 #else
-	    char *str;
-	    char *cur;
+            char *str;
+            char *cur;
 #endif
-	    size_t maxlen;
-	} str;
+            size_t maxlen;
+        } str;
     } d;
 
     unsigned int type : 1;

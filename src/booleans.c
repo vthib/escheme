@@ -22,7 +22,7 @@
 static unsigned long booleantype = 0;
 
 #define ESCM_BOOL_T ((void *) &booleantype) /* just get an non NULL value
-					       "(void *) 1" is impl-dependent */
+                                               "(void *) 1" is impl-dependent */
 #define ESCM_BOOL_F NULL
 
 static void boolean_print(escm *, void *, escm_output *, int);
@@ -91,12 +91,12 @@ static int
 boolean_parsetest(escm *e, int c)
 {
     if (c == '#') {
-	int c2;
+        int c2;
 
-	c2 = escm_input_peek(e->input);
-	if (e->casesensitive == 0)
-	    c2 = tolower(c2);
-	return (c2 == 't' || c2 == 'f');
+        c2 = escm_input_peek(e->input);
+        if (e->casesensitive == 0)
+            c2 = tolower(c2);
+        return (c2 == 't' || c2 == 'f');
     }
 
     return 0;
@@ -111,6 +111,6 @@ boolean_parse(escm *e)
 
     c = escm_input_getc(e->input);
     if (e->casesensitive == 0)
-	c = tolower(c);
+        c = tolower(c);
     return (c == 't') ? e->TRUE : e->FALSE;
 }

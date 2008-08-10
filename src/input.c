@@ -50,13 +50,13 @@ escm_input_fopen(const char *name)
 
     f->d.file.fp = fopen(name, "r");
     if (!f->d.file.fp) {
-	perror(name);
-	free(f);
-	f = NULL;
+        perror(name);
+        free(f);
+        f = NULL;
     } else {
-	f->d.file.name = xstrdup(name);
-	f->d.file.line = 1;
-	f->managed = 0;
+        f->d.file.name = xstrdup(name);
+        f->d.file.line = 1;
+        f->managed = 0;
     }
 
     return f;
@@ -78,7 +78,7 @@ escm_input_fmng(FILE *fp, const char *name)
 
     f->d.file.name = xstrdup(name);
     f->d.file.line = f->d.file.car = -1; /* signal that we can't know where we
-					    are in the stream */
+                                            are in the stream */
     f->managed = 1;
 
     return f;
@@ -118,17 +118,17 @@ void
 escm_input_close(escm_input *f)
 {
     if (!f)
-	return;
+        return;
 
     if (f->type == INPUT_FILE) {
-	if (!f->managed) {
-	    if (EOF == fclose(f->d.file.fp))
-		perror("fclose");
-	}
-	free(f->d.file.name);
-	free(f->d.file.ub);
+        if (!f->managed) {
+            if (EOF == fclose(f->d.file.fp))
+                perror("fclose");
+        }
+        free(f->d.file.name);
+        free(f->d.file.ub);
     } else
-	free(f->d.str.str);
+        free(f->d.str.str);
 
     free(f);
 }
@@ -147,29 +147,29 @@ escm_input_gettext(escm_input *f, const char *end)
 
     c = escm_input_getc(f);
     while (c != EOF && !strchr(end, c)) {
-	if (c == '\\') {
-	    c = escm_input_getc(f);
-	    switch (c) {
-	    case 'a': c = '\a'; break;
-	    case 'b': c = '\b'; break;
-	    case 'f': c = '\f'; break;
-	    case 'n': c = '\n'; break;
-	    case 'r': c = '\r'; break;
-	    case 't': c = '\t'; break;
-	    case 'v': c = '\v'; break;
-	    case '\\': case '"': break;
-	    default:
-		strbuf[len++] = '\\';
-		break; /* keep the new character */
-	    }
-	    strbuf[len++] = c;
-	} else
-	    strbuf[len++] = c;
-	c = escm_input_getc(f);
+        if (c == '\\') {
+            c = escm_input_getc(f);
+            switch (c) {
+            case 'a': c = '\a'; break;
+            case 'b': c = '\b'; break;
+            case 'f': c = '\f'; break;
+            case 'n': c = '\n'; break;
+            case 'r': c = '\r'; break;
+            case 't': c = '\t'; break;
+            case 'v': c = '\v'; break;
+            case '\\': case '"': break;
+            default:
+                strbuf[len++] = '\\';
+                break; /* keep the new character */
+            }
+            strbuf[len++] = c;
+        } else
+            strbuf[len++] = c;
+        c = escm_input_getc(f);
     } 
 
     if (!f->end)
-	escm_input_ungetc(f, c);
+        escm_input_ungetc(f, c);
     strbuf[len] = '\0';
 
     return xstrdup(strbuf);
@@ -188,14 +188,14 @@ escm_input_getstr_fun(escm_input *f, int (*fun)(int), int casesens)
     assert(f != NULL);
 
     do {
-	c = escm_input_getc(f);
-	if (!casesens)
-	    c = tolower(c);
-	strbuf[len++] = c;
+        c = escm_input_getc(f);
+        if (!casesens)
+            c = tolower(c);
+        strbuf[len++] = c;
     } while (c != EOF && fun(c));
 
     if (!f->end)
-	escm_input_ungetc(f, c);
+        escm_input_ungetc(f, c);
     strbuf[len - 1] = '\0';
 
     return xstrdup(strbuf);
@@ -210,11 +210,11 @@ escm_input_rewind(escm_input *f)
     assert(f != NULL);
 
     if (f->type == INPUT_FILE) {
-	rewind(f->d.file.fp);
-	f->d.file.line = 0;
-	f->d.file.car = 0;
+        rewind(f->d.file.fp);
+        f->d.file.line = 0;
+        f->d.file.car = 0;
     } else
-	f->d.str.cur = f->d.str.str;
+        f->d.str.cur = f->d.str.str;
 
     f->end = 0;
 }
@@ -226,22 +226,22 @@ escm_input_print(escm_input *f, escm_output *outp)
     assert(f != NULL);
 
     if (f->type == INPUT_FILE) {
-	escm_printf(outp, "%s:", f->d.file.name);
-	if (f->d.file.line == -1)
-	    escm_putc(outp, ':');
-	else
-	    escm_printf(outp, "%ld:", f->d.file.line);
-	if (f->d.file.car == -1)
-	    escm_printf(outp, ": ");
-	else
-	    escm_printf(outp, "%ld: ", f->d.file.car);
+        escm_printf(outp, "%s:", f->d.file.name);
+        if (f->d.file.line == -1)
+            escm_putc(outp, ':');
+        else
+            escm_printf(outp, "%ld:", f->d.file.line);
+        if (f->d.file.car == -1)
+            escm_printf(outp, ": ");
+        else
+            escm_printf(outp, "%ld: ", f->d.file.car);
     } else {
 #ifdef ESCM_USE_UNICODE
-	escm_printf(outp, "\"%ls\":%d: ", f->d.str.str,
-		    f->d.str.cur - f->d.str.str);
+        escm_printf(outp, "\"%ls\":%d: ", f->d.str.str,
+                    f->d.str.cur - f->d.str.str);
 #else
-	escm_printf(outp, "\"%s\":%d: ", f->d.str.str,
-		    f->d.str.cur - f->d.str.str);
+        escm_printf(outp, "\"%s\":%d: ", f->d.str.str,
+                    f->d.str.cur - f->d.str.str);
 #endif
     }
 }
@@ -258,29 +258,29 @@ escm_input_getc(escm_input *f)
     assert(f != NULL);
 
     if (f->end)
-	return EOF;
+        return EOF;
 
     if (f->type == INPUT_FILE) {
-	if (f->d.file.un > 0)
-	    c = f->d.file.ub[--f->d.file.un];
-	else
-	    c = getc(f->d.file.fp);
+        if (f->d.file.un > 0)
+            c = f->d.file.ub[--f->d.file.un];
+        else
+            c = getc(f->d.file.fp);
 
-	if (c == EOF)
-	    f->end = 1;
-	else if (c == '\n') {
-	    if (f->d.file.line != -1)
-		f->d.file.line++;
-	    f->d.file.car = 0;
-	} else {
-	    if (f->d.file.car != -1)
-		f->d.file.car++;
-	}
+        if (c == EOF)
+            f->end = 1;
+        else if (c == '\n') {
+            if (f->d.file.line != -1)
+                f->d.file.line++;
+            f->d.file.car = 0;
+        } else {
+            if (f->d.file.car != -1)
+                f->d.file.car++;
+        }
     } else {
-	if (*f->d.str.cur == '\0')
-	    f->end = 1, c = EOF;
-	else
-	    c = *f->d.str.cur++;
+        if (*f->d.str.cur == '\0')
+            f->end = 1, c = EOF;
+        else
+            c = *f->d.str.cur++;
     }
 
     return c;
@@ -294,22 +294,22 @@ escm_input_peek(escm_input *f)
     assert(f != NULL);
 
     if (f->end)
-	return EOF;
+        return EOF;
 
     if (f->type == INPUT_FILE) {
-	if (f->d.file.un > 0)
-	    return f->d.file.ub[f->d.file.un - 1];
+        if (f->d.file.un > 0)
+            return f->d.file.ub[f->d.file.un - 1];
 
-	c = getc(f->d.file.fp);
-	
-	if (f->d.file.usize <= f->d.file.un) {
-	    f->d.file.usize += 2;
-	    f->d.file.ub = xrealloc(f->d.file.ub,
-				    f->d.file.usize * sizeof *f->d.file.ub);
-	}
-	f->d.file.ub[f->d.file.un++] = c;
+        c = getc(f->d.file.fp);
+        
+        if (f->d.file.usize <= f->d.file.un) {
+            f->d.file.usize += 2;
+            f->d.file.ub = xrealloc(f->d.file.ub,
+                                    f->d.file.usize * sizeof *f->d.file.ub);
+        }
+        f->d.file.ub[f->d.file.un++] = c;
     } else
-	c = *f->d.str.cur;
+        c = *f->d.str.cur;
 
     return c;
 }
@@ -323,22 +323,22 @@ escm_input_ungetc(escm_input *f, int c)
     assert(f != NULL);
 
     if (f->type == INPUT_FILE) {
-	if (f->d.file.car != -1) {
-	    if (f->d.file.car > 0)
-		f->d.file.car--;
-	    else if (f->d.file.car == 0 && c == '\n' && f->d.file.line != -1)
-		f->d.file.line--;
-	}
+        if (f->d.file.car != -1) {
+            if (f->d.file.car > 0)
+                f->d.file.car--;
+            else if (f->d.file.car == 0 && c == '\n' && f->d.file.line != -1)
+                f->d.file.line--;
+        }
 
-	if (f->d.file.usize <= f->d.file.un) {
-	    f->d.file.usize += 2;
-	    f->d.file.ub = xrealloc(f->d.file.ub,
-				    f->d.file.usize * sizeof *f->d.file.ub);
-	}
-	f->d.file.ub[f->d.file.un++] = c;
+        if (f->d.file.usize <= f->d.file.un) {
+            f->d.file.usize += 2;
+            f->d.file.ub = xrealloc(f->d.file.ub,
+                                    f->d.file.usize * sizeof *f->d.file.ub);
+        }
+        f->d.file.ub[f->d.file.un++] = c;
     } else {
-	if (f->d.str.cur > f->d.str.str)
-	    f->d.str.cur--;
+        if (f->d.str.cur > f->d.str.str)
+            f->d.str.cur--;
     }
 
     f->end = 0;
@@ -357,29 +357,29 @@ escm_input_getwc(escm_input *f)
     assert(f != NULL);
 
     if (f->end)
-	return EOF;
+        return EOF;
 
     if (f->type == INPUT_FILE) {
-	if (f->d.file.un > 0)
-	    c = f->d.file.ub[--f->d.file.un];
-	else
-	    c = fgetwc(f->d.file.fp);
+        if (f->d.file.un > 0)
+            c = f->d.file.ub[--f->d.file.un];
+        else
+            c = fgetwc(f->d.file.fp);
 
-	if (c == WEOF)
-	    f->end = 1, c = EOF;
-	else if (c == L'\n') {
-	    if (f->d.file.line != -1)
-		f->d.file.line++;
-	    f->d.file.car = 0;
-	} else {
-	    if (f->d.file.car != -1)
-		f->d.file.car++;
-	}
+        if (c == WEOF)
+            f->end = 1, c = EOF;
+        else if (c == L'\n') {
+            if (f->d.file.line != -1)
+                f->d.file.line++;
+            f->d.file.car = 0;
+        } else {
+            if (f->d.file.car != -1)
+                f->d.file.car++;
+        }
     } else {
-	if (*f->d.str.cur == L'\0')
-	    f->end = 1, c = EOF;
-	else
-	    c = *f->d.str.cur++;
+        if (*f->d.str.cur == L'\0')
+            f->end = 1, c = EOF;
+        else
+            c = *f->d.str.cur++;
     }
 
     return c;
@@ -393,22 +393,22 @@ escm_input_wpeek(escm_input *f)
     assert(f != NULL);
 
     if (f->end)
-	return EOF;
+        return EOF;
 
     if (f->type == INPUT_FILE) {
-	if (f->d.file.un > 0)
-	    return f->d.file.ub[f->d.file.un - 1];
+        if (f->d.file.un > 0)
+            return f->d.file.ub[f->d.file.un - 1];
 
-	c = fgetwc(f->d.file.fp);
-	
-	if (f->d.file.usize <= f->d.file.un) {
-	    f->d.file.usize += 2;
-	    f->d.file.ub = xrealloc(f->d.file.ub,
-				    f->d.file.usize * sizeof *f->d.file.ub);
-	}
-	f->d.file.ub[f->d.file.un++] = c;
+        c = fgetwc(f->d.file.fp);
+        
+        if (f->d.file.usize <= f->d.file.un) {
+            f->d.file.usize += 2;
+            f->d.file.ub = xrealloc(f->d.file.ub,
+                                    f->d.file.usize * sizeof *f->d.file.ub);
+        }
+        f->d.file.ub[f->d.file.un++] = c;
     } else
-	c = *f->d.str.cur;
+        c = *f->d.str.cur;
 
     return c;
 }
@@ -424,29 +424,29 @@ escm_input_getwtext(escm_input *f, const wchar_t *end)
 
     c = escm_input_getwc(f);
     while (c != EOF && !wcschr(end, c)) {
-	if (c == L'\\') {
-	    c = escm_input_getwc(f);
-	    switch (c) {
-	    case L'a': c = L'\a'; break;
-	    case L'b': c = L'\b'; break;
-	    case L'f': c = L'\f'; break;
-	    case L'n': c = L'\n'; break;
-	    case L'r': c = L'\r'; break;
-	    case L't': c = L'\t'; break;
-	    case L'v': c = L'\v'; break;
-	    case L'\\': case '\"': break;
-	    default:
-		wcsbuf[len++] = '\\';
-		break; /* keep the new character */
-	    }
-	    wcsbuf[len++] = c;
-	} else
-	    wcsbuf[len++] = c;
-	c = escm_input_getwc(f);
+        if (c == L'\\') {
+            c = escm_input_getwc(f);
+            switch (c) {
+            case L'a': c = L'\a'; break;
+            case L'b': c = L'\b'; break;
+            case L'f': c = L'\f'; break;
+            case L'n': c = L'\n'; break;
+            case L'r': c = L'\r'; break;
+            case L't': c = L'\t'; break;
+            case L'v': c = L'\v'; break;
+            case L'\\': case '\"': break;
+            default:
+                wcsbuf[len++] = '\\';
+                break; /* keep the new character */
+            }
+            wcsbuf[len++] = c;
+        } else
+            wcsbuf[len++] = c;
+        c = escm_input_getwc(f);
     } 
 
     if (!f->end)
-	escm_input_ungetwc(f, c);
+        escm_input_ungetwc(f, c);
     wcsbuf[len] = L'\0';
 
     return xwcsdup(wcsbuf);
@@ -465,14 +465,14 @@ escm_input_getwstr_fun(escm_input *f, int (*fun)(wint_t), int casesens)
     assert(f != NULL);
 
     do {
-	c = escm_input_getwc(f);
-	if (!casesens)
-	    c = towlower(c);
-	wcsbuf[len++] = (wchar_t) c;
+        c = escm_input_getwc(f);
+        if (!casesens)
+            c = towlower(c);
+        wcsbuf[len++] = (wchar_t) c;
     } while (c != EOF && fun(c));
 
     if (!f->end)
-	escm_input_ungetwc(f, c);
+        escm_input_ungetwc(f, c);
     wcsbuf[len - 1] = L'\0';
 
     return xwcsdup(wcsbuf);
@@ -487,22 +487,22 @@ escm_input_ungetwc(escm_input *f, wint_t c)
     assert(f != NULL);
 
     if (f->type == INPUT_FILE) {
-	if (f->d.file.car != -1) {
-	    if (f->d.file.car > 0)
-		f->d.file.car--;
-	    else if (f->d.file.car == 0 && c == L'\n' && f->d.file.line != -1)
-		f->d.file.line--;
-	}
+        if (f->d.file.car != -1) {
+            if (f->d.file.car > 0)
+                f->d.file.car--;
+            else if (f->d.file.car == 0 && c == L'\n' && f->d.file.line != -1)
+                f->d.file.line--;
+        }
 
-	if (f->d.file.usize <= f->d.file.un) {
-	    f->d.file.usize += 2;
-	    f->d.file.ub = xrealloc(f->d.file.ub,
-				    f->d.file.usize * sizeof *f->d.file.ub);
-	}
-	f->d.file.ub[f->d.file.un++] = c;
+        if (f->d.file.usize <= f->d.file.un) {
+            f->d.file.usize += 2;
+            f->d.file.ub = xrealloc(f->d.file.ub,
+                                    f->d.file.usize * sizeof *f->d.file.ub);
+        }
+        f->d.file.ub[f->d.file.un++] = c;
     } else {
-	if (f->d.str.cur > f->d.str.str)
-	    f->d.str.cur--;
+        if (f->d.str.cur > f->d.str.str)
+            f->d.str.cur--;
     }
 
     f->end = 0;

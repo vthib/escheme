@@ -23,7 +23,7 @@
 
 #define ESCM_ISPROC(x) ((x)->type == ESCM_TYPE_PROC)
 #define ESCM_ISCLOSURE(x) (ESCM_ISPROC(x) && \
-			   (escm_proc_val(x)->type == ESCM_CLOSURE))
+                           (escm_proc_val(x)->type == ESCM_CLOSURE))
 
 #define escm_proc_val(x) ((escm_procedure *) (x)->ptr)
 
@@ -31,21 +31,21 @@ typedef struct escm_procedure {
     char *name;
 
     union {
-	struct {
-	    unsigned int min;
-	    int max;
-	    unsigned int quoted;
+        struct {
+            unsigned int min;
+            int max;
+            unsigned int quoted;
 
-	    void *data;
+            void *data;
 
-	    Escm_Fun_Prim fun;
-	} c;
-	struct {
-	    escm_atom *code;
-	    escm_atom *env;
+            Escm_Fun_Prim fun;
+        } c;
+        struct {
+            escm_atom *code;
+            escm_atom *env;
 
-	    escm_atom *args;
-	} closure;
+            escm_atom *args;
+        } closure;
     } d;
 
     enum { ESCM_PRIMITIVE, ESCM_CLOSURE } type;
@@ -55,7 +55,7 @@ void escm_procedures_init(escm *);
 unsigned long escm_proc_tget(void);
 
 escm_atom *escm_procedure_new(escm *, const char *, unsigned int, int,
-			      Escm_Fun_Prim, void *);
+                              Escm_Fun_Prim, void *);
 
 escm_atom *escm_procedure_exec(escm *, escm_atom *, escm_atom *, int);
 

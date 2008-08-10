@@ -35,7 +35,7 @@
 */
 
 # define ESCM_CIRCULAR_LIST 2 /* 0: no handle, 1: just in list? and length
-				 2: check also when printing */
+                                 2: check also when printing */
 #endif
 
 #if defined ESCM_USE_UNICODE && !defined ESCM_USE_C99

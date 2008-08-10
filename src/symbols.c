@@ -55,9 +55,9 @@ escm_symbols_init(escm *e)
 
 #ifdef ESCM_USE_STRINGS
     (void) escm_procedure_new(e, "symbol->string", 1, 1, escm_symbol_to_string,
-			      NULL);
+                              NULL);
     (void) escm_procedure_new(e, "string->symbol", 1, 1, escm_string_to_symbol,
-			      NULL);
+                              NULL);
 #endif
 
     a = escm_procedure_new(e, "lookup", 1, 1, escm_lookup, NULL);
@@ -89,7 +89,7 @@ escm_symbol_set(escm_atom *sym, escm_atom *atom)
 
     t = sym->ptr;
     if (!t->node)
-	t->node = xcalloc(1, sizeof *t->node);
+        t->node = xcalloc(1, sizeof *t->node);
     t->node->atom = atom;
 }
 
@@ -109,8 +109,8 @@ escm_symbol_to_string(escm *e, escm_atom *args)
     escm_atom *sym;
 
     if (!escm_type_ison(ESCM_TYPE_STRING)) {
-	escm_error(e, "~s: string type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: string type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     sym = escm_cons_pop(e, &args);
@@ -118,17 +118,17 @@ escm_symbol_to_string(escm *e, escm_atom *args)
 
 #ifdef ESCM_USE_UNICODE
     if (escm_type_ison(ESCM_TYPE_USTRING)) {
-	wchar_t *w;
-	escm_atom *a;
+        wchar_t *w;
+        escm_atom *a;
 
-	w = strtowcs(escm_sym_name(sym));
-	a = escm_ustring_make(e, w, wcslen(w));
-	free(w);
-	return a;
+        w = strtowcs(escm_sym_name(sym));
+        a = escm_ustring_make(e, w, wcslen(w));
+        free(w);
+        return a;
     } else
 #endif
-	return escm_astring_make(e, xstrdup(escm_sym_name(sym)),
-				 strlen(escm_sym_name(sym)));
+        return escm_astring_make(e, xstrdup(escm_sym_name(sym)),
+                                 strlen(escm_sym_name(sym)));
 }
 
 escm_atom *
@@ -137,8 +137,8 @@ escm_string_to_symbol(escm *e, escm_atom *args)
     escm_atom *str;
 
     if (!escm_type_ison(ESCM_TYPE_STRING)) {
-	escm_error(e, "~s: string type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: string type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     str = escm_cons_pop(e, &args);
@@ -146,15 +146,15 @@ escm_string_to_symbol(escm *e, escm_atom *args)
 
 #ifdef ESCM_USE_UNICODE
     if (escm_type_ison(ESCM_TYPE_USTRING)) {
-	char *s;
-	escm_atom *ret;
+        char *s;
+        escm_atom *ret;
 
-	s = wcstostr(escm_ustr_val(str));
-	ret = escm_symbol_make(e, s);
-	free(s);
-	return ret;
+        s = wcstostr(escm_ustr_val(str));
+        ret = escm_symbol_make(e, s);
+        free(s);
+        return ret;
     } else
-	return escm_symbol_make(e, escm_astr_val(str));
+        return escm_symbol_make(e, escm_astr_val(str));
 #else
     return escm_symbol_make(e, escm_str_val(str));
 #endif /* ESCM_USE_UNICODE */
@@ -178,8 +178,8 @@ symbol_print(escm *e, escm_tst *symbol, escm_output *stream, int lvl)
     (void) e;
 
     if (lvl == 0) {
-	escm_print_slashify(stream, symbol->symname);
-	return;
+        escm_print_slashify(stream, symbol->symname);
+        return;
     }
 
     escm_printf(stream, "%s", symbol->symname);
@@ -191,25 +191,25 @@ symbol_parsetest(escm *e, int c)
     (void) e;
 
     if (c == '+' || c == '-') {
-	int c2;
+        int c2;
 
-	c2 = escm_input_getc(e->input);
-	if (c2 == '.') {
-	    int ret;
+        c2 = escm_input_getc(e->input);
+        if (c2 == '.') {
+            int ret;
 
-	    ret = !isdigit(escm_input_peek(e->input));
-	    escm_input_ungetc(e->input, c2);
-	    return ret;
-	}
+            ret = !isdigit(escm_input_peek(e->input));
+            escm_input_ungetc(e->input, c2);
+            return ret;
+        }
  
-	escm_input_ungetc(e->input, c2);
-	return !(isdigit(c2) || c2 == 'i');
+        escm_input_ungetc(e->input, c2);
+        return !(isdigit(c2) || c2 == 'i');
     } else if (c == '.')
-	return !isdigit(escm_input_peek(e->input));
+        return !isdigit(escm_input_peek(e->input));
     else if (isdigit(c))
-	return 0;
+        return 0;
     else
-	return issymbol(c);
+        return issymbol(c);
 }
 
 static escm_atom *
@@ -229,8 +229,8 @@ static escm_atom *
 symbol_eval(escm *e, escm_tst *sym)
 {
     if (!sym->node || !sym->node->atom) {
-	escm_error(e, "unknown symbol `~s'.~%", e->curobj);
-	escm_abort(e);
+        escm_error(e, "unknown symbol `~s'.~%", e->curobj);
+        escm_abort(e);
     }
 
     return sym->node->atom;
@@ -249,7 +249,7 @@ static void
 symbol_mark(escm *e, escm_tst *sym)
 {
     if (sym->node && sym->node->atom)
-	escm_atom_mark(e, sym->node->atom);
+        escm_atom_mark(e, sym->node->atom);
 }
 
 static inline int

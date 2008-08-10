@@ -131,18 +131,19 @@ if (math)
 endif (math)
 
 add_library(escm SHARED ${FILES})
-add_executable(escheme ${FILES} src/main.c)
-#target_link_libraries(escheme escm)
+add_executable(escheme src/main.c)
+target_link_libraries(escheme escm)
 
 add_definitions(${DEFINES})
 if (NOT libmath)
   message("Math library not found, disabling math support.")
 else (NOT libmath)
   target_link_libraries(escm m)
-  target_link_libraries(escheme m)
+  target_link_libraries(escheme)
 endif (NOT libmath)
 
-set(ESCM_SHARE_PATH "${CMAKE_INSTALL_PREFIX}/share/escheme/")
+#set(ESCM_SHARE_PATH "${CMAKE_INSTALL_PREFIX}/share/escheme/")
+set(ESCM_SHARE_PATH "./")
 
 configure_file(config.h.cmake config.h ESCAPE_QUOTES)
 
@@ -150,3 +151,8 @@ install(FILES init.scm DESTINATION ${ESCM_SHARE_PATH})
 install(PROGRAMS escheme DESTINATION bin)
 install(TARGETS escm DESTINATION lib)
 
+enable_testing()
+add_test(test_macros escheme test/test_macros.scm)
+add_test(test_strings escheme test/test_strings.scm)
+add_test(test_booleans escheme test/test_booleans.scm)
+add_test(test_lists escheme test/test_lists.scm)

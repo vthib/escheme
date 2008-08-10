@@ -22,17 +22,22 @@ void
 escm_srfi_init(escm *e)
 {
 #if defined ESCM_USE_STRINGS && defined ESCM_USE_PORTS
-    /* srfi 6 */
-    (void) escm_procedure_new(e, "open-input-string", 1, 1,
-			      escm_open_input_string, NULL);
-    (void) escm_procedure_new(e, "open-output-string", 0, 0,
-			      escm_open_output_string, NULL);
-    (void) escm_procedure_new(e, "get-output-string", 1, 1,
-			      escm_get_output_string, NULL);
-#endif
+    (void) escm_library_enter(e, "srfi-6", 1);
 
-    /* srfi 23 */
+    (void) escm_procedure_new(e, "open-input-string", 1, 1,
+                              escm_open_input_string, NULL);
+    (void) escm_procedure_new(e, "open-output-string", 0, 0,
+                              escm_open_output_string, NULL);
+    (void) escm_procedure_new(e, "get-output-string", 1, 1,
+                              escm_get_output_string, NULL);
+
+    escm_library_exit(e); /* srfi-6 */
+#endif
+    (void) escm_library_enter(e, "srfi-23", 1);
+
     (void) escm_procedure_new(e, "error", 1, -1, escm_srfi_error, NULL);
+
+    escm_library_exit(e); /* srfi-23 */
 }
 
 #if defined ESCM_USE_STRINGS && defined ESCM_USE_PORTS
@@ -43,12 +48,12 @@ escm_open_input_string(escm *e, escm_atom *args)
     escm_atom *str;
 
     if (!escm_type_ison(ESCM_TYPE_STRING)) {
-	escm_error(e, "~s: string type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: string type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
     if (!escm_type_ison(ESCM_TYPE_PORT)) {
-	escm_error(e, "~s: port type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: port type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     str = escm_cons_pop(e, &args);
@@ -56,15 +61,15 @@ escm_open_input_string(escm *e, escm_atom *args)
 
 #ifdef ESCM_USE_UNICODE
     if (escm_type_ison(ESCM_TYPE_ASTRING)) {
-	wchar_t *w;
-	escm_atom *atom;
+        wchar_t *w;
+        escm_atom *atom;
 
-	w = strtowcs(escm_astr_val(str));
-	atom = escm_port_make(e, escm_input_str(w), 1);
-	free(w);
-	return atom;
+        w = strtowcs(escm_astr_val(str));
+        atom = escm_port_make(e, escm_input_str(w), 1);
+        free(w);
+        return atom;
     } else
-	return escm_port_make(e, escm_input_str(escm_ustr_val(str)), 1);
+        return escm_port_make(e, escm_input_str(escm_ustr_val(str)), 1);
 #else
     return escm_port_make(e, escm_input_str(escm_str_val(str)), 1);
 #endif
@@ -76,12 +81,12 @@ escm_open_output_string(escm *e, escm_atom *args)
     (void) args;
 
     if (!escm_type_ison(ESCM_TYPE_STRING)) {
-	escm_error(e, "~s: string type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: string type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
     if (!escm_type_ison(ESCM_TYPE_PORT)) {
-	escm_error(e, "~s: port type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: port type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     return escm_port_make(e, escm_output_str(), 0);
@@ -94,40 +99,40 @@ escm_get_output_string(escm *e, escm_atom *args)
     escm_output *outp;
 
     if (!escm_type_ison(ESCM_TYPE_STRING)) {
-	escm_error(e, "~s: string type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: string type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
     if (!escm_type_ison(ESCM_TYPE_PORT)) {
-	escm_error(e, "~s: port type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: port type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     port = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISPORT(port), port, e);
 
     if (escm_port_val(port)->input) {
-	escm_error(e, "~s: given port is not an output port.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: given port is not an output port.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     outp = escm_port_val(port)->d.output;
 
 # ifdef ESCM_USE_UNICODE
     if (escm_type_ison(ESCM_TYPE_USTRING))
-	return escm_ustring_make(e, escm_output_getstr(outp),
-				 outp->d.str.cur - outp->d.str.str);
+        return escm_ustring_make(e, escm_output_getstr(outp),
+                                 outp->d.str.cur - outp->d.str.str);
     else {
-	char *p;
-	escm_atom *a;
+        char *p;
+        escm_atom *a;
 
-	p = wcstostr(escm_output_getstr(outp));
-	a = escm_astring_make(e, p, outp->d.str.cur - outp->d.str.str);
-	free(p);
-	return a;
+        p = wcstostr(escm_output_getstr(outp));
+        a = escm_astring_make(e, p, outp->d.str.cur - outp->d.str.str);
+        free(p);
+        return a;
     }
 # else
     return escm_astring_make(e, escm_output_getstr(outp),
-			     outp->d.str.cur - outp->d.str.str);
+                             outp->d.str.cur - outp->d.str.str);
 # endif /* ESCM_USE_UNICODE */
 }
 #endif
@@ -143,10 +148,10 @@ escm_srfi_error(escm *e, escm_atom *args)
     escm_printf(e->errp, "Error: ");
     escm_atom_print4(e, reason, e->errp, 1);
     if (args != e->NIL)
-	escm_printf(e->errp, ": ");
+        escm_printf(e->errp, ": ");
     while (args != e->NIL) {
-	reason = escm_cons_pop(e, &args);
-	escm_atom_print4(e, reason, e->errp, 1);
+        reason = escm_cons_pop(e, &args);
+        escm_atom_print4(e, reason, e->errp, 1);
     }
     escm_putc(e->errp, '\n');
 

@@ -35,10 +35,10 @@
 # define ESCM_TYPE_CHAR (ESCM_TYPE_ACHAR | ESCM_TYPE_UCHAR)
 
 # define ESCM_ISCHAR(x) ((x)->type == ESCM_TYPE_CHAR)
-# define escm_char_val(x)						\
+# define escm_char_val(x)                                                \
     ((escm_type_ison(ESCM_TYPE_ACHAR)) ? escm_achar_val(x) : escm_uchar_val(x))
-# define escm_char_make(e, c)						\
-    ((escm_type_ison(ESCM_TYPE_ACHAR)) ? escm_achar_make(e, c) :	\
+# define escm_char_make(e, c)                                                \
+    ((escm_type_ison(ESCM_TYPE_ACHAR)) ? escm_achar_make(e, c) :        \
      escm_uchar_make(e, c))
 #endif
 

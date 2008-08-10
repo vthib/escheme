@@ -27,8 +27,8 @@
 
 typedef struct escm_port {
     union {
-	escm_input *input;
-	escm_output *output;
+        escm_input *input;
+        escm_output *output;
     } d;
 
     unsigned int nofree : 1;

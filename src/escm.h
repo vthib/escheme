@@ -26,22 +26,22 @@
 
 #define escm_abort(e) do { (e)->err = 1; return NULL; } while(0)
 
-#define escm_assert(test, atom, e)					\
-    do {								\
-	if (!(test)) {							\
-	    escm_error((e), "~s: ~s: wrong argument.~%", escm_fun(e), (atom)); \
-	    escm_abort(e);						\
-	}								\
+#define escm_assert(test, atom, e)                                        \
+    do {                                                                \
+        if (!(test)) {                                                        \
+            escm_error((e), "~s: ~s: wrong argument.~%", escm_fun(e), (atom)); \
+            escm_abort(e);                                                \
+        }                                                                \
     } while(0)
 
 /* Okay, this is ugly, but there is no other solution */
-#define escm_assert1(test, atom, e, st)					\
-    do {								\
-	if (!(test)) {							\
-	    escm_error((e), "~s: ~s: wrong argument.~%", escm_fun(e), (atom)); \
-	    st;								\
-	    escm_abort(e);						\
-	}								\
+#define escm_assert1(test, atom, e, st)                                        \
+    do {                                                                \
+        if (!(test)) {                                                        \
+            escm_error((e), "~s: ~s: wrong argument.~%", escm_fun(e), (atom)); \
+            st;                                                                \
+            escm_abort(e);                                                \
+        }                                                                \
     } while(0)
 
 enum { TYPE_BUILT, TYPE_DYN };
@@ -51,31 +51,31 @@ struct escm_type {
     Escm_Fun_Free ffree;
 
     union {
-	struct {
-	    Escm_Fun_Print fprint;
-	    Escm_Fun_Equal fequal;
+        struct {
+            Escm_Fun_Print fprint;
+            Escm_Fun_Equal fequal;
 
-	    /* those two functions needs to be not null if only it add a new
-	       syntax to the parser */
-	    Escm_Fun_Parsetest fparsetest;
-	    Escm_Fun_Parse fparse;
+            /* those two functions needs to be not null if only it add a new
+               syntax to the parser */
+            Escm_Fun_Parsetest fparsetest;
+            Escm_Fun_Parse fparse;
 
-	    Escm_Fun_Eval feval;
-	    Escm_Fun_Exec fexec;
+            Escm_Fun_Eval feval;
+            Escm_Fun_Exec fexec;
 
-	    Escm_Fun_Exit fexit;
-	    void *dexit;
-	} c;
-	struct {
-	    escm_atom *fprint;
-	    escm_atom *fequal;
-	    escm_atom *fparsetest;
-	    escm_atom *fparse;
-	    escm_atom *feval;
-	    escm_atom *fexec;
+            Escm_Fun_Exit fexit;
+            void *dexit;
+        } c;
+        struct {
+            escm_atom *fprint;
+            escm_atom *fequal;
+            escm_atom *fparsetest;
+            escm_atom *fparse;
+            escm_atom *feval;
+            escm_atom *fexec;
 
-	    unsigned long basetype;
-	} dyn;
+            unsigned long basetype;
+        } dyn;
     } d;
 
     unsigned int type : 1;

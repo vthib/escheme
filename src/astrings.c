@@ -55,7 +55,7 @@ escm_astrings_init(escm *e)
 
 #ifdef ESCM_USE_NUMBERS
     (void) escm_procedure_new(e, "string-length", 1, 1, escm_astring_length,
-			      NULL);
+                              NULL);
 #endif
 
     (void) escm_procedure_new(e, "string=?", 2, 2, escm_astring_eq_p, NULL);
@@ -65,30 +65,30 @@ escm_astrings_init(escm *e)
     (void) escm_procedure_new(e, "string>=?", 2, 2, escm_astring_ge_p, NULL);
 
     (void) escm_procedure_new(e, "string-ci=?", 2, 2, escm_astring_ci_eq_p,
-			      NULL);
+                              NULL);
     (void) escm_procedure_new(e, "string-ci<?", 2, 2, escm_astring_ci_lt_p,
-			      NULL);
+                              NULL);
     (void) escm_procedure_new(e, "string-ci>?", 2, 2, escm_astring_ci_gt_p,
-			      NULL);
+                              NULL);
     (void) escm_procedure_new(e, "string-ci<=?", 2, 2, escm_astring_ci_le_p,
-			      NULL);
+                              NULL);
     (void) escm_procedure_new(e, "string-ci>=?", 2, 2, escm_astring_ci_ge_p,
-			      NULL);
+                              NULL);
 
 #ifdef ESCM_USE_NUMBERS
     (void) escm_procedure_new(e, "substring", 2, 3, escm_subastring, NULL);
 #endif
     (void) escm_procedure_new(e, "string-append", 0, -1, escm_astring_append,
-			      NULL);
+                              NULL);
     (void) escm_procedure_new(e, "string-copy", 1, 1, escm_astring_copy, NULL);
 #ifdef ESCM_USE_CHARACTERS
     (void) escm_procedure_new(e, "string-fill!", 2, 2, escm_astring_fill_x,
-			      NULL);
+                              NULL);
 
     (void) escm_procedure_new(e, "string->list", 1, 1, escm_astring_to_list,
-			      NULL);
+                              NULL);
     (void) escm_procedure_new(e, "list->string", 1, 1, escm_list_to_astring,
-			      NULL);
+                              NULL);
 #endif
 }
 
@@ -127,22 +127,22 @@ escm_make_astring(escm *e, escm_atom *args)
     size_t k;
 
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
-	escm_error(e, "~s: character type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: character type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-	escm_error(e, "~s: number type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: number type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     length = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISINT(length) && escm_number_ival(length) >= 0,
-		length, e);
+                length, e);
     k = (size_t) escm_number_ival(length);
 
     c = escm_cons_pop(e, &args);
     if (c)
-	escm_assert(ESCM_ISCHAR(c), c, e);
+        escm_assert(ESCM_ISCHAR(c), c, e);
 
     str = xmalloc((k + 1) * sizeof *str);
     memset(str, (c != NULL) ? escm_achar_val(c) : 0, k);
@@ -164,21 +164,21 @@ escm_prim_astring(escm *e, escm_atom *args)
     size_t len;
 
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
-	escm_error(e, "~s: character type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: character type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     len = 0;
     for (cons = escm_cons_val(args); cons; cons = escm_cons_next(cons)) {
-	escm_assert(ESCM_ISCHAR(cons->car), cons->car, e);
-	len++;
+        escm_assert(ESCM_ISCHAR(cons->car), cons->car, e);
+        len++;
     }
 
     str = xmalloc((len + 1) * sizeof *str);
 
     len = 0;
     for (c = escm_cons_pop(e, &args); c; c = escm_cons_pop(e, &args))
-	str[len++] = escm_achar_val(c);
+        str[len++] = escm_achar_val(c);
     str[len] = '\0';
 
     c = escm_astring_make(e, str, len);
@@ -194,8 +194,8 @@ escm_astring_length(escm *e, escm_atom *args)
     escm_atom *str;
 
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-	escm_error(e, "~s: number type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: number type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     str = escm_cons_pop(e, &args);
@@ -213,12 +213,12 @@ escm_astring_ref(escm *e, escm_atom *args)
     long i;
 
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
-	escm_error(e, "~s: character type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: character type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-	escm_error(e, "~s: number type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: number type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     str = escm_cons_pop(e, &args);
@@ -230,8 +230,8 @@ escm_astring_ref(escm *e, escm_atom *args)
     escm_assert(i >= 0, k, e);
 
     if ((size_t) i >= escm_astr_len(str)) {
-	escm_error(e, "~s: index ~s is out of range.~s", escm_fun(e), k);
-	escm_abort(e);
+        escm_error(e, "~s: index ~s is out of range.~s", escm_fun(e), k);
+        escm_abort(e);
     }
 
     return escm_achar_make(e, escm_astr_val(str)[i]);
@@ -244,12 +244,12 @@ escm_astring_set_x(escm *e, escm_atom *args)
     long i;
 
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
-	escm_error(e, "~s: character type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: character type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-	escm_error(e, "~s: number type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: number type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     str = escm_cons_pop(e, &args);
@@ -264,14 +264,14 @@ escm_astring_set_x(escm *e, escm_atom *args)
     escm_assert(ESCM_ISACHAR(c), c, e);
 
     if ((size_t) i >= escm_astr_len(str)) {
-	escm_error(e, "~s: index ~s is out of range.~s", escm_fun(e), k);
-	escm_abort(e);
+        escm_error(e, "~s: index ~s is out of range.~s", escm_fun(e), k);
+        escm_abort(e);
     }
 
     if (str->ro == 1) {
-	escm_error(e, "~s: Can't modify ~s: immutable string.~%", escm_fun(e),
-		   str);
-	escm_abort(e);
+        escm_error(e, "~s: Can't modify ~s: immutable string.~%", escm_fun(e),
+                   str);
+        escm_abort(e);
     }
 
     escm_astr_val(str)[i] = escm_achar_val(c);
@@ -304,7 +304,7 @@ escm_astring_lt_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISASTR(a2), a2, e);
 
     if (a1 == a2)
-	return e->FALSE;
+        return e->FALSE;
 
     i = strcmp(escm_astr_val(a1), escm_astr_val(a2));
     return (i < 0) ? e->TRUE : e->FALSE;
@@ -322,7 +322,7 @@ escm_astring_gt_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISASTR(a2), a2, e);
 
     if (a1 == a2)
-	return e->FALSE;
+        return e->FALSE;
 
     i = strcmp(escm_astr_val(a1), escm_astr_val(a2));
     return (i > 0) ? e->TRUE : e->FALSE;
@@ -340,7 +340,7 @@ escm_astring_le_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISASTR(a2), a2, e);
 
     if (a1 == a2)
-	return e->FALSE;
+        return e->FALSE;
 
     i = strcmp(escm_astr_val(a1), escm_astr_val(a2));
     return (i <= 0) ? e->TRUE : e->FALSE;
@@ -358,7 +358,7 @@ escm_astring_ge_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISASTR(a2), a2, e);
 
     if (a1 == a2)
-	return e->FALSE;
+        return e->FALSE;
 
     i = strcmp(escm_astr_val(a1), escm_astr_val(a2));
     return (i >= 0) ? e->TRUE : e->FALSE;
@@ -377,12 +377,12 @@ escm_astring_ci_eq_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISASTR(a2), a2, e);
 
     if (a1 == a2 || escm_astr_len(a1) != escm_astr_len(a2))
-	return e->TRUE;
+        return e->TRUE;
 
     s1 = escm_astr_val(a1), s2 = escm_astr_val(a2);
     for (i = 0; i < escm_astr_len(a1); i++) {
-	if (tolower(s1[i]) != tolower(s2[i]))
-	    return e->FALSE;
+        if (tolower(s1[i]) != tolower(s2[i]))
+            return e->FALSE;
     }
 
     return e->TRUE;
@@ -400,7 +400,7 @@ escm_astring_ci_lt_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISASTR(a2), a2, e);
 
     if (a1 == a2)
-	return e->FALSE;
+        return e->FALSE;
 
     i = xstrcasecmp(escm_astr_val(a1), escm_astr_val(a2));
     return (i < 0) ? e->TRUE : e->FALSE;
@@ -418,7 +418,7 @@ escm_astring_ci_gt_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISASTR(a2), a2, e);
 
     if (a1 == a2)
-	return e->FALSE;
+        return e->FALSE;
 
     i = xstrcasecmp(escm_astr_val(a1), escm_astr_val(a2));
     return (i > 0) ? e->TRUE : e->FALSE;
@@ -436,7 +436,7 @@ escm_astring_ci_le_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISASTR(a2), a2, e);
 
     if (a1 == a2)
-	return e->FALSE;
+        return e->FALSE;
 
     i = xstrcasecmp(escm_astr_val(a1), escm_astr_val(a2));
     return (i <= 0) ? e->TRUE : e->FALSE;
@@ -454,7 +454,7 @@ escm_astring_ci_ge_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISASTR(a2), a2, e);
 
     if (a1 == a2)
-	return e->FALSE;
+        return e->FALSE;
 
     i = xstrcasecmp(escm_astr_val(a1), escm_astr_val(a2));
     return (i >= 0) ? e->TRUE : e->FALSE;
@@ -469,8 +469,8 @@ escm_subastring(escm *e, escm_atom *args)
     char *s;
 
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-	escm_error(e, "~s: number type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: number type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     str = escm_cons_pop(e, &args);
@@ -480,20 +480,20 @@ escm_subastring(escm *e, escm_atom *args)
     escm_assert(ESCM_ISINT(a), a, e);
     start = escm_number_ival(a);
     if (start < 0 || (size_t) start > escm_astr_len(str)) {
-	escm_error(e, "~s: index ~s is out of range.~s", escm_fun(e), a);
-	escm_abort(e);
+        escm_error(e, "~s: index ~s is out of range.~s", escm_fun(e), a);
+        escm_abort(e);
     }
 
     a = escm_cons_pop(e, &args);
     if (a) {
-	escm_assert(ESCM_ISINT(a), a, e);
-	end = escm_number_ival(a);
-	if (end < 0 || (size_t) end > escm_astr_len(str) || end < start) {
-	    escm_error(e, "~s: index ~s is out of range.~s", escm_fun(e), a);
-	    escm_abort(e);
-	}
+        escm_assert(ESCM_ISINT(a), a, e);
+        end = escm_number_ival(a);
+        if (end < 0 || (size_t) end > escm_astr_len(str) || end < start) {
+            escm_error(e, "~s: index ~s is out of range.~s", escm_fun(e), a);
+            escm_abort(e);
+        }
     } else
-	end = escm_astr_len(str);
+        end = escm_astr_len(str);
 
     s = xmalloc((size_t) (end - start + 1) * sizeof *s);
     memcpy(s, &(escm_astr_val(str)[start]), (size_t) end - start);
@@ -515,15 +515,15 @@ escm_astring_append(escm *e, escm_atom *args)
 
     len = 0;
     for (c = escm_cons_val(args); c; c = escm_cons_next(c)) {
-	escm_assert(ESCM_ISASTR(c->car), c->car, e);
-	len += escm_astr_len(c->car);
+        escm_assert(ESCM_ISASTR(c->car), c->car, e);
+        len += escm_astr_len(c->car);
     }
 
     s = xmalloc((len + 1) * sizeof *s);
     len = 0;
     for (c = escm_cons_val(args); c; c = escm_cons_next(c)) {
-	memcpy(&(s[len]), escm_astr_val(c->car), escm_astr_len(c->car));
-	len += escm_astr_len(c->car);
+        memcpy(&(s[len]), escm_astr_val(c->car), escm_astr_len(c->car));
+        len += escm_astr_len(c->car);
     }
     s[len] = '\0';
 
@@ -550,8 +550,8 @@ escm_astring_fill_x(escm *e, escm_atom *args)
     escm_atom *str, *c;
 
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
-	escm_error(e, "~s: character type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: character type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     str = escm_cons_pop(e, &args);
@@ -560,9 +560,9 @@ escm_astring_fill_x(escm *e, escm_atom *args)
     escm_assert(ESCM_ISCHAR(c), c, e);
 
     if (str->ro == 1) {
-	escm_error(e, "~s: Can't modify ~s: immutable string.~%", escm_fun(e),
-		   str);
-	escm_abort(e);
+        escm_error(e, "~s: Can't modify ~s: immutable string.~%", escm_fun(e),
+                   str);
+        escm_abort(e);
     }
 
     memset(escm_astr_val(str), escm_achar_val(c), escm_astr_len(str));
@@ -576,8 +576,8 @@ escm_astring_to_list(escm *e, escm_atom *args)
     char *p;
 
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
-	escm_error(e, "~s: character type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: character type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     str = escm_cons_pop(e, &args);
@@ -585,7 +585,7 @@ escm_astring_to_list(escm *e, escm_atom *args)
 
     escm_ctx_enter(e);
     for (p = escm_astr_val(str); *p != '\0'; p++)
-	escm_ctx_put(e, escm_achar_make(e, *p));
+        escm_ctx_put(e, escm_achar_make(e, *p));
 
     return escm_ctx_leave(e);
 }
@@ -617,10 +617,10 @@ astring_print(escm *e, escm_astring *astring, escm_output *stream, int lvl)
     (void) e;
 
     if (lvl == 0) {
-	escm_putc(stream, '"');
-	escm_print_slashify(stream, astring->str);
-	escm_putc(stream, '"');
-	return;
+        escm_putc(stream, '"');
+        escm_print_slashify(stream, astring->str);
+        escm_putc(stream, '"');
+        return;
     }
 
     escm_printf(stream, "%s", astring->str);
@@ -633,9 +633,9 @@ astring_equal(escm *e, escm_astring *s1, escm_astring *s2, int lvl)
 
     switch (lvl) {
     case 0: case 1: /* eq? & eqv?: true if same pointer */
-	return s1 == s2;
+        return s1 == s2;
     case 2: default: /* equal? */
-	return (s1->len == s2->len && 0 == strcmp(s1->str, s2->str));
+        return (s1->len == s2->len && 0 == strcmp(s1->str, s2->str));
     }
 }
 

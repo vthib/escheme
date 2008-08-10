@@ -58,7 +58,7 @@ escm_ustrings_init(escm *e)
 
 #ifdef ESCM_USE_NUMBERS
     (void) escm_procedure_new(e, "string-length", 1, 1, escm_ustring_length,
-			      NULL);
+                              NULL);
 #endif
 
     (void) escm_procedure_new(e, "string=?", 2, 2, escm_ustring_eq_p, NULL);
@@ -68,30 +68,30 @@ escm_ustrings_init(escm *e)
     (void) escm_procedure_new(e, "string>=?", 2, 2, escm_ustring_ge_p, NULL);
 
     (void) escm_procedure_new(e, "string-ci=?", 2, 2, escm_ustring_ci_eq_p,
-			      NULL);
+                              NULL);
     (void) escm_procedure_new(e, "string-ci<?", 2, 2, escm_ustring_ci_lt_p,
-			      NULL);
+                              NULL);
     (void) escm_procedure_new(e, "string-ci>?", 2, 2, escm_ustring_ci_gt_p,
-			      NULL);
+                              NULL);
     (void) escm_procedure_new(e, "string-ci<=?", 2, 2, escm_ustring_ci_le_p,
-			      NULL);
+                              NULL);
     (void) escm_procedure_new(e, "string-ci>=?", 2, 2, escm_ustring_ci_ge_p,
-			      NULL);
+                              NULL);
 
 #ifdef ESCM_USE_NUMBERS
     (void) escm_procedure_new(e, "substring", 2, 3, escm_subustring, NULL);
 #endif
     (void) escm_procedure_new(e, "string-append", 0, -1, escm_ustring_append,
-			      NULL);
+                              NULL);
     (void) escm_procedure_new(e, "string-copy", 1, 1, escm_ustring_copy, NULL);
 #ifdef ESCM_USE_CHARACTERS
     (void) escm_procedure_new(e, "string-fill!", 2, 2, escm_ustring_fill_x,
-			      NULL);
+                              NULL);
 
     (void) escm_procedure_new(e, "string->list", 1, 1, escm_ustring_to_list,
-			      NULL);
+                              NULL);
     (void) escm_procedure_new(e, "list->string", 1, 1, escm_list_to_ustring,
-			      NULL);
+                              NULL);
 #endif
 }
 
@@ -148,22 +148,22 @@ escm_make_ustring(escm *e, escm_atom *args)
     size_t k;
 
     if (!escm_type_ison(ESCM_TYPE_UCHAR)) {
-	escm_error(e, "~s: character type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: character type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-	escm_error(e, "~s: number type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: number type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     length = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISINT(length) && escm_number_ival(length) >= 0,
-		length, e);
+                length, e);
     k = (size_t) escm_number_ival(length);
 
     c = escm_cons_pop(e, &args);
     if (c)
-	escm_assert(ESCM_ISUCHAR(c), c, e);
+        escm_assert(ESCM_ISUCHAR(c), c, e);
 
     wcs = xmalloc((k + 1) * sizeof *wcs);
     wmemset(wcs, (c != NULL) ? escm_uchar_val(c) : L'\0', k);
@@ -185,21 +185,21 @@ escm_prim_ustring(escm *e, escm_atom *args)
     size_t len;
 
     if (!escm_type_ison(ESCM_TYPE_UCHAR)) {
-	escm_error(e, "~s: character type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: character type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     len = 0;
     for (cons = escm_cons_val(args); cons; cons = escm_cons_next(cons)) {
-	escm_assert(ESCM_ISUCHAR(cons->car), cons->car, e);
-	len++;
+        escm_assert(ESCM_ISUCHAR(cons->car), cons->car, e);
+        len++;
     }
 
     wcs = xmalloc((len + 1) * sizeof *wcs);
 
     len = 0;
     for (c = escm_cons_pop(e, &args); c; c = escm_cons_pop(e, &args))
-	wcs[len++] = escm_uchar_val(c);
+        wcs[len++] = escm_uchar_val(c);
     wcs[len] = L'\0';
 
     c = escm_ustring_make(e, wcs, len);
@@ -215,8 +215,8 @@ escm_ustring_length(escm *e, escm_atom *args)
     escm_atom *str;
 
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-	escm_error(e, "~s: number type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: number type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     str = escm_cons_pop(e, &args);
@@ -234,12 +234,12 @@ escm_ustring_ref(escm *e, escm_atom *args)
     long i;
 
     if (!escm_type_ison(ESCM_TYPE_UCHAR)) {
-	escm_error(e, "~s: character type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: character type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-	escm_error(e, "~s: number type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: number type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     str = escm_cons_pop(e, &args);
@@ -251,8 +251,8 @@ escm_ustring_ref(escm *e, escm_atom *args)
     escm_assert(i >= 0, k, e);
 
     if ((size_t) i >= escm_ustr_len(str)) {
-	escm_error(e, "~s: index ~s is out of range.~%", escm_fun(e), k);
-	escm_abort(e);
+        escm_error(e, "~s: index ~s is out of range.~%", escm_fun(e), k);
+        escm_abort(e);
     }
 
     return escm_uchar_make(e, escm_ustr_val(str)[i]);
@@ -265,20 +265,20 @@ escm_ustring_set_x(escm *e, escm_atom *args)
     long i;
 
     if (!escm_type_ison(ESCM_TYPE_UCHAR)) {
-	escm_error(e, "~s: character type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: character type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-	escm_error(e, "~s: number type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: number type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     str = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISUSTR(str), str, e);
     if (str->ro == 1) {
-	escm_error(e, "~s: Can't modify ~s: immutable string.~%", escm_fun(e),
-		   str);
-	escm_abort(e);
+        escm_error(e, "~s: Can't modify ~s: immutable string.~%", escm_fun(e),
+                   str);
+        escm_abort(e);
     }
 
 
@@ -291,8 +291,8 @@ escm_ustring_set_x(escm *e, escm_atom *args)
     escm_assert(ESCM_ISUCHAR(c), c, e);
 
     if ((size_t) i >= escm_ustr_len(str)) {
-	escm_error(e, "~s: index ~s is out of range.~%", escm_fun(e), k);
-	escm_abort(e);
+        escm_error(e, "~s: index ~s is out of range.~%", escm_fun(e), k);
+        escm_abort(e);
     }
 
     escm_ustr_val(str)[i] = escm_uchar_val(c);
@@ -325,7 +325,7 @@ escm_ustring_lt_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISUSTR(a2), a2, e);
 
     if (a1 == a2)
-	return e->FALSE;
+        return e->FALSE;
 
     i = wcscmp(escm_ustr_val(a1), escm_ustr_val(a2));
     return (i < 0) ? e->TRUE : e->FALSE;
@@ -343,7 +343,7 @@ escm_ustring_gt_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISUSTR(a2), a2, e);
 
     if (a1 == a2)
-	return e->FALSE;
+        return e->FALSE;
 
     i = wcscmp(escm_ustr_val(a1), escm_ustr_val(a2));
     return (i > 0) ? e->TRUE : e->FALSE;
@@ -361,7 +361,7 @@ escm_ustring_le_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISUSTR(a2), a2, e);
 
     if (a1 == a2)
-	return e->FALSE;
+        return e->FALSE;
 
     i = wcscmp(escm_ustr_val(a1), escm_ustr_val(a2));
     return (i <= 0) ? e->TRUE : e->FALSE;
@@ -379,7 +379,7 @@ escm_ustring_ge_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISUSTR(a2), a2, e);
 
     if (a1 == a2)
-	return e->FALSE;
+        return e->FALSE;
 
     i = wcscmp(escm_ustr_val(a1), escm_ustr_val(a2));
     return (i >= 0) ? e->TRUE : e->FALSE;
@@ -398,12 +398,12 @@ escm_ustring_ci_eq_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISUSTR(a2), a2, e);
 
     if (a1 == a2 || escm_ustr_len(a1) != escm_ustr_len(a2))
-	return e->TRUE;
+        return e->TRUE;
 
     s1 = escm_ustr_val(a1), s2 = escm_ustr_val(a2);
     for (i = 0; i < escm_ustr_len(a1); i++) {
-	if (towlower(s1[i]) != towlower(s2[i]))
-	    return e->FALSE;
+        if (towlower(s1[i]) != towlower(s2[i]))
+            return e->FALSE;
     }
 
     return e->TRUE;
@@ -421,7 +421,7 @@ escm_ustring_ci_lt_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISUSTR(a2), a2, e);
 
     if (a1 == a2)
-	return e->FALSE;
+        return e->FALSE;
 
     i = xwcscasecmp(escm_ustr_val(a1), escm_ustr_val(a2));
     return (i < 0) ? e->TRUE : e->FALSE;
@@ -439,7 +439,7 @@ escm_ustring_ci_gt_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISUSTR(a2), a2, e);
 
     if (a1 == a2)
-	return e->FALSE;
+        return e->FALSE;
 
     i = xwcscasecmp(escm_ustr_val(a1), escm_ustr_val(a2));
     return (i > 0) ? e->TRUE : e->FALSE;
@@ -457,7 +457,7 @@ escm_ustring_ci_le_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISUSTR(a2), a2, e);
 
     if (a1 == a2)
-	return e->FALSE;
+        return e->FALSE;
 
     i = xwcscasecmp(escm_ustr_val(a1), escm_ustr_val(a2));
     return (i <= 0) ? e->TRUE : e->FALSE;
@@ -475,7 +475,7 @@ escm_ustring_ci_ge_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISUSTR(a2), a2, e);
 
     if (a1 == a2)
-	return e->FALSE;
+        return e->FALSE;
 
     i = xwcscasecmp(escm_ustr_val(a1), escm_ustr_val(a2));
     return (i >= 0) ? e->TRUE : e->FALSE;
@@ -490,8 +490,8 @@ escm_subustring(escm *e, escm_atom *args)
     wchar_t *s;
 
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-	escm_error(e, "~s: number type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: number type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     str = escm_cons_pop(e, &args);
@@ -501,20 +501,20 @@ escm_subustring(escm *e, escm_atom *args)
     escm_assert(ESCM_ISINT(a), a, e);
     start = escm_number_ival(a);
     if (start < 0 || (size_t) start > escm_ustr_len(str)) {
-	escm_error(e, "~s: index ~s is out of range.~%", escm_fun(e), a);
-	escm_abort(e);
+        escm_error(e, "~s: index ~s is out of range.~%", escm_fun(e), a);
+        escm_abort(e);
     }
 
     a = escm_cons_pop(e, &args);
     if (a) {
-	escm_assert(ESCM_ISINT(a), a, e);
-	end = escm_number_ival(a);
-	if (end < 0 || (size_t) end > escm_ustr_len(str) || end < start) {
-	    escm_error(e, "~s: index ~s is out of range.~%", escm_fun(e), a);
-	    escm_abort(e);
-	}
+        escm_assert(ESCM_ISINT(a), a, e);
+        end = escm_number_ival(a);
+        if (end < 0 || (size_t) end > escm_ustr_len(str) || end < start) {
+            escm_error(e, "~s: index ~s is out of range.~%", escm_fun(e), a);
+            escm_abort(e);
+        }
     } else
-	end = escm_ustr_len(str);
+        end = escm_ustr_len(str);
 
     s = xmalloc((size_t) (end - start + 1) * sizeof *s);
     memcpy(s, &(escm_ustr_val(str)[start]), (size_t) (end - start) * sizeof *s);
@@ -536,16 +536,16 @@ escm_ustring_append(escm *e, escm_atom *args)
 
     len = 0;
     for (c = escm_cons_val(args); c; c = escm_cons_next(c)) {
-	escm_assert(ESCM_ISUSTR(c->car), c->car, e);
-	len += escm_ustr_len(c->car);
+        escm_assert(ESCM_ISUSTR(c->car), c->car, e);
+        len += escm_ustr_len(c->car);
     }
 
     s = xmalloc((len + 1) * sizeof *s);
     len = 0;
     for (c = escm_cons_val(args); c; c = escm_cons_next(c)) {
-	memcpy(&(s[len]), escm_ustr_val(c->car),
-	       escm_ustr_len(c->car) * sizeof *s);
-	len += escm_ustr_len(c->car);
+        memcpy(&(s[len]), escm_ustr_val(c->car),
+               escm_ustr_len(c->car) * sizeof *s);
+        len += escm_ustr_len(c->car);
     }
     s[len] = L'\0';
 
@@ -572,8 +572,8 @@ escm_ustring_fill_x(escm *e, escm_atom *args)
     escm_atom *str, *c;
 
     if (!escm_type_ison(ESCM_TYPE_UCHAR)) {
-	escm_error(e, "~s: character type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: character type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     str = escm_cons_pop(e, &args);
@@ -582,9 +582,9 @@ escm_ustring_fill_x(escm *e, escm_atom *args)
     escm_assert(ESCM_ISUCHAR(c), c, e);
 
     if (str->ro == 1) {
-	escm_error(e, "~s: Can't modify ~s: immutable string.~%", escm_fun(e),
-		   str);
-	escm_abort(e);
+        escm_error(e, "~s: Can't modify ~s: immutable string.~%", escm_fun(e),
+                   str);
+        escm_abort(e);
     }
 
     wmemset(escm_ustr_val(str), escm_uchar_val(c), escm_ustr_len(str));
@@ -598,8 +598,8 @@ escm_ustring_to_list(escm *e, escm_atom *args)
     size_t i;
 
     if (!escm_type_ison(ESCM_TYPE_UCHAR)) {
-	escm_error(e, "~s: character type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: character type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     str = escm_cons_pop(e, &args);
@@ -607,7 +607,7 @@ escm_ustring_to_list(escm *e, escm_atom *args)
 
     escm_ctx_enter(e);
     for (i = 0; i < escm_ustr_len(str); i++)
-	escm_ctx_put(e, escm_uchar_make(e, escm_ustr_val(str)[i]));
+        escm_ctx_put(e, escm_uchar_make(e, escm_ustr_val(str)[i]));
 
     return escm_ctx_leave(e);
 }
@@ -618,8 +618,8 @@ escm_list_to_ustring(escm *e, escm_atom *args)
     escm_atom *list;
 
     if (!escm_type_ison(ESCM_TYPE_UCHAR)) {
-	escm_error(e, "~s: character type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: character type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     list = escm_cons_pop(e, &args);
@@ -644,10 +644,10 @@ ustring_print(escm *e, escm_ustring *ustring, escm_output *stream, int lvl)
     (void) e;
 
     if (lvl == 0) {
-	escm_putc(stream, '"');
-	escm_print_wslashify(stream, ustring->str);
-	escm_putc(stream, '"');
-	return;
+        escm_putc(stream, '"');
+        escm_print_wslashify(stream, ustring->str);
+        escm_putc(stream, '"');
+        return;
     }
 
     escm_printf(stream, "%ls", ustring->str);
@@ -660,9 +660,9 @@ ustring_equal(escm *e, escm_ustring *s1, escm_ustring *s2, int lvl)
 
     switch (lvl) {
     case 0: case 1: /* eq? & eqv?: true if same pointer */
-	return s1 == s2;
+        return s1 == s2;
     case 2: default: /* equal? */
-	return (s1->len == s2->len && 0 == wcscmp(s1->str, s2->str));
+        return (s1->len == s2->len && 0 == wcscmp(s1->str, s2->str));
     }
 }
 

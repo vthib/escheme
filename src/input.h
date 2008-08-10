@@ -23,32 +23,32 @@ enum { INPUT_FILE, INPUT_STR };
 
 struct escm_input {
     union {
-	struct {
-	    long line; /* a better type would be "size_t", but in some case we
-			  need to use "-1", and ssize_t isn't standard */
-	    long car;
+        struct {
+            long line; /* a better type would be "size_t", but in some case we
+                          need to use "-1", and ssize_t isn't standard */
+            long car;
 
-	    FILE *fp;
-	    char *name;
+            FILE *fp;
+            char *name;
 
-	    /* used to allow multiples calls to ungetc */
+            /* used to allow multiples calls to ungetc */
 #ifdef ESCM_USE_UNICODE
-	    wint_t *ub;
+            wint_t *ub;
 #else
-	    int *ub;
+            int *ub;
 #endif
-	    size_t usize;
-	    size_t un;
-	} file;
-	struct {
+            size_t usize;
+            size_t un;
+        } file;
+        struct {
 #ifdef ESCM_USE_UNICODE
-	    wchar_t *str;
-	    wchar_t *cur;
+            wchar_t *str;
+            wchar_t *cur;
 #else
-	    char *str;
-	    char *cur;
+            char *str;
+            char *cur;
 #endif
-	} str;
+        } str;
     } d;
 
     unsigned int managed : 1;

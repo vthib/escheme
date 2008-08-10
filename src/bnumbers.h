@@ -23,7 +23,7 @@
 
 #define ESCM_ISBNUMBER(x) ((x)->type == ESCM_TYPE_BNUMBER)
 #define ESCM_ISBINT(x) (ESCM_ISBNUMBER(x) && \
-		       ((escm_bnumber *) (x)->ptr)->fixnum == 1)
+                       ((escm_bnumber *) (x)->ptr)->fixnum == 1)
 #define ESCM_ISBREAL(x) (!ESCM_ISBINT(x))
 
 #define escm_bnumber_ival(x) (((escm_bnumber *) (x)->ptr)->d.ival)
@@ -33,8 +33,8 @@
 
 typedef struct escm_bnumber {
     union {
-	long ival;
-	double rval;
+        long ival;
+        double rval;
     } d;
 
     unsigned int fixnum : 1;

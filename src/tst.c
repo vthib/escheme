@@ -27,7 +27,7 @@ escm_tst_gettree(escm_tst **t, const char *s)
 
     tree = createpath(t, s);
     if (!tree->symname)
-	tree->symname = xstrdup(s);
+        tree->symname = xstrdup(s);
     return tree;
 }
 
@@ -45,7 +45,7 @@ escm_tst_get(escm_tst *t, const char *s)
         if (*(s + 1) == '\0')
             return t->node->atom;
         else
-	    return escm_tst_get(t->down, s + 1);
+            return escm_tst_get(t->down, s + 1);
     }
 }
 
@@ -68,7 +68,7 @@ escm_tst_foreach(escm_tst *t, void (*f)(escm *, escm_atom *), escm *e)
         return;
 
     for (node = t->node; node; node = node->prev)
-	f(e, node->atom);
+        f(e, node->atom);
 
     escm_tst_foreach(t->lo, f, e);
     escm_tst_foreach(t->down, f, e);
@@ -88,7 +88,7 @@ escm_tst_free(escm_tst *t)
     escm_tst_free(t->hi);
 
     for (node = t->node; node; node = prev)
-	prev = node->prev, free(node);
+      prev = node->prev, free(node);
     free(t->symname);
     free(t);
 }
@@ -110,9 +110,8 @@ createpath(escm_tst **t, const char *s)
         return createpath(&(*t)->hi, s);
     else {
         if (*(s + 1) == '\0')
-	    return *t;
-	else
-	    return createpath(&(*t)->down, s + 1);
+            return *t;
+        else
+            return createpath(&(*t)->down, s + 1);
     }
 }
-

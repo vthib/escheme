@@ -92,21 +92,21 @@ escm_cnumbers_init(escm *e)
     numbertype = escm_type_add(e, t);
 
     if (!escm_type_ison(ESCM_TYPE_BOOL)) {
-	e->FALSE = makeatom(e, makeint(0));
-	e->TRUE = makeatom(e, makeint(1));
+        e->FALSE = makeatom(e, makeint(0));
+        e->TRUE = makeatom(e, makeint(1));
     }
 
     (void) escm_procedure_new(e, "number?", 1, 1, (Escm_Fun_Prim) escm_number_p,
-			      (void *) (ESCM_COMPLEX + 1));
+                              (void *) (ESCM_COMPLEX + 1));
     (void) escm_procedure_new(e, "integer?", 1, 1, (Escm_Fun_Prim)escm_number_p,
-			      (void *) (ESCM_INTEGER + 1));
+                              (void *) (ESCM_INTEGER + 1));
     (void) escm_procedure_new(e, "real?", 1, 1, (Escm_Fun_Prim) escm_number_p,
-			      (void *) (ESCM_REAL + 1));
+                              (void *) (ESCM_REAL + 1));
     (void) escm_procedure_new(e, "rational?", 1, 1,
-			      (Escm_Fun_Prim) escm_number_p,
-			      (void *) (ESCM_RATIONAL + 1));
+                              (Escm_Fun_Prim) escm_number_p,
+                              (void *) (ESCM_RATIONAL + 1));
     (void) escm_procedure_new(e, "complex?", 1, 1, (Escm_Fun_Prim)escm_number_p,
-			      (void *) (ESCM_COMPLEX + 1));
+                              (void *) (ESCM_COMPLEX + 1));
 
     (void) escm_procedure_new(e, "exact?", 1, 1, escm_exact_p, NULL);
     (void) escm_procedure_new(e, "inexact?", 1, 1, escm_inexact_p, NULL);
@@ -152,15 +152,15 @@ escm_cnumbers_init(escm *e)
 #endif
 
     (void) escm_procedure_new(e, "exact->inexact", 1, 2, escm_exact_to_inexact,
-			      NULL);
+                              NULL);
     (void) escm_procedure_new(e, "inexact->exact", 1, 2, escm_inexact_to_exact,
-			      NULL);
+                              NULL);
 
 #ifdef ESCM_USE_STRINGS
     (void) escm_procedure_new(e, "number->string", 1, 2, escm_number_to_string,
-			      NULL);
+                              NULL);
     (void) escm_procedure_new(e, "string->number", 1, 2, escm_string_to_number,
-			      NULL);
+                              NULL);
 #endif
 }
 
@@ -202,8 +202,8 @@ escm_number_p(escm *e, escm_atom *args, void *data)
     a = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISNUMBER(a), a, e);
 
-    return (((escm_number *) a->ptr)->type <= ((escm_intptr) data - 1)) ?
-	e->TRUE : e->FALSE;
+    return (escm_cnumber_val(a)->type <= (size_t) ((escm_intptr) data - 1)) ?
+        e->TRUE : e->FALSE;
 }
 
 escm_atom *
@@ -237,8 +237,8 @@ escm_add(escm *e, escm_atom *args)
     a = makeint(0);
 
     while ((atom = escm_cons_pop(e, &args)) != NULL) {
-	escm_assert1(ESCM_ISNUMBER(atom), atom, e, free(a));
-	escm_number_add(e, &a, atom->ptr);
+        escm_assert1(ESCM_ISNUMBER(atom), atom, e, free(a));
+        escm_number_add(e, &a, atom->ptr);
     }
 
     return escm_atom_new(e, numbertype, a);
@@ -255,17 +255,17 @@ escm_sub(escm *e, escm_atom *args)
     atom = escm_cons_pop(e, &args);
 
     if (args != e->NIL) {
-	free(a);
-	escm_assert(ESCM_ISNUMBER(atom), atom, e);
-	a = dupl(atom->ptr);
-	atom = escm_cons_pop(e, &args);
+        free(a);
+        escm_assert(ESCM_ISNUMBER(atom), atom, e);
+        a = dupl(atom->ptr);
+        atom = escm_cons_pop(e, &args);
     }
 
     do {
-	escm_assert1(ESCM_ISNUMBER(atom), atom, e, free(a));
-	escm_number_sub(e, &a, atom->ptr);
+        escm_assert1(ESCM_ISNUMBER(atom), atom, e, free(a));
+        escm_number_sub(e, &a, atom->ptr);
 
-	atom = escm_cons_pop(e, &args);
+        atom = escm_cons_pop(e, &args);
     } while (atom);
 
     return escm_atom_new(e, numbertype, a);
@@ -280,8 +280,8 @@ escm_mul(escm *e, escm_atom *args)
     a = makeint(1);
 
     while ((atom = escm_cons_pop(e, &args)) != NULL) {
-	escm_assert1(ESCM_ISNUMBER(atom), atom, e, free(a));
-	escm_number_mul(e, &a, atom->ptr);
+        escm_assert1(ESCM_ISNUMBER(atom), atom, e, free(a));
+        escm_number_mul(e, &a, atom->ptr);
     }
 
     return escm_atom_new(e, numbertype, a);
@@ -298,17 +298,17 @@ escm_div(escm *e, escm_atom *args)
     atom = escm_cons_pop(e, &args);
 
     if (args != e->NIL) {
-	free(a);
-	escm_assert(ESCM_ISNUMBER(atom), atom, e);
-	a = dupl(atom->ptr);
-	atom = escm_cons_pop(e, &args);
+        free(a);
+        escm_assert(ESCM_ISNUMBER(atom), atom, e);
+        a = dupl(atom->ptr);
+        atom = escm_cons_pop(e, &args);
     }
 
     do {
-	escm_assert1(ESCM_ISNUMBER(atom), atom, e, free(a));
-	escm_number_div(e, &a, atom->ptr);
+        escm_assert1(ESCM_ISNUMBER(atom), atom, e, free(a));
+        escm_number_div(e, &a, atom->ptr);
 
-	atom = escm_cons_pop(e, &args);
+        atom = escm_cons_pop(e, &args);
     } while (atom);
 
     return escm_atom_new(e, numbertype, a);
@@ -324,10 +324,10 @@ escm_eq(escm *e, escm_atom *args)
     escm_assert(ESCM_ISNUMBER(a), a, e);
 
     for (b = escm_cons_pop(e, &args); b; b = escm_cons_pop(e, &args)) {
-	escm_assert(ESCM_ISNUMBER(b), b, e);
+        escm_assert(ESCM_ISNUMBER(b), b, e);
 
-	if (0 == escm_atom_equal(e, a, b, 0))
-	    return e->FALSE;
+        if (0 == escm_atom_equal(e, a, b, 0))
+            return e->FALSE;
     }
 
     return e->TRUE;
@@ -344,54 +344,54 @@ escm_lt(escm *e, escm_atom *args)
     a = c->ptr;
 
     for (c = escm_cons_pop(e, &args); c; c = escm_cons_pop(e, &args)) {
-	escm_assert(ESCM_ISNUMBER(c), c, e);
-	b = c->ptr;
+        escm_assert(ESCM_ISNUMBER(c), c, e);
+        b = c->ptr;
 
-	if (a->type == ESCM_COMPLEX || b->type == ESCM_COMPLEX) {
-	    escm_error(e, "~s: cannot compared complex numbers.~%",
-		       escm_fun(e));
-	    return e->FALSE;
-	}
+        if (a->type == ESCM_COMPLEX || b->type == ESCM_COMPLEX) {
+            escm_error(e, "~s: cannot compared complex numbers.~%",
+                       escm_fun(e));
+            return e->FALSE;
+        }
 
-	if (a->type != b->type) {
-	    if (a->type == ESCM_RATIONAL) {
-		if (!DBL_LT(a->d.rat.n / (double) a->d.rat.d,
-			    (b->type == ESCM_REAL) ? b->d.real : b->d.i))
-		    return e->FALSE;
-	    } else if (b->type == ESCM_RATIONAL) {
-		if (!DBL_LT((a->type == ESCM_REAL) ? a->d.real : a->d.i,
-			    b->d.rat.n / (double) b->d.rat.d))
-		    return e->FALSE;
-	    } else {
-		if (!DBL_LT((a->type == ESCM_REAL) ? a->d.real : a->d.i,
-			    (b->type == ESCM_REAL) ? b->d.real : b->d.i))
-		    return e->FALSE;
-	    }
-	} else {
-	    switch (a->type) {
-	    case ESCM_INTEGER:
-		if (!(a->d.i < b->d.i))
-		    return e->FALSE;
-		break;
-	    case ESCM_REAL:
-		if (!DBL_LT(a->d.real, b->d.real))
-		    return e->FALSE;
-		break;
-	    case ESCM_RATIONAL:
-		if (a->d.rat.d == b->d.rat.d) {
-		    if (!(a->d.rat.n < b->d.rat.n))
-			return e->FALSE;
-		} else {
-		    if (!DBL_LT(a->d.rat.n / (double) a->d.rat.d,
-				b->d.rat.n / (double) b->d.rat.n))
-			return e->FALSE;
-		}
-	    default:
-		break;
-	    }
-	}
+        if (a->type != b->type) {
+            if (a->type == ESCM_RATIONAL) {
+                if (!DBL_LT(a->d.rat.n / (double) a->d.rat.d,
+                            (b->type == ESCM_REAL) ? b->d.real : b->d.i))
+                    return e->FALSE;
+            } else if (b->type == ESCM_RATIONAL) {
+                if (!DBL_LT((a->type == ESCM_REAL) ? a->d.real : a->d.i,
+                            b->d.rat.n / (double) b->d.rat.d))
+                    return e->FALSE;
+            } else {
+                if (!DBL_LT((a->type == ESCM_REAL) ? a->d.real : a->d.i,
+                            (b->type == ESCM_REAL) ? b->d.real : b->d.i))
+                    return e->FALSE;
+            }
+        } else {
+            switch (a->type) {
+            case ESCM_INTEGER:
+                if (!(a->d.i < b->d.i))
+                    return e->FALSE;
+                break;
+            case ESCM_REAL:
+                if (!DBL_LT(a->d.real, b->d.real))
+                    return e->FALSE;
+                break;
+            case ESCM_RATIONAL:
+                if (a->d.rat.d == b->d.rat.d) {
+                    if (!(a->d.rat.n < b->d.rat.n))
+                        return e->FALSE;
+                } else {
+                    if (!DBL_LT(a->d.rat.n / (double) a->d.rat.d,
+                                b->d.rat.n / (double) b->d.rat.n))
+                        return e->FALSE;
+                }
+            default:
+                break;
+            }
+        }
 
-	a = b;
+        a = b;
     }
 
     return e->TRUE;
@@ -408,54 +408,54 @@ escm_gt(escm *e, escm_atom *args)
     a = c->ptr;
 
     for (c = escm_cons_pop(e, &args); c; c = escm_cons_pop(e, &args)) {
-	escm_assert(ESCM_ISNUMBER(c), c, e);
-	b = c->ptr;
+        escm_assert(ESCM_ISNUMBER(c), c, e);
+        b = c->ptr;
 
-	if (a->type == ESCM_COMPLEX || b->type == ESCM_COMPLEX) {
-	    escm_error(e, "~s: cannot compared complex numbers.~%",
-		       escm_fun(e));
-	    return e->FALSE;
-	}
+        if (a->type == ESCM_COMPLEX || b->type == ESCM_COMPLEX) {
+            escm_error(e, "~s: cannot compared complex numbers.~%",
+                       escm_fun(e));
+            return e->FALSE;
+        }
 
-	if (a->type != b->type) {
-	    if (a->type == ESCM_RATIONAL) {
-		if (!DBL_GT(a->d.rat.n / (double) a->d.rat.d,
-			    (b->type == ESCM_REAL) ? b->d.real : b->d.i))
-		    return e->FALSE;
-	    } else if (b->type == ESCM_RATIONAL) {
-		if (!DBL_GT((a->type == ESCM_REAL) ? a->d.real : a->d.i,
-			    b->d.rat.n / (double) b->d.rat.d))
-		    return e->FALSE;
-	    } else {
-		if (!DBL_GT((a->type == ESCM_REAL) ? a->d.real : a->d.i,
-			    (b->type == ESCM_REAL) ? b->d.real : b->d.i))
-		    return e->FALSE;
-	    }
-	} else {
-	    switch (a->type) {
-	    case ESCM_INTEGER:
-		if (!(a->d.i > b->d.i))
-		    return e->FALSE;
-		break;
-	    case ESCM_REAL:
-		if (!DBL_GT(a->d.real, b->d.real))
-		    return e->FALSE;
-		break;
-	    case ESCM_RATIONAL:
-		if (a->d.rat.d == b->d.rat.d) {
-		    if (!(a->d.rat.n > b->d.rat.n))
-			return e->FALSE;
-		} else {
-		    if (!DBL_GT(a->d.rat.n / (double) a->d.rat.d,
-				b->d.rat.n / (double) b->d.rat.n))
-			return e->FALSE;
-		}
-	    default:
-		break;
-	    }
-	}
+        if (a->type != b->type) {
+            if (a->type == ESCM_RATIONAL) {
+                if (!DBL_GT(a->d.rat.n / (double) a->d.rat.d,
+                            (b->type == ESCM_REAL) ? b->d.real : b->d.i))
+                    return e->FALSE;
+            } else if (b->type == ESCM_RATIONAL) {
+                if (!DBL_GT((a->type == ESCM_REAL) ? a->d.real : a->d.i,
+                            b->d.rat.n / (double) b->d.rat.d))
+                    return e->FALSE;
+            } else {
+                if (!DBL_GT((a->type == ESCM_REAL) ? a->d.real : a->d.i,
+                            (b->type == ESCM_REAL) ? b->d.real : b->d.i))
+                    return e->FALSE;
+            }
+        } else {
+            switch (a->type) {
+            case ESCM_INTEGER:
+                if (!(a->d.i > b->d.i))
+                    return e->FALSE;
+                break;
+            case ESCM_REAL:
+                if (!DBL_GT(a->d.real, b->d.real))
+                    return e->FALSE;
+                break;
+            case ESCM_RATIONAL:
+                if (a->d.rat.d == b->d.rat.d) {
+                    if (!(a->d.rat.n > b->d.rat.n))
+                        return e->FALSE;
+                } else {
+                    if (!DBL_GT(a->d.rat.n / (double) a->d.rat.d,
+                                b->d.rat.n / (double) b->d.rat.n))
+                        return e->FALSE;
+                }
+            default:
+                break;
+            }
+        }
 
-	a = b;
+        a = b;
     }
 
     return e->TRUE;
@@ -472,54 +472,54 @@ escm_le(escm *e, escm_atom *args)
     a = c->ptr;
 
     for (c = escm_cons_pop(e, &args); c; c = escm_cons_pop(e, &args)) {
-	escm_assert(ESCM_ISNUMBER(c), c, e);
-	b = c->ptr;
+        escm_assert(ESCM_ISNUMBER(c), c, e);
+        b = c->ptr;
 
-	if (a->type == ESCM_COMPLEX || b->type == ESCM_COMPLEX) {
-	    escm_error(e, "~s: cannot compared complex numbers.~%",
-		       escm_fun(e));
-	    return e->FALSE;
-	}
+        if (a->type == ESCM_COMPLEX || b->type == ESCM_COMPLEX) {
+            escm_error(e, "~s: cannot compared complex numbers.~%",
+                       escm_fun(e));
+            return e->FALSE;
+        }
 
-	if (a->type != b->type) {
-	    if (a->type == ESCM_RATIONAL) {
-		if (!DBL_LE(a->d.rat.n / (double) a->d.rat.d,
-			    (b->type == ESCM_REAL) ? b->d.real : b->d.i))
-		    return e->FALSE;
-	    } else if (b->type == ESCM_RATIONAL) {
-		if (!DBL_LE((a->type == ESCM_REAL) ? a->d.real : a->d.i,
-			    b->d.rat.n / (double) b->d.rat.d))
-		    return e->FALSE;
-	    } else {
-		if (!DBL_LE((a->type == ESCM_REAL) ? a->d.real : a->d.i,
-			    (b->type == ESCM_REAL) ? b->d.real : b->d.i))
-		    return e->FALSE;
-	    }
-	} else {
-	    switch (a->type) {
-	    case ESCM_INTEGER:
-		if (!(a->d.i <= b->d.i))
-		    return e->FALSE;
-		break;
-	    case ESCM_REAL:
-		if (!DBL_LE(a->d.real, b->d.real))
-		    return e->FALSE;
-		break;
-	    case ESCM_RATIONAL:
-		if (a->d.rat.d == b->d.rat.d) {
-		    if (!(a->d.rat.n <= b->d.rat.n))
-			return e->FALSE;
-		} else {
-		    if (!DBL_LE(a->d.rat.n / (double) a->d.rat.d,
-				b->d.rat.n / (double) b->d.rat.n))
-			return e->FALSE;
-		}
-	    default:
-		break;
-	    }
-	}
+        if (a->type != b->type) {
+            if (a->type == ESCM_RATIONAL) {
+                if (!DBL_LE(a->d.rat.n / (double) a->d.rat.d,
+                            (b->type == ESCM_REAL) ? b->d.real : b->d.i))
+                    return e->FALSE;
+            } else if (b->type == ESCM_RATIONAL) {
+                if (!DBL_LE((a->type == ESCM_REAL) ? a->d.real : a->d.i,
+                            b->d.rat.n / (double) b->d.rat.d))
+                    return e->FALSE;
+            } else {
+                if (!DBL_LE((a->type == ESCM_REAL) ? a->d.real : a->d.i,
+                            (b->type == ESCM_REAL) ? b->d.real : b->d.i))
+                    return e->FALSE;
+            }
+        } else {
+            switch (a->type) {
+            case ESCM_INTEGER:
+                if (!(a->d.i <= b->d.i))
+                    return e->FALSE;
+                break;
+            case ESCM_REAL:
+                if (!DBL_LE(a->d.real, b->d.real))
+                    return e->FALSE;
+                break;
+            case ESCM_RATIONAL:
+                if (a->d.rat.d == b->d.rat.d) {
+                    if (!(a->d.rat.n <= b->d.rat.n))
+                        return e->FALSE;
+                } else {
+                    if (!DBL_LE(a->d.rat.n / (double) a->d.rat.d,
+                                b->d.rat.n / (double) b->d.rat.n))
+                        return e->FALSE;
+                }
+            default:
+                break;
+            }
+        }
 
-	a = b;
+        a = b;
     }
 
     return e->TRUE;
@@ -536,54 +536,54 @@ escm_ge(escm *e, escm_atom *args)
     a = c->ptr;
 
     for (c = escm_cons_pop(e, &args); c; c = escm_cons_pop(e, &args)) {
-	escm_assert(ESCM_ISNUMBER(c), c, e);
-	b = c->ptr;
+        escm_assert(ESCM_ISNUMBER(c), c, e);
+        b = c->ptr;
 
-	if (a->type == ESCM_COMPLEX || b->type == ESCM_COMPLEX) {
-	    escm_error(e, "~s: cannot compared complex numbers.~%",
-		       escm_fun(e));
-	    return e->FALSE;
-	}
+        if (a->type == ESCM_COMPLEX || b->type == ESCM_COMPLEX) {
+            escm_error(e, "~s: cannot compared complex numbers.~%",
+                       escm_fun(e));
+            return e->FALSE;
+        }
 
-	if (a->type != b->type) {
-	    if (a->type == ESCM_RATIONAL) {
-		if (!DBL_GE(a->d.rat.n / (double) a->d.rat.d,
-			    (b->type == ESCM_REAL) ? b->d.real : b->d.i))
-		    return e->FALSE;
-	    } else if (b->type == ESCM_RATIONAL) {
-		if (!DBL_GE((a->type == ESCM_REAL) ? a->d.real : a->d.i,
-			    b->d.rat.n / (double) b->d.rat.d))
-		    return e->FALSE;
-	    } else {
-		if (!DBL_GE((a->type == ESCM_REAL) ? a->d.real : a->d.i,
-			    (b->type == ESCM_REAL) ? b->d.real : b->d.i))
-		    return e->FALSE;
-	    }
-	} else {
-	    switch (a->type) {
-	    case ESCM_INTEGER:
-		if (!(a->d.i >= b->d.i))
-		    return e->FALSE;
-		break;
-	    case ESCM_REAL:
-		if (!DBL_GE(a->d.real, b->d.real))
-		    return e->FALSE;
-		break;
-	    case ESCM_RATIONAL:
-		if (a->d.rat.d == b->d.rat.d) {
-		    if (!(a->d.rat.n >= b->d.rat.n))
-			return e->FALSE;
-		} else {
-		    if (!DBL_GE(a->d.rat.n / (double) a->d.rat.d,
-				b->d.rat.n / (double) b->d.rat.n))
-			return e->FALSE;
-		}
-	    default:
-		break;
-	    }
-	}
+        if (a->type != b->type) {
+            if (a->type == ESCM_RATIONAL) {
+                if (!DBL_GE(a->d.rat.n / (double) a->d.rat.d,
+                            (b->type == ESCM_REAL) ? b->d.real : b->d.i))
+                    return e->FALSE;
+            } else if (b->type == ESCM_RATIONAL) {
+                if (!DBL_GE((a->type == ESCM_REAL) ? a->d.real : a->d.i,
+                            b->d.rat.n / (double) b->d.rat.d))
+                    return e->FALSE;
+            } else {
+                if (!DBL_GE((a->type == ESCM_REAL) ? a->d.real : a->d.i,
+                            (b->type == ESCM_REAL) ? b->d.real : b->d.i))
+                    return e->FALSE;
+            }
+        } else {
+            switch (a->type) {
+            case ESCM_INTEGER:
+                if (!(a->d.i >= b->d.i))
+                    return e->FALSE;
+                break;
+            case ESCM_REAL:
+                if (!DBL_GE(a->d.real, b->d.real))
+                    return e->FALSE;
+                break;
+            case ESCM_RATIONAL:
+                if (a->d.rat.d == b->d.rat.d) {
+                    if (!(a->d.rat.n >= b->d.rat.n))
+                        return e->FALSE;
+                } else {
+                    if (!DBL_GE(a->d.rat.n / (double) a->d.rat.d,
+                                b->d.rat.n / (double) b->d.rat.n))
+                        return e->FALSE;
+                }
+            default:
+                break;
+            }
+        }
 
-	a = b;
+        a = b;
     }
 
     return e->TRUE;
@@ -605,7 +605,7 @@ escm_quotient(escm *e, escm_atom *args)
     }
     
     return escm_cint_make(e, escm_number_ival(n) / escm_number_ival(m),
-			 escm_cnumber_exactp(n) && escm_cnumber_exactp(m));
+                         escm_cnumber_exactp(n) && escm_cnumber_exactp(m));
 }
 
 escm_atom *
@@ -624,7 +624,7 @@ escm_remainder(escm *e, escm_atom *args)
     }
 
     return escm_cint_make(e, escm_number_ival(n) % escm_number_ival(m),
-			 escm_cnumber_exactp(n) && escm_cnumber_exactp(m));
+                         escm_cnumber_exactp(n) && escm_cnumber_exactp(m));
 }
 
 escm_atom *
@@ -648,7 +648,7 @@ escm_modulo(escm *e, escm_atom *args)
         res += escm_number_ival(m);
 
     return escm_cint_make(e, res, escm_cnumber_exactp(n) &&
-			  escm_cnumber_exactp(m));
+                          escm_cnumber_exactp(m));
 }
 
 escm_atom *
@@ -674,19 +674,19 @@ escm_gcd(escm *e, escm_atom *args)
 
     for (;;) {
         if (b == 0)
-	    return escm_cint_make(e, a, exact);
+            return escm_cint_make(e, a, exact);
         if (a == 0)
-	    return escm_cint_make(e, b, exact);
+            return escm_cint_make(e, b, exact);
 
         a = pgcd(a, b);
 
         n2 = escm_cons_pop(e, &args);
         if (!n2)
-	    return escm_cint_make(e, a, exact);
+            return escm_cint_make(e, a, exact);
 
         escm_assert(ESCM_ISINT(n2), n2, e);
         b = escm_number_ival(n2);
-	exact &= escm_cnumber_exactp(n2);
+        exact &= escm_cnumber_exactp(n2);
     }
 }
 
@@ -699,7 +699,7 @@ escm_lcm(escm *e, escm_atom *args)
 
     n1 = escm_cons_pop(e, &args);
     if (!n1)
-	return escm_int_make(e, 1);
+        return escm_int_make(e, 1);
 
     escm_assert(ESCM_ISINT(n1), n1, e);
     a = ABS(escm_number_ival(n1));
@@ -716,19 +716,19 @@ escm_lcm(escm *e, escm_atom *args)
     for (;;) {
         c = pgcd(a, b);
 
-	if ((LONG_MAX / b) < a) {
-	    escm_error(e, "~s: integer overflow.~%", escm_fun(e));
+        if ((LONG_MAX / b) < a) {
+            escm_error(e, "~s: integer overflow.~%", escm_fun(e));
             escm_abort(e);
         }
         a = a*b / c;
 
         n2 = escm_cons_pop(e, &args);
         if (!n2)
-	    return escm_cint_make(e, a, exact);
+            return escm_cint_make(e, a, exact);
 
         escm_assert(ESCM_ISINT(n2), n2, e);
         b = ABS(escm_number_ival(n2));
-	exact &= escm_cnumber_exactp(n2);
+        exact &= escm_cnumber_exactp(n2);
     }
 }
 
@@ -742,11 +742,11 @@ escm_numerator(escm *e, escm_atom *args)
     escm_assert(ESCM_ISNUMBER(n) && !ESCM_ISCOMPLEX(n), n, e);
 
     if (ESCM_ISINT(n))
-	return n;
+        return n;
     if (ESCM_ISRATIONAL(n)) {
-	ret = escm_int_make(e, escm_cnumber_val(n)->d.rat.n);
-	escm_cnumber_val(ret)->exact = escm_cnumber_exactp(n);
-	return ret;
+        ret = escm_int_make(e, escm_cnumber_val(n)->d.rat.n);
+        escm_cnumber_val(ret)->exact = escm_cnumber_exactp(n);
+        return ret;
     }
 
     a = escm_number_rval(n);
@@ -778,9 +778,9 @@ escm_denominator(escm *e, escm_atom *args)
     if (ESCM_ISINT(n))
         return n;
     if (ESCM_ISRATIONAL(n)) {
-	ret = escm_int_make(e, escm_cnumber_val(n)->d.rat.d);
-	escm_cnumber_val(ret)->exact = escm_cnumber_exactp(n);
-	return ret;
+        ret = escm_int_make(e, escm_cnumber_val(n)->d.rat.d);
+        escm_cnumber_val(ret)->exact = escm_cnumber_exactp(n);
+        return ret;
     }
 
     b = 1;
@@ -808,9 +808,9 @@ escm_floor(escm *e, escm_atom *args)
     escm_assert(ESCM_ISNUMBER(a) && !ESCM_ISCOMPLEX(a), a, e);
 
     if (ESCM_ISINT(a))
-	return a;
+        return a;
     return escm_cint_make(e, (long) floor(numbertoreal(a->ptr)),
-			  ESCM_ISRATIONAL(a));
+                          ESCM_ISRATIONAL(a));
 }
 
 escm_atom *
@@ -822,9 +822,9 @@ escm_ceiling(escm *e, escm_atom *args)
     escm_assert(ESCM_ISNUMBER(a) && !ESCM_ISCOMPLEX(a), a, e);
 
     if (ESCM_ISINT(a))
-	return a;
+        return a;
     return escm_cint_make(e, (long) ceil(numbertoreal(a->ptr)),
-			  ESCM_ISRATIONAL(a));
+                          ESCM_ISRATIONAL(a));
 }
 
 escm_atom *
@@ -836,19 +836,19 @@ escm_truncate(escm *e, escm_atom *args)
     escm_assert(ESCM_ISNUMBER(a) && !ESCM_ISCOMPLEX(a), a, e);
 
     if (ESCM_ISINT(a))
-	return a;
+        return a;
 # ifdef ESCM_USE_C99
     return escm_cint_make(e, (long) trunc(numbertoreal(a->ptr)),
-			  ESCM_ISRATIONAL(a));
+                          ESCM_ISRATIONAL(a));
 # else
     {
-	double r;
+        double r;
 
-	r = numbertoreal(a->ptr);
-	if (DBL_GE(r, 0.))
-	    return escm_cint_make(e, (long) floor(r), ESCM_ISRATIONAL(a));
-	else
-	    return escm_cint_make(e, (long) ceil(r), ESCM_ISRATIONAL(a));
+        r = numbertoreal(a->ptr);
+        if (DBL_GE(r, 0.))
+            return escm_cint_make(e, (long) floor(r), ESCM_ISRATIONAL(a));
+        else
+            return escm_cint_make(e, (long) ceil(r), ESCM_ISRATIONAL(a));
     }
 # endif
 }
@@ -862,9 +862,9 @@ escm_round(escm *e, escm_atom *args)
     escm_assert(ESCM_ISNUMBER(a) && !ESCM_ISCOMPLEX(a), a, e);
 
     if (ESCM_ISINT(a))
-	return a;
+        return a;
     return escm_cint_make(e, (long) xround(numbertoreal(a->ptr)),
-			  ESCM_ISRATIONAL(a));
+                          ESCM_ISRATIONAL(a));
 }
 
 escm_atom *
@@ -967,9 +967,9 @@ escm_sqrt(escm *e, escm_atom *args)
     a = sqrt(numbertoreal(atom->ptr));
 
     if (DBL_EQ(a, floor(a))) /* exact */
-	return escm_int_make(e, (long) a);
+        return escm_int_make(e, (long) a);
     else
-	return escm_real_make(e, a);
+        return escm_real_make(e, a);
 }
 
 escm_atom *
@@ -988,9 +988,9 @@ escm_expt(escm *e, escm_atom *args)
     a = pow(a, numbertoreal(atom->ptr));
 
     if (DBL_EQ(a, floor(a))) /* exact */
-	return escm_int_make(e, (long) a);
+        return escm_int_make(e, (long) a);
     else
-	return escm_real_make(e, a);
+        return escm_real_make(e, a);
 }
 #endif
 
@@ -1005,7 +1005,7 @@ escm_exact_to_inexact(escm *e, escm_atom *args)
 
     n = atom->ptr;
     if (!n->exact)
-	return atom;
+        return atom;
 
     return makeatom(e, extoinex(n));
 }
@@ -1021,7 +1021,7 @@ escm_inexact_to_exact(escm *e, escm_atom *args)
 
     n = atom->ptr;
     if (n->exact)
-	return atom;
+        return atom;
 
     return makeatom(e, inextoex(n));
 }
@@ -1035,8 +1035,8 @@ escm_number_to_string(escm *e, escm_atom *args)
     int radix;
 
     if (!escm_type_ison(ESCM_TYPE_STRING)) {
-	escm_error(e, "~s: string type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: string type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     a = escm_cons_pop(e, &args);
@@ -1046,13 +1046,13 @@ escm_number_to_string(escm *e, escm_atom *args)
 
     b = escm_cons_pop(e, &args);
     if (b) { /* radix */
-	escm_assert(ESCM_ISINT(b), b, e);
-	radix = (int) escm_number_ival(b);
-	if (radix != 2 && radix != 8 && radix != 10 && radix != 16) {
-	    escm_error(e, "~s: radix must be either 2, 8, 10 or 16.~%",
-		       escm_fun(e));
-	    escm_abort(e);
-	}
+        escm_assert(ESCM_ISINT(b), b, e);
+        radix = (int) escm_number_ival(b);
+        if (radix != 2 && radix != 8 && radix != 10 && radix != 16) {
+            escm_error(e, "~s: radix must be either 2, 8, 10 or 16.~%",
+                       escm_fun(e));
+            escm_abort(e);
+        }
     }
 
     str = numbertostr(e, a->ptr, radix);
@@ -1074,8 +1074,8 @@ escm_string_to_number(escm *e, escm_atom *args)
     int radix;
 
     if (!escm_type_ison(ESCM_TYPE_STRING)) {
-	escm_error(e, "~s: string type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: string type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     a = escm_cons_pop(e, &args);
@@ -1085,34 +1085,34 @@ escm_string_to_number(escm *e, escm_atom *args)
 
     b = escm_cons_pop(e, &args);
     if (b) { /* radix */
-	escm_assert(ESCM_ISINT(b), b, e);
-	radix = (int) escm_number_ival(b);
-	if (radix != 2 && radix != 8 && radix != 10 && radix != 16) {
-	    escm_error(e, "~s: radix must be either 2, 8, 10 or 16.~%",
-		       escm_fun(e));
-	    escm_abort(e);
-	}
+        escm_assert(ESCM_ISINT(b), b, e);
+        radix = (int) escm_number_ival(b);
+        if (radix != 2 && radix != 8 && radix != 10 && radix != 16) {
+            escm_error(e, "~s: radix must be either 2, 8, 10 or 16.~%",
+                       escm_fun(e));
+            escm_abort(e);
+        }
     }
 
 #ifdef ESCM_USE_UNICODE
     if (escm_type_ison(ESCM_TYPE_ASTRING)) {
-	wchar_t *w;
+        wchar_t *w;
 
-	w = strtowcs(escm_astr_val(a));
-	input = escm_input_str(w);
-	free(w);
+        w = strtowcs(escm_astr_val(a));
+        input = escm_input_str(w);
+        free(w);
     } else
-	input = escm_input_str(escm_ustr_val(a));
+        input = escm_input_str(escm_ustr_val(a));
 #else
     input = escm_input_str(escm_str_val(a));
 #endif
 
     number = inputtonumber(e, input, radix);
     if (!number)
-	goto err;
+        goto err;
     if (input->end == 0) {
-	number_free(number);
-	goto err;
+        number_free(number);
+        goto err;
     }
 
     escm_input_close(input);
@@ -1133,19 +1133,19 @@ escm_number_add(escm *e, escm_number **dest, escm_number *src)
 
     switch (src->type) {
     case ESCM_INTEGER:
-	addint(e, dest, src);
-	(*dest)->exact &= src->exact;
-	break;
+        addint(e, dest, src);
+        (*dest)->exact &= src->exact;
+        break;
     case ESCM_REAL: addreal(e, dest, src); break;
     case ESCM_RATIONAL: addrat(e, dest, src); break;
     case ESCM_COMPLEX:
-	addcpx(e, dest, src);
-	(*dest)->exact &= ((*dest)->d.cpx.re->exact | (*dest)->d.cpx.im->exact);
-	break;
+        addcpx(e, dest, src);
+        (*dest)->exact &= ((*dest)->d.cpx.re->exact | (*dest)->d.cpx.im->exact);
+        break;
     }
 
     if (freesrc)
-	free(src);
+        free(src);
 }
 
 void
@@ -1157,19 +1157,19 @@ escm_number_sub(escm *e, escm_number **dest, escm_number *src)
 
     switch (src->type) {
     case ESCM_INTEGER:
-	subint(e, dest, src);
-	(*dest)->exact &= src->exact;
-	break;
+        subint(e, dest, src);
+        (*dest)->exact &= src->exact;
+        break;
     case ESCM_REAL: subreal(e, dest, src); break;
     case ESCM_RATIONAL: subrat(e, dest, src); break;
     case ESCM_COMPLEX:
-	subcpx(e, dest, src);
-	(*dest)->exact &= ((*dest)->d.cpx.re->exact | (*dest)->d.cpx.im->exact);
-	break;
+        subcpx(e, dest, src);
+        (*dest)->exact &= ((*dest)->d.cpx.re->exact | (*dest)->d.cpx.im->exact);
+        break;
     }
 
     if (freesrc)
-	free(src);
+        free(src);
 }
 
 void
@@ -1181,19 +1181,19 @@ escm_number_mul(escm *e, escm_number **dest, escm_number *src)
 
     switch (src->type) {
     case ESCM_INTEGER:
-	mulint(e, dest, src);
-	(*dest)->exact &= src->exact;
-	break;
+        mulint(e, dest, src);
+        (*dest)->exact &= src->exact;
+        break;
     case ESCM_REAL: mulreal(e, dest, src); break;
     case ESCM_RATIONAL: mulrat(e, dest, src); break;
     case ESCM_COMPLEX:
-	mulcpx(e, dest, src);
-	(*dest)->exact &= ((*dest)->d.cpx.re->exact | (*dest)->d.cpx.im->exact);
-	break;
+        mulcpx(e, dest, src);
+        (*dest)->exact &= ((*dest)->d.cpx.re->exact | (*dest)->d.cpx.im->exact);
+        break;
     }
 
     if (freesrc)
-	free(src);
+        free(src);
 }
 
 void
@@ -1205,19 +1205,19 @@ escm_number_div(escm *e, escm_number **dest, escm_number *src)
 
     switch (src->type) {
     case ESCM_INTEGER:
-	divint(e, dest, src);
-	(*dest)->exact &= src->exact;
-	break;
+        divint(e, dest, src);
+        (*dest)->exact &= src->exact;
+        break;
     case ESCM_REAL: divreal(e, dest, src); break;
     case ESCM_RATIONAL: divrat(e, dest, src); break;
     case ESCM_COMPLEX:
-	divcpx(e, dest, src);
-	(*dest)->exact &= ((*dest)->d.cpx.re->exact | (*dest)->d.cpx.im->exact);
-	break;
+        divcpx(e, dest, src);
+        (*dest)->exact &= ((*dest)->d.cpx.re->exact | (*dest)->d.cpx.im->exact);
+        break;
     }
 
     if (freesrc)
-	free(src);
+        free(src);
 }
 
 static void
@@ -1230,56 +1230,56 @@ harmonize(escm_number **destptr, escm_number **srcptr, int *freesrc)
 
     *freesrc = 0;
     if (dest->type > src->type) {
-	escm_number *a;
+        escm_number *a;
 
-	switch (dest->type) {
-	case ESCM_REAL: a = makereal((double) src->d.i); break;
-	case ESCM_RATIONAL:
-	{
-	    if (src->type == ESCM_INTEGER)
-		a = makerat(src->d.i, 1);
-	    else
-		a = realtorat(src->d.real);
-	    break;
-	}
-	case ESCM_COMPLEX:
-	    a = xcalloc(1, sizeof *a);
-	    a->type = ESCM_COMPLEX;
-	    a->d.cpx.re = src;
-	    a->d.cpx.im = makeint(0);
-	    break;
-	default:
-	    a = NULL;
-	    break;
-	}
+        switch (dest->type) {
+        case ESCM_REAL: a = makereal((double) src->d.i); break;
+        case ESCM_RATIONAL:
+        {
+            if (src->type == ESCM_INTEGER)
+                a = makerat(src->d.i, 1);
+            else
+                a = realtorat(src->d.real);
+            break;
+        }
+        case ESCM_COMPLEX:
+            a = xcalloc(1, sizeof *a);
+            a->type = ESCM_COMPLEX;
+            a->d.cpx.re = src;
+            a->d.cpx.im = makeint(0);
+            break;
+        default:
+            a = NULL;
+            break;
+        }
 
-	*srcptr = a, *freesrc = 1;
+        *srcptr = a, *freesrc = 1;
     } else if (dest->type < src->type) {
-	escm_number *a;
+        escm_number *a;
 
-	switch (src->type) {
-	case ESCM_REAL: a = makereal((double) dest->d.i); break;
-	case ESCM_RATIONAL:
-	{
-	    if (dest->type == ESCM_INTEGER)
-		a = makerat(dest->d.i, 1);
-	    else
-		a = realtorat(dest->d.real);
-	    break;
-	}
-	case ESCM_COMPLEX:
-	    a = xcalloc(1, sizeof *a);
-	    a->type = ESCM_COMPLEX;
-	    a->d.cpx.re = dest;
-	    a->d.cpx.im = makeint(0);
-	    *destptr = a;
-	    return;
-	default:
-	    a = NULL;
-	    break;
-	}
+        switch (src->type) {
+        case ESCM_REAL: a = makereal((double) dest->d.i); break;
+        case ESCM_RATIONAL:
+        {
+            if (dest->type == ESCM_INTEGER)
+                a = makerat(dest->d.i, 1);
+            else
+                a = realtorat(dest->d.real);
+            break;
+        }
+        case ESCM_COMPLEX:
+            a = xcalloc(1, sizeof *a);
+            a->type = ESCM_COMPLEX;
+            a->d.cpx.re = dest;
+            a->d.cpx.im = makeint(0);
+            *destptr = a;
+            return;
+        default:
+            a = NULL;
+            break;
+        }
 
-	free(dest), *destptr = a;
+        free(dest), *destptr = a;
     }
 }
 
@@ -1290,7 +1290,7 @@ realtorat(double a)
 
     b = 1;
     while (!DBL_EQ(a, floor(a))) /* XXX: bignums */
-	a *= 2, b *= 2;
+        a *= 2, b *= 2;
 
     return makerat((long) a, b);
 }
@@ -1300,13 +1300,13 @@ numbertoreal(escm_number *a)
 {
     switch (a->type) {
     case ESCM_INTEGER:
-	return (double) a->d.i;
+        return (double) a->d.i;
     case ESCM_REAL:
-	return (double) a->d.real;
+        return (double) a->d.real;
     case ESCM_RATIONAL:
-	return (double) a->d.rat.n / (double) a->d.rat.d;
+        return (double) a->d.rat.n / (double) a->d.rat.d;
     default:
-	return 0.;
+        return 0.;
     }
 }
 
@@ -1327,9 +1327,9 @@ static void
 addint(escm *e, escm_number **dest, escm_number *src)
 {
     if ((src->d.i >= 0) ? (LONG_MAX - src->d.i) < (*dest)->d.i
-	: (LONG_MIN - src->d.i) > (*dest)->d.i) {
-	escm_printf(e->errp, "number overflow.\n");
-	return;
+        : (LONG_MIN - src->d.i) > (*dest)->d.i) {
+        escm_printf(e->errp, "number overflow.\n");
+        return;
     }
 
     (*dest)->d.i += src->d.i; /* XXX: bignums */
@@ -1339,9 +1339,9 @@ static void
 subint(escm *e, escm_number **dest, escm_number *src)
 {
     if ((src->d.i >= 0) ? (LONG_MIN + src->d.i) > (*dest)->d.i
-	: (LONG_MAX + src->d.i) < (*dest)->d.i) {
-	escm_printf(e->errp, "number overflow.\n");
-	return;
+        : (LONG_MAX + src->d.i) < (*dest)->d.i) {
+        escm_printf(e->errp, "number overflow.\n");
+        return;
     }
 
     (*dest)->d.i -= src->d.i; /* XXX: bignums */
@@ -1351,9 +1351,9 @@ static void
 mulint(escm *e, escm_number **dest, escm_number *src)
 {
     if ((src->d.i > 1) ? (LONG_MAX / src->d.i) < (*dest)->d.i
-	: (LONG_MIN / src->d.i) < (*dest)->d.i) {
-	escm_printf(e->errp, "number overflow.\n");
-	return;
+        : (LONG_MIN / src->d.i) < (*dest)->d.i) {
+        escm_printf(e->errp, "number overflow.\n");
+        return;
     }
 
     (*dest)->d.i *= src->d.i; /* XXX: bignums */
@@ -1363,17 +1363,17 @@ static void
 divint(escm *e, escm_number **dest, escm_number *src)
 {
     if (src->d.i == 0) {
-	escm_printf(e->errp, "division by zero.\n");
-	return;
+        escm_printf(e->errp, "division by zero.\n");
+        return;
     }
     if ((src->d.i > (*dest)->d.i) || ((*dest)->d.i % src->d.i != 0)) {
-	long n;
+        long n;
 
-	n = (*dest)->d.i;
-	free(*dest);
-	*dest = makerat(n, src->d.i);
+        n = (*dest)->d.i;
+        free(*dest);
+        *dest = makerat(n, src->d.i);
     } else
-	(*dest)->d.i /= src->d.i;
+        (*dest)->d.i /= src->d.i;
 }
 
 /*--- reals ---*/
@@ -1394,10 +1394,10 @@ static void
 addreal(escm *e, escm_number **dest, escm_number *src)
 {
     if (DBL_GE(src->d.real, 0.) ?
-	DBL_LT((DBL_MAX - src->d.real), (*dest)->d.real) :
-	DBL_GT((DBL_MAX + src->d.real), (*dest)->d.real)) {
-	escm_printf(e->errp, "number overflow.\n");
-	return;
+        DBL_LT((DBL_MAX - src->d.real), (*dest)->d.real) :
+        DBL_GT((DBL_MAX + src->d.real), (*dest)->d.real)) {
+        escm_printf(e->errp, "number overflow.\n");
+        return;
     }
 
     (*dest)->d.real += src->d.real; /* XXX: bigreals */
@@ -1407,10 +1407,10 @@ static void
 subreal(escm *e, escm_number **dest, escm_number *src)
 {
     if (DBL_GE(src->d.real, 0.) ?
-	DBL_GT((DBL_MAX - src->d.real), (*dest)->d.real) :
-	DBL_LT((DBL_MAX + src->d.real), (*dest)->d.real)) {
-	escm_printf(e->errp, "number overflow.\n");
-	return;
+        DBL_GT((DBL_MAX - src->d.real), (*dest)->d.real) :
+        DBL_LT((DBL_MAX + src->d.real), (*dest)->d.real)) {
+        escm_printf(e->errp, "number overflow.\n");
+        return;
     }
 
     (*dest)->d.real -= src->d.real;
@@ -1420,10 +1420,10 @@ static void
 mulreal(escm *e, escm_number **dest, escm_number *src)
 {
     if (DBL_GT(src->d.real, 1.) ?
-	DBL_LT((DBL_MAX / src->d.real), (*dest)->d.real) :
-	DBL_GT((DBL_MAX * src->d.real), (*dest)->d.real)) {
-	escm_printf(e->errp, "number overflow.\n");
-	return;
+        DBL_LT((DBL_MAX / src->d.real), (*dest)->d.real) :
+        DBL_GT((DBL_MAX * src->d.real), (*dest)->d.real)) {
+        escm_printf(e->errp, "number overflow.\n");
+        return;
     }
 
     (*dest)->d.real *= src->d.real;
@@ -1433,16 +1433,16 @@ static void
 divreal(escm *e, escm_number **dest, escm_number *src)
 {
     if (DBL_EQ(src->d.real, 0.)) {
-	escm_printf(e->errp, "division by zero.\n");
-	return;
+        escm_printf(e->errp, "division by zero.\n");
+        return;
     }
     if (DBL_LT(src->d.real, 1.) && DBL_GT(src->d.real, -1.)) {
-	if (DBL_GT(src->d.real, 0.) ?
-	    DBL_LT((DBL_MAX * src->d.real), (*dest)->d.real) :
-	    DBL_LT((DBL_MAX * -src->d.real), (*dest)->d.real)) {
-	    escm_printf(e->errp, "number overflow.\n");
-	    return;
-	}
+        if (DBL_GT(src->d.real, 0.) ?
+            DBL_LT((DBL_MAX * src->d.real), (*dest)->d.real) :
+            DBL_LT((DBL_MAX * -src->d.real), (*dest)->d.real)) {
+            escm_printf(e->errp, "number overflow.\n");
+            return;
+        }
     }
 
     (*dest)->d.real /= src->d.real;
@@ -1471,13 +1471,13 @@ addrat(escm *e, escm_number **dest, escm_number *src)
     d1 = (*dest)->d.rat.d, d2 = src->d.rat.d;
     f1 = f2 = 1;
     while (d1 != d2) {
-	if (d1 > d2) {
-	    f2 = (d1 % d2 == 0) ? d1 / d2 : f2 + 1;
-	    d2 = src->d.rat.d * f2;
-	} else {
-	    f1 = (d2 % d1 == 0) ? d2 / d1 : f1 + 1;
-	    d1 = (*dest)->d.rat.d * f1;
-	}
+        if (d1 > d2) {
+            f2 = (d1 % d2 == 0) ? d1 / d2 : f2 + 1;
+            d2 = src->d.rat.d * f2;
+        } else {
+            f1 = (d2 % d1 == 0) ? d2 / d1 : f1 + 1;
+            d1 = (*dest)->d.rat.d * f1;
+        }
     }
     (*dest)->d.rat.n *= f1;
     (*dest)->d.rat.n += (src->d.rat.n * f2);
@@ -1494,13 +1494,13 @@ subrat(escm *e, escm_number **dest, escm_number *src)
     d1 = (*dest)->d.rat.d, d2 = src->d.rat.d;
     f1 = f2 = 1;
     while (d1 != d2) {
-	if (d1 > d2) {
-	    f2 = (d1 % d2 == 0) ? d1 / d2 : f2 + 1;
-	    d2 = src->d.rat.d * f2;
-	} else {
-	    f1 = (d2 % d1 == 0) ? d2 / d1 : f1 + 1;
-	    d1 = (*dest)->d.rat.d * f1;
-	}
+        if (d1 > d2) {
+            f2 = (d1 % d2 == 0) ? d1 / d2 : f2 + 1;
+            d2 = src->d.rat.d * f2;
+        } else {
+            f1 = (d2 % d1 == 0) ? d2 / d1 : f1 + 1;
+            d1 = (*dest)->d.rat.d * f1;
+        }
     }
     (*dest)->d.rat.n *= f1;
     (*dest)->d.rat.n -= (src->d.rat.n * f2);
@@ -1580,14 +1580,14 @@ divcpx(escm *e, escm_number **dest, escm_number *src)
 
     switch (src->d.cpx.im->type) {
     case ESCM_INTEGER:
-	src->d.cpx.im->d.i = -src->d.cpx.im->d.i;
-	break;
+        src->d.cpx.im->d.i = -src->d.cpx.im->d.i;
+        break;
     case ESCM_REAL:
-	src->d.cpx.im->d.real = -src->d.cpx.im->d.real;
-	break;
+        src->d.cpx.im->d.real = -src->d.cpx.im->d.real;
+        break;
     case ESCM_RATIONAL:
-	src->d.cpx.im->d.rat.n = -src->d.cpx.im->d.rat.n;
-	break;
+        src->d.cpx.im->d.rat.n = -src->d.cpx.im->d.rat.n;
+        break;
     default:;
     }
 
@@ -1602,11 +1602,11 @@ static void
 number_free(escm_number *n)
 {
     if (!n)
-	return;
+        return;
 
     if (n->type == ESCM_COMPLEX) {
-	number_free(n->d.cpx.re);
-	number_free(n->d.cpx.im);
+        number_free(n->d.cpx.re);
+        number_free(n->d.cpx.im);
     }
     free(n);
 }
@@ -1619,22 +1619,22 @@ number_print(escm *e, escm_number *number, escm_output *stream, int lvl)
 
     switch (number->type) {
     case ESCM_INTEGER:
-	escm_printf(stream, "%ld", number->d.i);
-	if (number->exact == 0)
-	    escm_putc(stream, '.');
-	break;
+        escm_printf(stream, "%ld", number->d.i);
+        if (number->exact == 0)
+            escm_putc(stream, '.');
+        break;
     case ESCM_REAL:
-	escm_printf(stream, "%.15g", number->d.real);
-	break;
+        escm_printf(stream, "%.15g", number->d.real);
+        break;
     case ESCM_RATIONAL:
-	escm_printf(stream, "%ld/%ld", number->d.rat.n, number->d.rat.d);
-	break;
+        escm_printf(stream, "%ld/%ld", number->d.rat.n, number->d.rat.d);
+        break;
     case ESCM_COMPLEX:
-	number_print(e, number->d.cpx.re, stream, lvl);
-	escm_putc(stream, ',');
-	number_print(e, number->d.cpx.im, stream, lvl);
-	escm_putc(stream, 'i');
-	break;
+        number_print(e, number->d.cpx.re, stream, lvl);
+        escm_putc(stream, ',');
+        number_print(e, number->d.cpx.im, stream, lvl);
+        escm_putc(stream, 'i');
+        break;
     }
 }
 
@@ -1645,20 +1645,20 @@ number_equal(escm *e, escm_number *n1, escm_number *n2, int lvl)
     (void) lvl;
 
     if (n1 == n2)
-	return 1;
+        return 1;
     if (n1->type != n2->type || n1->exact != n2->exact)
-	return 0;
+        return 0;
 
     switch (n1->type) {
     case ESCM_INTEGER: return n1->d.i == n2->d.i;
     case ESCM_REAL: return DBL_EQ(n1->d.real, n2->d.real);
     case ESCM_RATIONAL: return DBL_EQ(n1->d.rat.n / (double) n1->d.rat.d,
-				      n2->d.rat.n / (double) n2->d.rat.d);
+                                      n2->d.rat.n / (double) n2->d.rat.d);
     case ESCM_COMPLEX:
-	return (number_equal(e, n1->d.cpx.re, n2->d.cpx.re, lvl) &&
-		number_equal(e, n1->d.cpx.im, n2->d.cpx.im, lvl));
+        return (number_equal(e, n1->d.cpx.re, n2->d.cpx.re, lvl) &&
+                number_equal(e, n1->d.cpx.im, n2->d.cpx.im, lvl));
     default:
-	return 0;
+        return 0;
     }
 }
 
@@ -1668,20 +1668,20 @@ number_parsetest(escm *e, int c)
     (void) e;
 
     if (isdigit(c))
-	return 1;
+        return 1;
     else if (c == '+' || c == '-') {
-	int c2;
+        int c2;
 
-	c2 = escm_input_peek(e->input);
-	if (c2 == '.')
-	    return isdigit(escm_input_peek(e->input));
-	return (isdigit(c2) || (c2 == 'i'));
+        c2 = escm_input_peek(e->input);
+        if (c2 == '.')
+            return isdigit(escm_input_peek(e->input));
+        return (isdigit(c2) || (c2 == 'i'));
     } else if (c == '.')
-	return isdigit(escm_input_peek(e->input));
+        return isdigit(escm_input_peek(e->input));
     else if (c == '#')
-	return (strchr("boxdei", escm_input_peek(e->input)) != NULL);
+        return (strchr("boxdei", escm_input_peek(e->input)) != NULL);
     else
-	return 0;
+        return 0;
 }    
 
 static escm_atom *
@@ -1691,7 +1691,7 @@ number_parse(escm *e)
 
     n = inputtonumber(e, e->input, 10);
     if (!n)
-	return NULL;
+        return NULL;
     return escm_atom_new(e, numbertype, n);
 }
 
@@ -1706,137 +1706,137 @@ inputtonumber(escm *e, escm_input *input, int radix)
 
     exact = 2;
     while ((c = escm_input_getc(input)) == '#') {
-	switch (escm_input_getc(input)) {
-	case 'b': radix = 2; break;
-	case 'o': radix = 8; break;
-	case 'd': radix = 10; break;
-	case 'x': radix = 16; break;
-	case 'i': exact = 0; break;
-	case 'e': exact = 1; break;
-	default:
-	    escm_parse_print(input, e->errp, "unknown character #%c.\n", c);
-	    return NULL;
-	}
+        switch (escm_input_getc(input)) {
+        case 'b': radix = 2; break;
+        case 'o': radix = 8; break;
+        case 'd': radix = 10; break;
+        case 'x': radix = 16; break;
+        case 'i': exact = 0; break;
+        case 'e': exact = 1; break;
+        default:
+            escm_parse_print(input, e->errp, "unknown character #%c.\n", c);
+            return NULL;
+        }
     }
     if (c == EOF)
-	return NULL;
+        return NULL;
     escm_input_ungetc(input, c);
 
     str = escm_input_getstr_fun(input, isnumber, 1);
     if (!str)
-	return NULL;
+        return NULL;
     p = str;
     if (strchr(str, 'i')) {
-	escm_number *cpx;
+        escm_number *cpx;
 
-	cpx = xmalloc(sizeof *cpx);
-	cpx->type = ESCM_COMPLEX;
-	if (*(str + 1) == 'i') {
-	    if (*(str + 2) != '\0') {
-		escm_parse_print(input, e->errp, "complex number must end with a "
-				 "i.\n");
-		goto cpxbad;
-	    }
-	    cpx->d.cpx.re = xmalloc(sizeof *cpx->d.cpx.re);
-	    cpx->d.cpx.re->type = ESCM_INTEGER;
-	    cpx->d.cpx.re->d.i = 0;
-	    cpx->d.cpx.re->exact = 1;
+        cpx = xmalloc(sizeof *cpx);
+        cpx->type = ESCM_COMPLEX;
+        if (*(str + 1) == 'i') {
+            if (*(str + 2) != '\0') {
+                escm_parse_print(input, e->errp, "complex number must end with a "
+                                 "i.\n");
+                goto cpxbad;
+            }
+            cpx->d.cpx.re = xmalloc(sizeof *cpx->d.cpx.re);
+            cpx->d.cpx.re->type = ESCM_INTEGER;
+            cpx->d.cpx.re->d.i = 0;
+            cpx->d.cpx.re->exact = 1;
 
-	    cpx->d.cpx.im = xmalloc(sizeof *cpx->d.cpx.im);
-	    cpx->d.cpx.im->type = ESCM_INTEGER;
-	    cpx->d.cpx.im->d.i = (*str == '+') ? 1 : -1;
-	    cpx->d.cpx.im->exact = 1;
+            cpx->d.cpx.im = xmalloc(sizeof *cpx->d.cpx.im);
+            cpx->d.cpx.im->type = ESCM_INTEGER;
+            cpx->d.cpx.im->d.i = (*str == '+') ? 1 : -1;
+            cpx->d.cpx.im->exact = 1;
 
-	    free(str);
-	    return cpx;
-	}
-	cpx->d.cpx.re = getreal(e, input, &p, radix);
-	if (!cpx->d.cpx.re)
-	    goto cpxbad;
+            free(str);
+            return cpx;
+        }
+        cpx->d.cpx.re = getreal(e, input, &p, radix);
+        if (!cpx->d.cpx.re)
+            goto cpxbad;
 
-	if (*p != '-' && *p != '+') {	
-	    escm_parse_print(input, e->errp, "expecting a '+' or a '-' before "
-			     "the imaginary part.\n");
-	    number_free(cpx->d.cpx.re);
-	    goto cpxbad;
-	}
+        if (*p != '-' && *p != '+') {   
+            escm_parse_print(input, e->errp, "expecting a '+' or a '-' before "
+                             "the imaginary part.\n");
+            number_free(cpx->d.cpx.re);
+            goto cpxbad;
+        }
 
-	cpx->d.cpx.im = getreal(e, input, &p, radix);
-	if (!cpx->d.cpx.im)
-	    goto cpxbad;
-	if (*p == '+' || *p == '-') {	    
-	    cpx->d.cpx.im->d.i = (*p == '+') ? 1 : -1;
-	    p++;
-	}
-	if (*p != 'i' || *(p + 1) != '\0') {
-	    escm_parse_print(input, e->errp, "complex number must end with a i.\n");
- 	    number_free(cpx->d.cpx.im);
- 	    number_free(cpx->d.cpx.re);
-	    goto cpxbad;
-	}
+        cpx->d.cpx.im = getreal(e, input, &p, radix);
+        if (!cpx->d.cpx.im)
+            goto cpxbad;
+        if (*p == '+' || *p == '-') {       
+            cpx->d.cpx.im->d.i = (*p == '+') ? 1 : -1;
+            p++;
+        }
+        if (*p != 'i' || *(p + 1) != '\0') {
+            escm_parse_print(input, e->errp, "complex number must end with a i.\n");
+            number_free(cpx->d.cpx.im);
+            number_free(cpx->d.cpx.re);
+            goto cpxbad;
+        }
 
-	if ((cpx->d.cpx.im->type == ESCM_INTEGER && cpx->d.cpx.im->d.i == 0) ||
-	    (cpx->d.cpx.im->type == ESCM_REAL &&
-	     DBL_EQ(cpx->d.cpx.re->d.real, 0.)) ||
-	    (cpx->d.cpx.im->type == ESCM_RATIONAL &&
-	     cpx->d.cpx.im->d.rat.n == 0)) {
-		number_free(cpx->d.cpx.im);
-		a = cpx->d.cpx.re, free(cpx);
-		free(str);
-		return a;
-	    }
+        if ((cpx->d.cpx.im->type == ESCM_INTEGER && cpx->d.cpx.im->d.i == 0) ||
+            (cpx->d.cpx.im->type == ESCM_REAL &&
+             DBL_EQ(cpx->d.cpx.re->d.real, 0.)) ||
+            (cpx->d.cpx.im->type == ESCM_RATIONAL &&
+             cpx->d.cpx.im->d.rat.n == 0)) {
+                number_free(cpx->d.cpx.im);
+                a = cpx->d.cpx.re, free(cpx);
+                free(str);
+                return a;
+            }
 
-	free(str);
-	cpx->exact = (cpx->d.cpx.re->exact & cpx->d.cpx.re->exact);
-	if (exact != 2) {
-	    if (exact == 1 && cpx->exact != 1) {
-		escm_number *tmp;
+        free(str);
+        cpx->exact = (cpx->d.cpx.re->exact & cpx->d.cpx.re->exact);
+        if (exact != 2) {
+            if (exact == 1 && cpx->exact != 1) {
+                escm_number *tmp;
 
-		tmp = inextoex(cpx);
-		number_free(cpx);
-		cpx = tmp;
-	    } else if (exact == 0 && cpx->exact != 0) {
-		escm_number *tmp;
+                tmp = inextoex(cpx);
+                number_free(cpx);
+                cpx = tmp;
+            } else if (exact == 0 && cpx->exact != 0) {
+                escm_number *tmp;
 
-		tmp = extoinex(cpx);
-		number_free(cpx);
-		cpx = tmp;
-	    }
-	}
-	return cpx;
+                tmp = extoinex(cpx);
+                number_free(cpx);
+                cpx = tmp;
+            }
+        }
+        return cpx;
 
     cpxbad:
-	free(cpx);
-	free(str);
-	return NULL;
+        free(cpx);
+        free(str);
+        return NULL;
     }
 
     a = getreal(e, input, &p, radix);
     if (exact == 1 && a->exact != 1) {
-	escm_number *tmp;
+        escm_number *tmp;
 
-	tmp = inextoex(a);
-	free(a), a = tmp;
+        tmp = inextoex(a);
+        free(a), a = tmp;
     } else if (exact == 0 && a->exact == 1) {
-	escm_number *tmp;
+        escm_number *tmp;
 
-	tmp = extoinex(a);
-	free(a), a = tmp;
+        tmp = extoinex(a);
+        free(a), a = tmp;
     }
     if (*p != '\0') {
-	if (input->type == INPUT_FILE)
-	    input->d.file.car -= strlen(str) - (p - str) - 1;
-	else
+        if (input->type == INPUT_FILE)
+            input->d.file.car -= strlen(str) - (p - str) - 1;
+        else
 #ifdef ESCM_USE_UNICODE
-	    input->d.str.cur = (wchar_t *) input->d.str.str +
-		((p - str + 1) * sizeof (wchar_t));
+            input->d.str.cur = (wchar_t *) input->d.str.str +
+                ((p - str + 1) * sizeof (wchar_t));
 #else
-	    input->d.str.cur = (char *) input->d.str.str + (p - str + 1);
+            input->d.str.cur = (char *) input->d.str.str + (p - str + 1);
 #endif
-	escm_parse_print(input, e->errp, "Character `%c' unexpected.\n", *p);
-	free(str);
-	free(a);
-	return NULL;
+        escm_parse_print(input, e->errp, "Character `%c' unexpected.\n", *p);
+        free(str);
+        free(a);
+        return NULL;
     }
     free(str);
     return a;
@@ -1848,43 +1848,43 @@ getreal(escm *e, escm_input *input, char **p, int radix)
     char *exp;
     
     if ((exp = strchr(*p, 's')) != NULL)
-	*exp = 'e';
+        *exp = 'e';
     else if ((exp = strchr(*p, 'f')) != NULL)
-	*exp = 'e';
+        *exp = 'e';
     else if ((exp = strchr(*p, 'd')) != NULL)
-	*exp = 'e';
+        *exp = 'e';
     else if ((exp = strchr(*p, 'l')) != NULL)
-	*exp = 'e';
-	
+        *exp = 'e';
+        
     /* this will not work with radix != 10 */
     if (strchr(*p, '.') || strchr(*p, 'e')) {
-	double a;
+        double a;
 
-	a = strtod(*p, p);
-	if (DBL_EQ(floor(a), a)) {
-	    escm_number *n;
+        a = strtod(*p, p);
+        if (DBL_EQ(floor(a), a)) {
+            escm_number *n;
 
-	    n = makeint((long) a);
-	    n->exact = 0;
-	    return n;
-	}
-	return makereal(a);
+            n = makeint((long) a);
+            n->exact = 0;
+            return n;
+        }
+        return makereal(a);
     } else if (strchr(*p, '/')) {
-	long n, d;
+        long n, d;
 
-	n = strtol(*p, p, radix);
-	if (*(*p + 1) == '-') {
-	    escm_parse_print(input, e->errp,
-			     "the denominator must be positive.\n");
-	    return NULL;
-	}
-	(*p)++;
-	d = strtol(*p, p, radix);
-	if (n % d == 0)
-	    return makeint(n / d);
-	return makerat(n, d);
+        n = strtol(*p, p, radix);
+        if (*(*p + 1) == '-') {
+            escm_parse_print(input, e->errp,
+                             "the denominator must be positive.\n");
+            return NULL;
+        }
+        (*p)++;
+        d = strtol(*p, p, radix);
+        if (n % d == 0)
+            return makeint(n / d);
+        return makerat(n, d);
     } else
-	return makeint(strtol(*p, p, radix));
+        return makeint(strtol(*p, p, radix));
 }
 
 static int
@@ -1898,13 +1898,13 @@ isnegative(escm_number *n)
 {
     switch (n->type) {
     case ESCM_INTEGER:
-	return n->d.i < 0;
+        return n->d.i < 0;
     case ESCM_REAL:
-	return DBL_LT(n->d.real, 0.);
+        return DBL_LT(n->d.real, 0.);
     case ESCM_RATIONAL:
-	return n->d.rat.n < 0;
+        return n->d.rat.n < 0;
     default:
-	return 0;
+        return 0;
     }
 }
 
@@ -1915,21 +1915,21 @@ extoinex(escm_number *n)
 
     switch (n->type) {
     case ESCM_INTEGER:
-	new = makeint(n->d.i);
-	new->exact = 0;
-	return new;
+        new = makeint(n->d.i);
+        new->exact = 0;
+        return new;
     case ESCM_REAL:
-	return makereal(n->d.real);
+        return makereal(n->d.real);
     case ESCM_RATIONAL:
-	return makereal(((double) n->d.rat.n) / n->d.rat.d);
+        return makereal(((double) n->d.rat.n) / n->d.rat.d);
     case ESCM_COMPLEX:
-	new = xmalloc(sizeof *new);
-	new->type = ESCM_COMPLEX, new->exact = 0;
-	new->d.cpx.re = extoinex(n->d.cpx.re);
-	new->d.cpx.im = extoinex(n->d.cpx.im);
-	return new;
+        new = xmalloc(sizeof *new);
+        new->type = ESCM_COMPLEX, new->exact = 0;
+        new->d.cpx.re = extoinex(n->d.cpx.re);
+        new->d.cpx.im = extoinex(n->d.cpx.im);
+        return new;
     default:
-	return n;
+        return n;
     }
 }
 
@@ -1940,19 +1940,19 @@ inextoex(escm_number *n)
 
     switch (n->type) {
     case ESCM_INTEGER:
-	return makeint(n->d.i);
+        return makeint(n->d.i);
     case ESCM_REAL:
-	return realtorat(n->d.real);
+        return realtorat(n->d.real);
     case ESCM_RATIONAL:
-	return makerat(n->d.rat.n, n->d.rat.d);
+        return makerat(n->d.rat.n, n->d.rat.d);
     case ESCM_COMPLEX:
-	new = xmalloc(sizeof *new);
-	new->type = ESCM_COMPLEX, new->exact = 1;
-	new->d.cpx.re = inextoex(n->d.cpx.re);
-	new->d.cpx.im = inextoex(n->d.cpx.im);
-	return new;
+        new = xmalloc(sizeof *new);
+        new->type = ESCM_COMPLEX, new->exact = 1;
+        new->d.cpx.re = inextoex(n->d.cpx.re);
+        new->d.cpx.im = inextoex(n->d.cpx.im);
+        return new;
     default:
-	return n;
+        return n;
     }
 }
 
@@ -1965,10 +1965,10 @@ dupl(escm_number *n)
     a->type = n->type, a->exact = n->exact;
 
     if (n->type == ESCM_COMPLEX) {
-	a->d.cpx.re = dupl(n->d.cpx.re);
-	a->d.cpx.im = dupl(n->d.cpx.im);
+        a->d.cpx.re = dupl(n->d.cpx.re);
+        a->d.cpx.im = dupl(n->d.cpx.im);
     } else
-	memcpy(&(a->d), &(n->d), sizeof n->d);
+        memcpy(&(a->d), &(n->d), sizeof n->d);
 
     return a;
 }
@@ -1979,17 +1979,17 @@ pgcd(long a, long b)
     long c;
 
     if (b == 0)
-	return a;
+        return a;
     if (b < 0)
-	b = -b;
+        b = -b;
     if (a == 0)
-	return b;
+        return b;
     if (a < 0)
-	a = -a;
+        a = -a;
 
     do {
-	c = a % b;
-	a = b, b = c;
+        c = a % b;
+        a = b, b = c;
     } while (c != 0);
 
     return a;
@@ -2006,11 +2006,11 @@ bintostr(long a)
 
     p = buf;
     for (off = (long) sizeof(a) * CHAR_BIT - 1; off >= 0; off--) {
-	if (p == buf) {
-	    if (((a >> off) & 0x1) != 0)
-		*p++ = ((a >> off) & 0x1) ? '1' : '0';
-	} else
-	    *p++ = (((a >> off) & 0x1)) ? '1' : '0';
+        if (p == buf) {
+            if (((a >> off) & 0x1) != 0)
+                *p++ = ((a >> off) & 0x1) ? '1' : '0';
+        } else
+            *p++ = (((a >> off) & 0x1)) ? '1' : '0';
     }
     *p = '\0';
 
@@ -2024,71 +2024,71 @@ numbertostr(escm *e, escm_number *n, int radix)
     int len, maxlen;
 
     if (n->type == ESCM_INTEGER) {
-	if (radix == 2)
-	    return bintostr(n->d.i);
+        if (radix == 2)
+            return bintostr(n->d.i);
 
-	maxlen = 25;
-	str = xmalloc(sizeof *str * maxlen);
+        maxlen = 25;
+        str = xmalloc(sizeof *str * maxlen);
 
-	switch (radix) {
-	case 8:
-	    len = snprintf(str, maxlen, "%lo", n->d.i);
-	    break;
-	case 16:
-	    len = snprintf(str, maxlen, "%lx", n->d.i);
-	    break;
-	default:
-	    len = snprintf(str, maxlen, "%ld", n->d.i);
-	    break;
-	}
-	if (len < maxlen && n->exact == 0) {
-	    str[len] = '.', len++;
-	    str[len] = '\0';
-	}
+        switch (radix) {
+        case 8:
+            len = snprintf(str, maxlen, "%lo", n->d.i);
+            break;
+        case 16:
+            len = snprintf(str, maxlen, "%lx", n->d.i);
+            break;
+        default:
+            len = snprintf(str, maxlen, "%ld", n->d.i);
+            break;
+        }
+        if (len < maxlen && n->exact == 0) {
+            str[len] = '.', len++;
+            str[len] = '\0';
+        }
 
     } else if (n->type == ESCM_REAL) {
-	maxlen = 30;
-	str = xmalloc(sizeof *str * maxlen);
+        maxlen = 30;
+        str = xmalloc(sizeof *str * maxlen);
 
-	len = snprintf(str, maxlen, "%.15g", n->d.real);
+        len = snprintf(str, maxlen, "%.15g", n->d.real);
     } else if (n->type == ESCM_RATIONAL) {
-	if (radix == 2)
-	    return bintostr(n->d.i);
+        if (radix == 2)
+            return bintostr(n->d.i);
 
-	maxlen = 50;
-	str = xmalloc(sizeof *str * maxlen);
+        maxlen = 50;
+        str = xmalloc(sizeof *str * maxlen);
 
-	switch (radix) {
-	case 8:
-	    len = snprintf(str, maxlen, "%lo/%lo", n->d.rat.n, n->d.rat.d);
-	    break;
-	case 16:
-	    len = snprintf(str, maxlen, "%lx/%lx", n->d.rat.n, n->d.rat.d);
-	    break;
-	default:
-	    len = snprintf(str, maxlen, "%ld/%ld", n->d.rat.n, n->d.rat.d);
-	    break;
-	}
+        switch (radix) {
+        case 8:
+            len = snprintf(str, maxlen, "%lo/%lo", n->d.rat.n, n->d.rat.d);
+            break;
+        case 16:
+            len = snprintf(str, maxlen, "%lx/%lx", n->d.rat.n, n->d.rat.d);
+            break;
+        default:
+            len = snprintf(str, maxlen, "%ld/%ld", n->d.rat.n, n->d.rat.d);
+            break;
+        }
     } else {
-	char *re, *im;
+        char *re, *im;
 
-	re = numbertostr(e, n->d.cpx.re, radix);
-	im = numbertostr(e, n->d.cpx.im, radix);
+        re = numbertostr(e, n->d.cpx.re, radix);
+        im = numbertostr(e, n->d.cpx.im, radix);
 
-	maxlen = strlen(re) + strlen(im) + 3;
-	str = xmalloc(sizeof *str * maxlen);
-	if (isnegative(n->d.cpx.im))
-	    len = snprintf(str, maxlen, "%s-%si", re, im);
-	else
-	    len = snprintf(str, maxlen, "%s+%si", re, im);
-	free(re), free(im);
+        maxlen = strlen(re) + strlen(im) + 3;
+        str = xmalloc(sizeof *str * maxlen);
+        if (isnegative(n->d.cpx.im))
+            len = snprintf(str, maxlen, "%s-%si", re, im);
+        else
+            len = snprintf(str, maxlen, "%s+%si", re, im);
+        free(re), free(im);
     }
 
     if (len >= maxlen) { /* output truncated */
-	escm_warning(e, "~s: the output was been truncated. The "
-		     "read/write invariance may not be respected.~%",
-		     escm_fun(e));
-	len = maxlen - 1;
+        escm_warning(e, "~s: the output was been truncated. The "
+                     "read/write invariance may not be respected.~%",
+                     escm_fun(e));
+        len = maxlen - 1;
     }
 
     return str;

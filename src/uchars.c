@@ -62,27 +62,27 @@ escm_uchars_init(escm *e)
     (void) escm_procedure_new(e, "char-ci>=?", 2, 2, escm_uchar_ci_ge_p, NULL);
 
     (void) escm_procedure_new(e, "char-alphabetic?", 1, 1,
-			      escm_uchar_alphabetic_p, NULL);
+                              escm_uchar_alphabetic_p, NULL);
     (void) escm_procedure_new(e, "char-numeric?", 1, 1,
-			      escm_uchar_numeric_p, NULL);
+                              escm_uchar_numeric_p, NULL);
     (void) escm_procedure_new(e, "char-whitespace?", 1, 1,
-			      escm_uchar_whitespace_p, NULL);
+                              escm_uchar_whitespace_p, NULL);
     (void) escm_procedure_new(e, "char-upper-case?", 1, 1,
-			      escm_uchar_upper_case_p, NULL);
+                              escm_uchar_upper_case_p, NULL);
     (void) escm_procedure_new(e, "char-lower_case?", 1, 1,
-			      escm_uchar_lower_case_p, NULL);
+                              escm_uchar_lower_case_p, NULL);
 
 #ifdef ESCM_USE_NUMBERS
     (void) escm_procedure_new(e, "char->integer", 1, 1,
-			      escm_uchar_to_integer, NULL);
+                              escm_uchar_to_integer, NULL);
     (void) escm_procedure_new(e, "integer->char", 1, 1,
-			      escm_integer_to_uchar, NULL);
+                              escm_integer_to_uchar, NULL);
 #endif
 
     (void) escm_procedure_new(e, "char-upcase", 1, 1,
-			      escm_uchar_upcase, NULL);
+                              escm_uchar_upcase, NULL);
     (void) escm_procedure_new(e, "char-downcase", 1, 1,
-			      escm_uchar_downcase, NULL);
+                              escm_uchar_downcase, NULL);
 }
 
 size_t
@@ -182,7 +182,7 @@ escm_uchar_ci_eq_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISUCHAR(c2), c2, e);
 
     return (towlower(escm_uchar_val(c1)) == towlower(escm_uchar_val(c2))) ?
-	e->TRUE : e->FALSE;
+        e->TRUE : e->FALSE;
 }
 
 escm_atom *
@@ -196,7 +196,7 @@ escm_uchar_ci_lt_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISUCHAR(c2), c2, e);
 
     return (towlower(escm_uchar_val(c1)) < towlower(escm_uchar_val(c2))) ?
-	e->TRUE : e->FALSE;
+        e->TRUE : e->FALSE;
 }
 
 escm_atom *
@@ -210,7 +210,7 @@ escm_uchar_ci_gt_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISUCHAR(c2), c2, e);
 
     return (towlower(escm_uchar_val(c1)) > towlower(escm_uchar_val(c2))) ?
-	e->TRUE : e->FALSE;
+        e->TRUE : e->FALSE;
 }
 
 escm_atom *
@@ -224,7 +224,7 @@ escm_uchar_ci_le_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISUCHAR(c2), c2, e);
 
     return (towlower(escm_uchar_val(c1)) <= towlower(escm_uchar_val(c2))) ?
-	e->TRUE : e->FALSE;
+        e->TRUE : e->FALSE;
 }
 
 escm_atom *
@@ -238,7 +238,7 @@ escm_uchar_ci_ge_p(escm *e, escm_atom *args)
     escm_assert(ESCM_ISUCHAR(c2), c2, e);
 
     return (towlower(escm_uchar_val(c1)) >= towlower(escm_uchar_val(c2))) ?
-	e->TRUE : e->FALSE;
+        e->TRUE : e->FALSE;
 }
 
 escm_atom *
@@ -303,8 +303,8 @@ escm_uchar_to_integer(escm *e, escm_atom *args)
     escm_atom *c;
 
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-	escm_error(e, "~s: number type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: number type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     c = escm_cons_pop(e, &args);
@@ -319,8 +319,8 @@ escm_integer_to_uchar(escm *e, escm_atom *args)
     escm_atom *n;
 
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-	escm_error(e, "~s: number type is off.~%", escm_fun(e));
-	escm_abort(e);
+        escm_error(e, "~s: number type is off.~%", escm_fun(e));
+        escm_abort(e);
     }
 
     n = escm_cons_pop(e, &args);
@@ -358,27 +358,27 @@ uchar_print(escm *e, int c, escm_output *stream, int lvl)
     (void) e;
 
     if (lvl == 1) {
-	if (c == EOF)
-	    escm_printf(stream, "#<eof-object>");
-	escm_putc(stream, c);
-	return;
+        if (c == EOF)
+            escm_printf(stream, "#<eof-object>");
+        escm_putc(stream, c);
+        return;
     }
 
     if (c == EOF) {
-	escm_printf(stream, "#<eof-object>");
-	return;
+        escm_printf(stream, "#<eof-object>");
+        return;
     }
 
     escm_printf(stream, "#\\");
     if (c == '\n')
-	escm_printf(stream, "newline");
+        escm_printf(stream, "newline");
     else if (c == ' ')
-	escm_printf(stream, "space");
+        escm_printf(stream, "space");
     else {
-	if (iswprint(c))
-	    escm_printf(stream, "%lc", c);
-	else
-	    escm_printf(stream, "x%x", (wint_t) c);	
+        if (iswprint(c))
+            escm_printf(stream, "%lc", c);
+        else
+            escm_printf(stream, "x%x", (wint_t) c);     
     }
 }
 
@@ -395,7 +395,7 @@ static int
 uchar_parsetest(escm *e, int c)
 {
     if (c == '#')
-	return escm_input_peek(e->input) == '\\';
+        return escm_input_peek(e->input) == '\\';
 
     return 0;
 }    
@@ -408,7 +408,7 @@ uchar_parse(escm *e)
     (void) escm_input_getc(e->input), escm_input_getc(e->input); /* skip #\ */
     c = input_getuchar(e, e->input);
     if (c == L'\0' && e->err == 1)
-	return NULL;
+        return NULL;
 
     return escm_uchar_make(e, c);
 }
@@ -425,51 +425,51 @@ input_getuchar(escm *e, escm_input *input)
 
     c = '\0';
     if (len < 1) {
-	free(str);
-	return escm_input_getwc(input);
+        free(str);
+        return escm_input_getwc(input);
     } else if (len == 1)
-	c = *str;
+        c = *str;
     else {
-	wchar_t *p;
+        wchar_t *p;
 
-	if (*str == 'x') {
-	    for (p = str + 1; *p != '\0'; p++) {
-		if (*p < '0' || *p > 'f') {
-		    escm_parse_print(input, e->errp, "invalid character: "
-				     "#\\%ls.\n", str);
-		    goto err;
-		}
-		if (*p <= '9')
-		    c <<= 4, c |= (*p - '0');
-		else
-		    c <<= 4, c |= ((*p - 'a') + 10);
-	    }
-	} else if (!wcscmp(str, L"newline") || wcscmp(str, L"linefeed") == 0)
-	    c = L'\n';
-	else if (wcscmp(str, L"space") == 0)
-	    c = L' ';
-	else if (wcscmp(str, L"nul") == 0)
-	    c = L'\0';
-	else if (wcscmp(str, L"alarm") == 0)
-	    c = L'\a';
-	else if (wcscmp(str, L"backspace") == 0)
-	    c = L'\b';
-	else if (wcscmp(str, L"tab") == 0)
-	    c = L'\t';
-	else if (wcscmp(str, L"vtab") == 0)
-	    c = L'\v';
-	else if (wcscmp(str, L"page") == 0)
-	    c = L'\f';
-	else if (wcscmp(str, L"return") == 0)
-	    c = L'\r';
-	else if (wcscmp(str, L"esc") == 0)
-	    c = L'\x1B';
-	else if (wcscmp(str, L"delete") == 0)
-	    c = L'\x7F';
-	else {
-	    escm_parse_print(input, e->errp, "unknown character #\\%s.\n", str);
-	    goto err;
-	}
+        if (*str == 'x') {
+            for (p = str + 1; *p != '\0'; p++) {
+                if (*p < '0' || *p > 'f') {
+                    escm_parse_print(input, e->errp, "invalid character: "
+                                     "#\\%ls.\n", str);
+                    goto err;
+                }
+                if (*p <= '9')
+                    c <<= 4, c |= (*p - '0');
+                else
+                    c <<= 4, c |= ((*p - 'a') + 10);
+            }
+        } else if (!wcscmp(str, L"newline") || wcscmp(str, L"linefeed") == 0)
+            c = L'\n';
+        else if (wcscmp(str, L"space") == 0)
+            c = L' ';
+        else if (wcscmp(str, L"nul") == 0)
+            c = L'\0';
+        else if (wcscmp(str, L"alarm") == 0)
+            c = L'\a';
+        else if (wcscmp(str, L"backspace") == 0)
+            c = L'\b';
+        else if (wcscmp(str, L"tab") == 0)
+            c = L'\t';
+        else if (wcscmp(str, L"vtab") == 0)
+            c = L'\v';
+        else if (wcscmp(str, L"page") == 0)
+            c = L'\f';
+        else if (wcscmp(str, L"return") == 0)
+            c = L'\r';
+        else if (wcscmp(str, L"esc") == 0)
+            c = L'\x1B';
+        else if (wcscmp(str, L"delete") == 0)
+            c = L'\x7F';
+        else {
+            escm_parse_print(input, e->errp, "unknown character #\\%s.\n", str);
+            goto err;
+        }
     }
 
     free(str);
@@ -480,4 +480,3 @@ err:
     e->err = 1;
     return '\0';
 }
-

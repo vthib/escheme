@@ -33,14 +33,14 @@ escm_atom_new(escm *e, size_t type, void *ptr)
 
     atom = e->freelist;
     if (!atom) { /* run the GC to collect some free atoms */
-	/* before we mark the object we try to create */
-	mark(e, type, ptr);
-	escm_gc_collect(e);
-	if (!e->freelist) {
-	    fprintf(stderr, "memory is full.\n");
-	    exit(EXIT_FAILURE);
-	}
-	atom = e->freelist;
+        /* before we mark the object we try to create */
+        mark(e, type, ptr);
+        escm_gc_collect(e);
+        if (!e->freelist) {
+            fprintf(stderr, "memory is full.\n");
+            exit(EXIT_FAILURE);
+        }
+        atom = e->freelist;
     }
     e->freelist = atom->link;
     atom->link = e->heap, e->heap = atom;
@@ -57,15 +57,15 @@ escm_atom_free(escm *e, escm_atom *atom)
     assert(e != NULL);
     assert(atom != NULL);
     if (!atom->ptr)
-	return;
+        return;
     if (atom->type >= e->ntypes) {
-	fprintf(stderr, "An atom have a unknown type.\n");
-	e->err = 1;
-	return;
+        fprintf(stderr, "An atom have a unknown type.\n");
+        e->err = 1;
+        return;
     }
 
     if (e->types[atom->type]->ffree && atom->nofree == 0)
-	e->types[atom->type]->ffree(atom->ptr);
+        e->types[atom->type]->ffree(atom->ptr);
 
     link = atom->link;
     memset(atom, 0, sizeof *atom);
@@ -77,11 +77,11 @@ escm_atom_mark(escm *e, escm_atom *atom)
 {
     assert(e != NULL);
     if (!atom || atom->marked == 1)
-	return;
+        return;
     if (atom->type >= e->ntypes) {
-	fprintf(stderr, "An atom have a unknown type.\n");
-	e->err = 1;
-	return;
+        fprintf(stderr, "An atom have a unknown type.\n");
+        e->err = 1;
+        return;
     }
 
     atom->marked = 1;
@@ -95,27 +95,27 @@ escm_atom_eval(escm *e, escm_atom *atom)
 
     assert(e != NULL);
     if (!atom)
-	return NULL;
+        return NULL;
     if (atom->type >= e->ntypes) {
-	fprintf(stderr, "An atom have a unknown type.\n");
-	escm_abort(e);
+        fprintf(stderr, "An atom have a unknown type.\n");
+        escm_abort(e);
     }
     if (atom->noeval)
-	return atom;
+        return atom;
 
     old = e->curobj, e->curobj = atom;
 
     if (e->types[atom->type]->type == TYPE_BUILT) {
-	if (e->types[atom->type]->d.c.feval)
-	    ret = e->types[atom->type]->d.c.feval(e, atom->ptr);
-	else
-	    ret = atom;
+        if (e->types[atom->type]->d.c.feval)
+            ret = e->types[atom->type]->d.c.feval(e, atom->ptr);
+        else
+            ret = atom;
     } else {
-	if (e->types[atom->type]->d.dyn.feval)
-	    ret = escm_procedure_exec(e, e->types[atom->type]->d.dyn.feval,
-				      escm_cons_make(e, atom, e->NIL), 0);
-	else
-	    ret = atom;
+        if (e->types[atom->type]->d.dyn.feval)
+            ret = escm_procedure_exec(e, e->types[atom->type]->d.dyn.feval,
+                                      escm_cons_make(e, atom, e->NIL), 0);
+        else
+            ret = atom;
     }
 
     e->curobj = old;
@@ -130,24 +130,24 @@ escm_atom_exec(escm *e, escm_atom *atom, escm_atom *args)
 
     assert(e != NULL);
     if (!atom)
-	return NULL;
+        return NULL;
     if (atom->type >= e->ntypes) {
-	fprintf(stderr, "An atom have a unknown type.\n");
-	escm_abort(e);
+        fprintf(stderr, "An atom have a unknown type.\n");
+        escm_abort(e);
     }
 
     old = e->curobj, e->curobj = atom;
     if (e->types[atom->type]->type == TYPE_BUILT) {
-	if (e->types[atom->type]->d.c.fexec)
-	    ret = e->types[atom->type]->d.c.fexec(e, atom->ptr, args);
-	else
-	    goto noexec;
+        if (e->types[atom->type]->d.c.fexec)
+            ret = e->types[atom->type]->d.c.fexec(e, atom->ptr, args);
+        else
+            goto noexec;
     } else {
-	if (e->types[atom->type]->d.dyn.fexec)
-	    ret = escm_procedure_exec(e, e->types[atom->type]->d.dyn.fexec,
-				      escm_cons_make(e, atom, args), 0);
-	else
-	    goto noexec;
+        if (e->types[atom->type]->d.dyn.fexec)
+            ret = escm_procedure_exec(e, e->types[atom->type]->d.dyn.fexec,
+                                      escm_cons_make(e, atom, args), 0);
+        else
+            goto noexec;
     }
     e->curobj = old;
 
@@ -166,36 +166,36 @@ escm_atom_print4(escm *e, escm_atom *atom, escm_output *stream, int lvl)
 
     assert(e != NULL);
     if (!atom)
-	return;
+        return;
     if (atom->type >= e->ntypes) {
-	fprintf(stderr, "An atom have a unknown type.\n");
-	e->err = 1;
-	return;
+        fprintf(stderr, "An atom have a unknown type.\n");
+        e->err = 1;
+        return;
     }
 
     old = e->curobj, e->curobj = atom;
     if (e->types[atom->type]->type == TYPE_BUILT) {
-	if (!e->types[atom->type]->d.c.fprint)
-	    opaque(atom, stream);
-	else
-	    e->types[atom->type]->d.c.fprint(e, atom->ptr, stream, lvl);
+        if (!e->types[atom->type]->d.c.fprint)
+            opaque(atom, stream);
+        else
+            e->types[atom->type]->d.c.fprint(e, atom->ptr, stream, lvl);
 #if defined ESCM_USE_PORTS && defined ESCM_USE_NUMBERS
     } else {
-	if (!e->types[atom->type]->d.dyn.fprint)
-	    opaque(atom, stream);
-	else {
-	    escm_atom *a;
+        if (!e->types[atom->type]->d.dyn.fprint)
+            opaque(atom, stream);
+        else {
+            escm_atom *a;
 
-	    escm_ctx_enter(e);
-	    escm_ctx_put(e, atom);
-	    a = escm_port_make(e, stream, 0);
-	    escm_port_val(a)->nofree = 1;
-	    escm_ctx_put(e, a);
-	    escm_ctx_put(e, escm_int_make(e, (long) lvl));
+            escm_ctx_enter(e);
+            escm_ctx_put(e, atom);
+            a = escm_port_make(e, stream, 0);
+            escm_port_val(a)->nofree = 1;
+            escm_ctx_put(e, a);
+            escm_ctx_put(e, escm_int_make(e, (long) lvl));
 
-	    (void) escm_procedure_exec(e, e->types[atom->type]->d.dyn.fprint,
-				       escm_ctx_leave(e), 0);
-	}
+            (void) escm_procedure_exec(e, e->types[atom->type]->d.dyn.fprint,
+                                       escm_ctx_leave(e), 0);
+        }
 #endif
     }
     e->curobj = old;
@@ -207,27 +207,27 @@ escm_atom_equal(escm *e, escm_atom *o1, escm_atom *o2, int lvl)
     assert(e != NULL);
 
     if (!o1 || !o2 || o1->type != o2->type)
-	return 0;
+        return 0;
     if (o1->type >= e->ntypes) {
-	fprintf(stderr, "An atom have a unknown type.\n");
-	e->err = 1;
-	return 0;
+        fprintf(stderr, "An atom have a unknown type.\n");
+        e->err = 1;
+        return 0;
     }
     if (o1->ptr == o2->ptr)
-	return 1;
+        return 1;
 
     if (e->types[o1->type]->type == TYPE_DYN) {
-	escm_atom *a;
+        escm_atom *a;
 
-	if (!e->types[o1->type]->d.dyn.fequal)
-	    return 0;
-	a = escm_cons_make(e, o1, escm_cons_make(e, o2, e->NIL));
-	a = escm_procedure_exec(e, e->types[o1->type]->d.dyn.fequal, a, 0);
-	return ESCM_ISTRUE(a) ? 1 : 0;
+        if (!e->types[o1->type]->d.dyn.fequal)
+            return 0;
+        a = escm_cons_make(e, o1, escm_cons_make(e, o2, e->NIL));
+        a = escm_procedure_exec(e, e->types[o1->type]->d.dyn.fequal, a, 0);
+        return ESCM_ISTRUE(a) ? 1 : 0;
     } else {
-	if (!e->types[o1->type]->d.c.fequal)
-	    return 0;
-	return e->types[o1->type]->d.c.fequal(e, o1->ptr, o2->ptr, lvl);
+        if (!e->types[o1->type]->d.c.fequal)
+            return 0;
+        return e->types[o1->type]->d.c.fequal(e, o1->ptr, o2->ptr, lvl);
     }
 }
 
@@ -237,7 +237,7 @@ mark(escm *e, size_t type, void *ptr)
     assert(e != NULL);
 
     if (e->types[type]->fmark)
-	e->types[type]->fmark(e, ptr);
+        e->types[type]->fmark(e, ptr);
 }
 
 static inline void

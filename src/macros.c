@@ -36,12 +36,12 @@ static unsigned long macrotype = 0;
 
 static int match(escm *, escm_macro *, escm_atom *, escm_atom *);
 static struct match *bind(escm *, escm_macro *, escm_atom *, escm_atom *,
-			  struct match *);
+                          struct match *);
 static escm_atom *expand(escm *, escm_macro *, escm_atom *, struct match *,
-			 int);
+                         int);
 
 static struct match *add(struct match *, escm_atom *, escm_atom *,
-			 struct match *);
+                         struct match *);
 static struct match *checkup(escm *, struct match *, escm_atom *);
 
 static void macro_mark(escm *, escm_macro *);
@@ -89,15 +89,15 @@ escm_expand(escm *e, escm_atom *args)
     atom = escm_cons_car(arg);
     macro = escm_atom_eval(e, atom);
     if (e->err == 1)
-	return NULL;
+        return NULL;
     if (!macro) {
-	escm_error(e, "~s: ~s do not yield an applicable value.~%", escm_fun(e),
-		   atom);
-	escm_abort(e);
+        escm_error(e, "~s: ~s do not yield an applicable value.~%", escm_fun(e),
+                   atom);
+        escm_abort(e);
     }
     if (!ESCM_ISMACRO(macro)) {
-	escm_error(e, "~s: ~s is not a macro.~%", escm_fun(e), macro);
-	escm_abort(e);
+        escm_error(e, "~s: ~s is not a macro.~%", escm_fun(e), macro);
+        escm_abort(e);
     }
 
     return macro_expand(e, macro->ptr, escm_cons_cdr(arg));
@@ -113,11 +113,11 @@ escm_define_syntax(escm *e, escm_atom *args)
 
     val = escm_atom_eval(e, escm_cons_car(args));
     if (e->err == 1)
-	return NULL;
+        return NULL;
     if (!val) {
-	escm_error(e, "~s: ~s expression not allowed in a definition "
-		   "context.~%", escm_fun(e), escm_cons_car(args));
-	escm_abort(e);
+        escm_error(e, "~s: ~s expression not allowed in a definition "
+                   "context.~%", escm_fun(e), escm_cons_car(args));
+        escm_abort(e);
     }
     escm_assert(ESCM_ISMACRO(val), val, e);
 
@@ -139,12 +139,12 @@ escm_syntax_rules(escm *e, escm_atom *args)
 
     m->rules = args;
     for (a = escm_cons_pop(e, &args); a; a = escm_cons_pop(e, &args)) {
-	escm_assert1(ESCM_ISCONS(a), a, e, free(m));
+        escm_assert1(ESCM_ISCONS(a), a, e, free(m));
 
-	c = a->ptr;
-	escm_assert1(ESCM_ISCONS(c->car) || ESCM_ISVECTOR(c->car), c->car, e,
-		     free(m));
-	escm_assert1(c->cdr != e->NIL, a, e, free(m));
+        c = a->ptr;
+        escm_assert1(ESCM_ISCONS(c->car) || ESCM_ISVECTOR(c->car), c->car, e,
+                     free(m));
+        escm_assert1(c->cdr != e->NIL, a, e, free(m));
     }
 
     m->env = e->env;
@@ -156,37 +156,37 @@ static int
 match(escm *e, escm_macro *m, escm_atom *rule, escm_atom *arg)
 {
     if (!rule || !arg)
-	return !rule && !arg;
+        return !rule && !arg;
 
     if (ESCM_ISSYM(rule)) {
-	if (escm_cons_isin(e, m->literals, rule, 1) &&
-	    escm_atom_equal(e, rule, arg, 1) == 0)
-	    return 0;
-	return 1;
+        if (escm_cons_isin(e, m->literals, rule, 1) &&
+            escm_atom_equal(e, rule, arg, 1) == 0)
+            return 0;
+        return 1;
     } else if (ESCM_ISCONS(rule)) {
-	escm_atom *r, *a;
-	int nextcons;
+        escm_atom *r, *a;
+        int nextcons;
 
-	if (!ESCM_ISCONS(arg))
-	    return 0;
-	if (rule == e->NIL)
-	    return arg == e->NIL;
+        if (!ESCM_ISCONS(arg))
+            return 0;
+        if (rule == e->NIL)
+            return arg == e->NIL;
 
-	nextcons = !ESCM_ISCONS(escm_cons_cdr(rule));
-	if (nextcons &&
-	    !match(e, m, escm_cons_cdr(rule), escm_cons_cdr(arg)))
-	    return 0;
+        nextcons = !ESCM_ISCONS(escm_cons_cdr(rule));
+        if (nextcons &&
+            !match(e, m, escm_cons_cdr(rule), escm_cons_cdr(arg)))
+            return 0;
 
-	r = escm_cons_pop(e, &rule);
-	a = escm_cons_pop(e, &arg);
-	if (rule != e->NIL && ESCM_ISSYM(escm_cons_car(rule)) &&
-	    strcmp(escm_sym_name(escm_cons_car(rule)), "...") == 0)
-	    return 1;
-	if (!match(e, m, r, a))
-	    return 0;
-	return (nextcons) ? 1 : match(e, m, rule, arg);
+        r = escm_cons_pop(e, &rule);
+        a = escm_cons_pop(e, &arg);
+        if (rule != e->NIL && ESCM_ISSYM(escm_cons_car(rule)) &&
+            strcmp(escm_sym_name(escm_cons_car(rule)), "...") == 0)
+            return 1;
+        if (!match(e, m, r, a))
+            return 0;
+        return (nextcons) ? 1 : match(e, m, rule, arg);
     } else
-	return escm_atom_equal(e, rule, arg, 2);
+        return escm_atom_equal(e, rule, arg, 2);
 }
 
 static struct match *
@@ -196,41 +196,41 @@ bind(escm *e, escm_macro *m, escm_atom *rule, escm_atom *arg,
     struct match *mid;
 
     if (rule == e->NIL)
-	return match;
+        return match;
 
     if (ESCM_ISSYM(rule)) {
-	if (!escm_cons_isin(e, m->literals, rule, 1))
-	    return add(match, rule, arg, checkup(e, match, rule));
+        if (!escm_cons_isin(e, m->literals, rule, 1))
+            return add(match, rule, arg, checkup(e, match, rule));
     } else if (ESCM_ISCONS(rule)) {
-	escm_atom *r, *a;
+        escm_atom *r, *a;
 
-	if (!ESCM_ISCONS(escm_cons_cdr(rule)))
-	    match = bind(e, m, escm_cons_cdr(rule),
-			 arg ? escm_cons_cdr(arg) : NULL, match);
+        if (!ESCM_ISCONS(escm_cons_cdr(rule)))
+            match = bind(e, m, escm_cons_cdr(rule),
+                         arg ? escm_cons_cdr(arg) : NULL, match);
 
-	r = escm_cons_pop(e, &rule);
-	if (rule != e->NIL && ESCM_ISSYM(escm_cons_car(rule)) &&
-	    strcmp(escm_sym_name(escm_cons_car(rule)), "...") == 0) {
-	    if (ESCM_ISSYM(r)) {
-		mid = checkup(e, match, r);
-		while ((a = escm_cons_pop(e, &arg)) != NULL) {
-		    match = add(match, r, a, mid);
-		    if (!mid)
-			mid = checkup(e, match, r);
-		}
-	    } else {
-		while ((a = escm_cons_pop(e, &arg)) != NULL)
-		    match = bind(e, m, r, a, match);
-	    }
-	    match = bind(e, m, r, a, match);
-		
-	    (void) escm_cons_pop(e, &rule);
-	} else  {
-	    a = escm_cons_pop(e, &arg);
-	    match = bind(e, m, r, a, match);
-	}
+        r = escm_cons_pop(e, &rule);
+        if (rule != e->NIL && ESCM_ISSYM(escm_cons_car(rule)) &&
+            strcmp(escm_sym_name(escm_cons_car(rule)), "...") == 0) {
+            if (ESCM_ISSYM(r)) {
+                mid = checkup(e, match, r);
+                while ((a = escm_cons_pop(e, &arg)) != NULL) {
+                    match = add(match, r, a, mid);
+                    if (!mid)
+                        mid = checkup(e, match, r);
+                }
+            } else {
+                while ((a = escm_cons_pop(e, &arg)) != NULL)
+                    match = bind(e, m, r, a, match);
+            }
+            match = bind(e, m, r, a, match);
+                
+            (void) escm_cons_pop(e, &rule);
+        } else  {
+            a = escm_cons_pop(e, &arg);
+            match = bind(e, m, r, a, match);
+        }
 
-	return bind(e, m, rule, arg, match);
+        return bind(e, m, rule, arg, match);
     }
     return match;
 }
@@ -244,50 +244,54 @@ expand(escm *e, escm_macro *m, escm_atom *rule, struct match *match,
     escm_atom *ret;
 
     if (ESCM_ISSYM(rule)) {
-	mid = checkup(e, match, rule);
-	if (mid) {
-	    if (ellipsis) {
-		if (!mid->cur->a) {
-		    mid->cur = (mid->cur->next) ? mid->cur->next : mid->fst;
-		    return NULL;
-		}
-		ret = mid->cur->a, mid->cur = mid->cur->next;
-	    } else
-		ret = mid->fst->a;
-	} else {
-	    atom = escm_sym_val(rule);
-	    ret = escm_atom_new(e, atom->type, atom->ptr);
-	    ret->noeval = 1, ret->nofree = 1;
-	}
+        mid = checkup(e, match, rule);
+        if (mid) {
+            if (ellipsis) {
+                if (!mid->cur->a) {
+                    mid->cur = (mid->cur->next) ? mid->cur->next : mid->fst;
+                    return NULL;
+                }
+                ret = mid->cur->a, mid->cur = mid->cur->next;
+            } else
+                ret = mid->fst->a;
+        } else {
+            atom = escm_sym_val(rule);
+            if (!atom) /* this symbol will be set in the context (we hope) */
+                ret = rule;
+            else {
+                ret = escm_atom_new(e, atom->type, atom->ptr);
+                ret->noeval = 1, ret->nofree = 1;
+            }
+        }
     } else if (ESCM_ISCONS(rule)) {
-	escm_cons *c;
+        escm_cons *c;
 
-	escm_ctx_enter(e);
+        escm_ctx_enter(e);
 
-	for (c = rule->ptr; c != NULL; c = escm_cons_next(c)) {
-	    if (ESCM_ISCONS(c->cdr) && c->cdr != e->NIL &&
-		ESCM_ISSYM(escm_cons_car(c->cdr)) &&
-		strcmp(escm_sym_name(escm_cons_car(c->cdr)), "...") == 0) {
-		while ((atom = expand(e, m, c->car, match, 1)) != NULL)
-		    escm_ctx_put(e, atom);
-		c = escm_cons_next(c);
-	    } else {
-		atom = expand(e, m, c->car, match, ellipsis);
-		if (!atom) goto retnull;
-		escm_ctx_put(e, atom);
-	    }
+        for (c = rule->ptr; c != NULL; c = escm_cons_next(c)) {
+            if (ESCM_ISCONS(c->cdr) && c->cdr != e->NIL &&
+                ESCM_ISSYM(escm_cons_car(c->cdr)) &&
+                strcmp(escm_sym_name(escm_cons_car(c->cdr)), "...") == 0) {
+                while ((atom = expand(e, m, c->car, match, 1)) != NULL)
+                    escm_ctx_put(e, atom);
+                c = escm_cons_next(c);
+            } else {
+                atom = expand(e, m, c->car, match, ellipsis);
+                if (!atom) goto retnull;
+                escm_ctx_put(e, atom);
+            }
 
-	    if (!ESCM_ISCONS(c->cdr)) {
-		e->ctx->dotted = 1;
-		atom = expand(e, m , c->cdr, match, ellipsis);
-		if (!atom) goto retnull;
-		escm_ctx_put(e, atom);
-	    }
-	}
+            if (!ESCM_ISCONS(c->cdr)) {
+                e->ctx->dotted = 1;
+                atom = expand(e, m , c->cdr, match, ellipsis);
+                if (!atom) goto retnull;
+                escm_ctx_put(e, atom);
+            }
+        }
 
-	ret = escm_ctx_leave(e);
+        ret = escm_ctx_leave(e);
     } else
-	ret = rule;
+        ret = rule;
 
     return ret;
 
@@ -302,17 +306,17 @@ add(struct match *match, escm_atom *id, escm_atom *bounded, struct match *m)
     struct node *n;
 
     if (!m) {
-	m = xcalloc(1, sizeof *m);
-	m->ident = id, m->prev = match;
-	match = m;
+        m = xcalloc(1, sizeof *m);
+        m->ident = id, m->prev = match;
+        match = m;
     }
 
     n = xmalloc(sizeof *n);
     n->a = bounded, n->next = NULL;
     if (!m->fst)
-	m->fst = n, m->cur = n;
+        m->fst = n, m->cur = n;
     else
-	m->cur->next = n, m->cur = n;
+        m->cur->next = n, m->cur = n;
 
     return match;
 }
@@ -323,7 +327,7 @@ checkup(escm *e, struct match *match, escm_atom *id)
     struct match *m;
 
     for (m = match; m && !escm_atom_equal(e, m->ident, id, 2); m = m->prev)
-	;
+        ;
 
     return m;
 }
@@ -364,25 +368,25 @@ macro_expand(escm *e, escm_macro *m, escm_atom *args)
 
     rules = m->rules;
     for (a = escm_cons_pop(e, &rules); a; a = escm_cons_pop(e, &rules)) {
-	if (match(e, m, escm_cons_cdr(escm_cons_car(a)), args)) {
-	    b = bind(e, m, escm_cons_cdr(escm_cons_car(a)), args, NULL);
-	    for (ma = b; ma; ma = ma->prev)
-		ma->cur = ma->fst;
+        if (match(e, m, escm_cons_cdr(escm_cons_car(a)), args)) {
+            b = bind(e, m, escm_cons_cdr(escm_cons_car(a)), args, NULL);
+            for (ma = b; ma; ma = ma->prev)
+                ma->cur = ma->fst;
 
-	    prevenv = escm_env_enter(e, m->env);
-	    a = expand(e, m, escm_cons_car(escm_cons_cdr(a)), b, 0);
-	    for (; b; b = ma) {
-		ma = b->prev;
-		for (n = b->fst; n; n = next)
-		    next = n->next, free(n);
-		free(b);
-	    }
-	    escm_env_leave(e, prevenv);
-	    return a;
-	}
+            prevenv = escm_env_enter(e, m->env);
+            a = expand(e, m, escm_cons_car(escm_cons_cdr(a)), b, 0);
+            for (; b; b = ma) {
+                ma = b->prev;
+                for (n = b->fst; n; n = next)
+                    next = n->next, free(n);
+                free(b);
+            }
+            escm_env_leave(e, prevenv);
+            return a;
+        }
     }
 
     escm_error(e, "Can't expand macro ~s.~%",
-	       escm_cons_car(escm_cons_car(escm_cons_car(m->rules))));
+               escm_cons_car(escm_cons_car(escm_cons_car(m->rules))));
     escm_abort(e);
 }

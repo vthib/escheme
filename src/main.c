@@ -48,6 +48,7 @@ main(int argc, char **argv)
     int resume = 0;
     int loadinit = 1;
     char *p;
+    int ret;
 
     memset(noload, 0, sizeof noload);
 
@@ -56,99 +57,99 @@ main(int argc, char **argv)
         fprintf(stderr, "can't set the locale.\n");
 
     for (i = 1; i < argc; i++) {
-	if (*argv[i] == '-' && argv[i][1] != 'e') {
-	    for (p = argv[i] + 1; *p != '\0'; p++) {
-		switch (*p) {
-		case 'a': useascii = 1; break;
-		case 'N': noload[CNUM] = 1; break;
-		case 'n': noload[BNUM] = 1; break;
-		case 's': noload[STRING] = 1; break;
-		case 'b': noload[BOOL] = 1; break;
-		case 'v': noload[VECT] = 1; break;
-		case 'c': noload[CHAR] = 1; break;
-		case 'P': noload[PROMISE] = 1; break;
-		case 'p': noload[PORT] = 1; break;
-		case 'm': noload[MACRO] = 1; break;
-		case 'C': noload[CONT] = 1; break;
-		case 'd': noload[DYNTYPE] = 1; break;
-		case 'g': casesens = 1; break;
-		case 'G': casesens = 0; break;
-		case 'r': resume = 1; break;
-		case 'S': loadinit = 0; break;
-		case 'h':
-		    usage(argv[0]);
-		    return EXIT_SUCCESS;
-		}
-	    }
-	} else
-	    break;
+        if (*argv[i] == '-' && argv[i][1] != 'e') {
+            for (p = argv[i] + 1; *p != '\0'; p++) {
+                switch (*p) {
+                case 'a': useascii = 1; break;
+                case 'N': noload[CNUM] = 1; break;
+                case 'n': noload[BNUM] = 1; break;
+                case 's': noload[STRING] = 1; break;
+                case 'b': noload[BOOL] = 1; break;
+                case 'v': noload[VECT] = 1; break;
+                case 'c': noload[CHAR] = 1; break;
+                case 'P': noload[PROMISE] = 1; break;
+                case 'p': noload[PORT] = 1; break;
+                case 'm': noload[MACRO] = 1; break;
+                case 'C': noload[CONT] = 1; break;
+                case 'd': noload[DYNTYPE] = 1; break;
+                case 'g': casesens = 1; break;
+                case 'G': casesens = 0; break;
+                case 'r': resume = 1; break;
+                case 'S': loadinit = 0; break;
+                case 'h':
+                    usage(argv[0]);
+                    return EXIT_SUCCESS;
+                }
+            }
+        } else
+            break;
     }
 
     e = escm_new();
     if (!e)
-	return EXIT_FAILURE;
+        return EXIT_FAILURE;
 
 #ifdef ESCM_USE_BOOLEANS
     if (!noload[BOOL])
-	escm_booleans_init(e);
+        escm_booleans_init(e);
 #endif
 
 /* numbers needs to be declared before symbols */
 #ifdef ESCM_USE_BNUMBERS
     if (!noload[BNUM])
-	escm_bnumbers_init(e);
+        escm_bnumbers_init(e);
 #endif
 
 #ifdef ESCM_USE_CNUMBERS
     if (!noload[CNUM] && noload[BNUM])
-	escm_cnumbers_init(e);
+        escm_cnumbers_init(e);
 #endif
 
 #ifdef ESCM_USE_STRINGS
     if (!noload[STRING]) {
 # ifdef ESCM_USE_UNICODE
-	if (!useascii)
-	    escm_ustrings_init(e);
-	else
+        if (!useascii)
+            escm_ustrings_init(e);
+        else
 # endif
-	    escm_astrings_init(e);
+            escm_astrings_init(e);
     }
 #endif
 #ifdef ESCM_USE_VECTORS
     if (!noload[VECT])
-	escm_vectors_init(e);
+        escm_vectors_init(e);
 #endif
 #ifdef ESCM_USE_CHARACTERS
     if (!noload[CHAR]) {
 # ifdef ESCM_USE_UNICODE
-	if (!useascii)
-	    escm_uchars_init(e);
-	else
+        if (!useascii)
+            escm_uchars_init(e);
+        else
 # endif
-	    escm_achars_init(e);
+            escm_achars_init(e);
     }
 #endif
 
 #ifdef ESCM_USE_PROMISES
     if (!noload[PROMISE])
-	escm_promises_init(e);
+        escm_promises_init(e);
 #endif
 #ifdef ESCM_USE_PORTS
     if (!noload[PORT])
-	escm_ports_init(e);
+        escm_ports_init(e);
 #endif
 #ifdef ESCM_USE_MACROS
     if (!noload[MACRO])
-	escm_macros_init(e);
+        escm_macros_init(e);
 #endif
 #ifdef ESCM_USE_CONTINUATIONS
     if (!noload[CONT])
-	escm_continuations_init(e);
+        escm_continuations_init(e);
 #endif
 
 #ifdef ESCM_USE_DYNTYPES
     if (!noload[DYNTYPE])
-	escm_dyntypes_init(e);
+        escm_dyntypes_init(e);
 #endif
 
 #ifndef ESCM_USE_CHARACTERS
@@ -160,51 +161,51 @@ main(int argc, char **argv)
 
     escm_init(e, loadinit);
 
+    ret = 1;
     if (i < argc) {
-	while (i < argc) {
-	    if (0 == strcmp(argv[i], "-e")) {
-		(void) escm_sparse(e, argv[i + 1]);
-		i += 2;
-	    } else
-		(void) escm_fparse(e, argv[i++]);
-	}
-	if (resume)
-	    escm_shell(e);
+        while (i < argc) {
+            if (0 == strcmp(argv[i], "-e")) {
+                ret = escm_sparse(e, argv[i + 1]);
+                i += 2;
+            } else
+                ret = escm_fparse(e, argv[i++]);
+            if (ret == 0)
+                break;
+        }
+        if (resume)
+            escm_shell(e);
     } else
-	escm_shell(e);
+        escm_shell(e);
 
     escm_free(e);
 
-    return EXIT_SUCCESS;
+    return (ret) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 static void
 usage(char *name)
 {
     printf("Escheme -- A small and smart scheme interpreter.\n"
-	   "\n"
-	   "%s [option ...] [file ...]\n"
-	   "if no file is present, display a prompt.\n"
-	   "\n"
-	   "-h\tprint this help.\n"
-	   "-a\tuse ascii (do not use unicode version of char and string).\n"
-	   "-N\tdo not load the complete number type.\n"
-	   "-n\tdo not load the basic number type.\n"
-	   "-s\tdo not load the string type.\n"
-	   "-b\tdo not load the boolean type.\n"
-	   "-v\tdo not load the vector type.\n"
-	   "-c\tdo not load the character type.\n"
-	   "-P\tdo not load the promise type.\n"
-	   "-p\tdo not load the port type.\n", name);
+           "\n"
+           "%s [option ...] [file ...]\n"
+           "if no file is present, display a prompt.\n"
+           "\n"
+           "-h\tprint this help.\n"
+           "-a\tuse ascii (do not use unicode version of char and string).\n"
+           "-N\tdo not load the complete number type.\n"
+           "-n\tdo not load the basic number type.\n"
+           "-s\tdo not load the string type.\n"
+           "-b\tdo not load the boolean type.\n"
+           "-v\tdo not load the vector type.\n"
+           "-c\tdo not load the character type.\n"
+           "-P\tdo not load the promise type.\n"
+           "-p\tdo not load the port type.\n", name);
     printf("-m\tdo not load the macro type.\n"
-	   "-C\tdo not load the continuation type.\n"
-	   "-d\tdo not load dynamic types primitives.\n"
-	   "\n"
-	   "-G\tSymbols are treated case-insensitively.\n"
-	   "-g\tSymbols are treated case-sensitively (default).\n"
-	   "\n"
-	   "-e expr\tEvaluates expr.\n\n");
+           "-C\tdo not load the continuation type.\n"
+           "-d\tdo not load dynamic types primitives.\n"
+           "\n"
+           "-G\tSymbols are treated case-insensitively.\n"
+           "-g\tSymbols are treated case-sensitively (default).\n"
+           "\n"
+           "-e expr\tEvaluates expr.\n\n");
 }
-
-
-

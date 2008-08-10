@@ -24,7 +24,7 @@
 #define ESCM_ISSYM(x) ((x)->type == ESCM_TYPE_SYMBOL)
 
 #define escm_sym_node(x) ((escm_tst *) (x)->ptr)
-#define escm_sym_val(x)						\
+#define escm_sym_val(x)                                                \
     ((escm_sym_node(x)->node) ? escm_sym_node(x)->node->atom : NULL)
 #define escm_sym_name(x) escm_sym_node(x)->symname
 

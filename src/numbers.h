@@ -58,16 +58,16 @@
 # define ESCM_TYPE_NUMBER (ESCM_TYPE_CNUMBER | ESCM_TYPE_BNUMBER)
 
 # define ESCM_ISNUMBER(x) ((x)->type == ESCM_TYPE_NUMBER)
-# define ESCM_ISINT(x)							\
+# define ESCM_ISINT(x)                                                        \
     ((escm_type_ison(ESCM_TYPE_CNUMBER)) ? ESCM_ISCINT(x) : ESCM_ISBINT(x))
-# define ESCM_ISREAL(x)							\
+# define ESCM_ISREAL(x)                                                        \
     ((escm_type_ison(ESCM_TYPE_CNUMBER)) ? ESCM_ISCREAL(x) : ESCM_ISBREAL(x))
 
-# define escm_number_ival(x)						\
-    ((escm_type_ison(ESCM_TYPE_CNUMBER)) ? escm_cnumber_ival(x) :	\
+# define escm_number_ival(x)                                                \
+    ((escm_type_ison(ESCM_TYPE_CNUMBER)) ? escm_cnumber_ival(x) :        \
      escm_bnumber_ival(x))
-# define escm_number_rval(x)						\
-    ((escm_type_ison(ESCM_TYPE_CNUMBER)) ? escm_cnumber_rval(x) :	\
+# define escm_number_rval(x)                                                \
+    ((escm_type_ison(ESCM_TYPE_CNUMBER)) ? escm_cnumber_rval(x) :        \
      escm_bnumber_rval(x))
 
 # ifdef ESCM_INTBOOL
@@ -76,10 +76,10 @@
 # endif
 
 # define escm_int_make(e, i) \
-    ((escm_type_ison(ESCM_TYPE_CNUMBER)) ? escm_cint_make(e, i, 1) :	\
+    ((escm_type_ison(ESCM_TYPE_CNUMBER)) ? escm_cint_make(e, i, 1) :        \
      escm_bint_make(e, i))
-# define escm_real_make(e, i)						\
-    ((escm_type_ison(ESCM_TYPE_CNUMBER)) ? escm_creal_make(e, i) :	\
+# define escm_real_make(e, i)                                                \
+    ((escm_type_ison(ESCM_TYPE_CNUMBER)) ? escm_creal_make(e, i) :        \
      escm_breal_make(e, i))
 
 #endif

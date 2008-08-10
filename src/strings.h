@@ -36,9 +36,9 @@
 # define ESCM_TYPE_STRING (ESCM_TYPE_ASTRING | ESCM_TYPE_USTRING)
 
 # define ESCM_ISSTR(x) ((x)->type == ESCM_TYPE_STRING)
-# define escm_str_val(x)						\
+# define escm_str_val(x)                                                \
     ((escm_type_ison(ESCM_TYPE_ASTRING)) ? escm_astr_val(x) : escm_ustr_val(x))
-# define escm_str_len(x)						\
+# define escm_str_len(x)                                                \
     ((escm_type_ison(ESCM_TYPE_ASTRING)) ? escm_astr_len(x) : escm_ustr_len(x))
 /* XXX: escm_string_make */
 #endif

@@ -40,9 +40,9 @@ escm_continuations_init(escm *e)
     continuationtype = escm_type_add(e, t);
 
     (void) escm_procedure_new(e, "continuation?", 1, 1, escm_continuation_p,
-			      NULL);
+                              NULL);
     (void) escm_procedure_new(e, "call-with-current-continuation", 1, 1,
-			      escm_call_with_cc, NULL);
+                              escm_call_with_cc, NULL);
     (void) escm_procedure_new(e, "call/cc", 1, 1, escm_call_with_cc, NULL);
 }
 
@@ -74,20 +74,20 @@ escm_call_with_cc(escm *e, escm_atom *args)
 
     i = setjmp(c->buf);
     if (i == 0) {
-	curcont = c;
-	c->ctx = e->ctx, e->ctx = NULL;
-	a = escm_procedure_exec(e, proc, escm_cons_make(e, cont, e->NIL), 0);
-	e->ctx = context_copy(c->ctx);
-	return a;
+        curcont = c;
+        c->ctx = e->ctx, e->ctx = NULL;
+        a = escm_procedure_exec(e, proc, escm_cons_make(e, cont, e->NIL), 0);
+        e->ctx = context_copy(c->ctx);
+        return a;
     } else {
-	/* local variable "c" may not be still valable, that why we use a
-	   global variable "curcont" */
-	if (!curcont)
-	    return NULL;
+        /* local variable "c" may not be still valable, that why we use a
+           global variable "curcont" */
+        if (!curcont)
+            return NULL;
 
-	e->ctx = context_copy(curcont->ctx);
+        e->ctx = context_copy(curcont->ctx);
 
-	return curcont->ret;
+        return curcont->ret;
     }
 }
 
@@ -97,14 +97,14 @@ continuation_free(escm_continuation *c)
     escm_context *ctx, *prev;
 
     for (ctx = c->ctx; ctx; ctx = prev)
-	prev = ctx->prev, free(ctx);
+        prev = ctx->prev, free(ctx);
 
     free(c);
 }
 
 static void
 continuation_print(escm *e, escm_continuation *cont, escm_output *stream,
-		   int lvl)
+                   int lvl)
 {
     (void) e;
     (void) lvl;
@@ -120,13 +120,13 @@ context_copy(escm_context *ctx)
 
     ret = NULL, prev = NULL;
     for (; ctx; ctx = ctx->prev) {
-	new = xcalloc(1, sizeof *new);
-	new->first = ctx->first, new->last = ctx->last;
-	if (prev)
-	    prev->prev = new;
-	if (!ret)
-	    ret = new;
-	prev = new;
+        new = xcalloc(1, sizeof *new);
+        new->first = ctx->first, new->last = ctx->last;
+        if (prev)
+            prev->prev = new;
+        if (!ret)
+            ret = new;
+        prev = new;
     }
 
     return ret;
@@ -137,16 +137,13 @@ continuation_exec(escm *e, escm_continuation *cont, escm_atom *args)
 {
     cont->ret = escm_atom_eval(e, escm_cons_car(args));
     if (e->err == 1)
-	return NULL;
+        return NULL;
 
     while (e->ctx)
-	escm_ctx_discard(e);
+        escm_ctx_discard(e);
 
     curcont = cont;
     longjmp(cont->buf, 1);
 
     return NULL;
 }
-
-
-

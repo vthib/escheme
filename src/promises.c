@@ -71,14 +71,14 @@ escm_force(escm *e, escm_atom *args)
     p = promise->ptr;
 
     if (!p->env) /* value already computed */
-	return p->atom;
+        return p->atom;
 
     penv = escm_env_enter(e, p->env);
 
     p->atom = escm_atom_eval(e, p->atom);
     escm_env_leave(e, penv);
     if (e->err == 1)
-	return NULL;
+        return NULL;
 
     p->env = NULL;
     return p->atom;

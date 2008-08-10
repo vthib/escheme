@@ -39,7 +39,7 @@ xmalloc(size_t n)
     p = malloc(n);
     if (!p) {
         fprintf(stderr, _("Memory is too low\n"));
-	exit(EXIT_FAILURE);
+        exit(EXIT_FAILURE);
     }
 
     return p;
@@ -100,12 +100,12 @@ xstrcasecmp(const char *s1, const char *s2)
     char *c1, *c2;
 
     for (c1 = (char *) s1, c2 = (char *) s2; *c1 != '\0'; c1++, c2++) {
-	if (*c2 == '\0')
-	    return 1;
-	else if (tolower(*c1) < tolower(*c2))
-	    return -1;
-	else if (tolower(*c1) > tolower(*c2))
-		return 1;
+        if (*c2 == '\0')
+            return 1;
+        else if (tolower(*c1) < tolower(*c2))
+            return -1;
+        else if (tolower(*c1) > tolower(*c2))
+                return 1;
     }
 
     return (*c2 != '\0') ? -1 : 0;
@@ -122,14 +122,14 @@ xround(double a)
     c = ceil(a);
 
     if (DBL_EQ(a - c, 0.5)) { /* round to even */
-	if (((long) c) % 2 == 0)
-	    return c;
-	else
-	    return c - 1;
+        if (((long) c) % 2 == 0)
+            return c;
+        else
+            return c - 1;
     } else if (DBL_LT(c, 0.5)) /* a is closer to his upper integer */
-	return c;
+        return c;
     else
-	return c - 1;
+        return c - 1;
 #endif
 }
 
@@ -142,7 +142,7 @@ wcstostr(const wchar_t *w)
     n = wcstombs(NULL, w, 0) + 1;
     str = xmalloc(sizeof *str * n);
     if (wcstombs(str, w, n) == (size_t) (-1))
-	fprintf(stderr, "wcstombs: conversion error.\n");
+        fprintf(stderr, "wcstombs: conversion error.\n");
     return str;
 }
 
@@ -155,7 +155,7 @@ strtowcs(const char *str)
     n = mbstowcs(NULL, str, 0) + 1;
     w = xmalloc(sizeof *w * n);
     if (mbstowcs(w, str, n) == (size_t) (-1))
-	fprintf(stderr, "mbstowcs: conversion error.\n");
+        fprintf(stderr, "mbstowcs: conversion error.\n");
     return w;
 }
 
@@ -182,10 +182,10 @@ xwcscasecmp(const wchar_t *s1, const wchar_t *s2)
     size_t i1, i2;
 
     for (i1 = 0, i2 = 0; s1[i1] != L'\0'; i1++, i2++) {
-	if (s2[i2] == L'\0')
-	    return 1;
-	else if (s1[i1] != s2[i2])
-	    return (s1[i1] > s2[i2]) ? 1 : -1;
+        if (s2[i2] == L'\0')
+            return 1;
+        else if (s1[i1] != s2[i2])
+            return (s1[i1] > s2[i2]) ? 1 : -1;
     }
 
     return (s2[i2] != L'\0') ? -1 : 0;

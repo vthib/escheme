@@ -22,21 +22,21 @@
 #define ESCM_TYPE_CNUMBER escm_cnumber_tget()
 
 #define ESCM_ISCNUMBER(x) ((x)->type == ESCM_TYPE_CNUMBER)
-#define ESCM_ISCINT(x) (ESCM_ISNUMBER(x) &&				\
-		       ((escm_number *) (x)->ptr)->type == ESCM_INTEGER)
-#define ESCM_ISCREAL(x) (ESCM_ISNUMBER(x) &&				\
-			((escm_number *) (x)->ptr)->type == ESCM_REAL)
-#define ESCM_ISRATIONAL(x) (ESCM_ISNUMBER(x) &&				\
-			    ((escm_number *) (x)->ptr)->type == ESCM_RATIONAL)
-#define ESCM_ISCOMPLEX(x) (ESCM_ISNUMBER(x) &&				\
-			   ((escm_number *) (x)->ptr)->type == ESCM_COMPLEX)
+#define ESCM_ISCINT(x) (ESCM_ISNUMBER(x) &&                                \
+                       ((escm_number *) (x)->ptr)->type == ESCM_INTEGER)
+#define ESCM_ISCREAL(x) (ESCM_ISNUMBER(x) &&                                \
+                        ((escm_number *) (x)->ptr)->type == ESCM_REAL)
+#define ESCM_ISRATIONAL(x) (ESCM_ISNUMBER(x) &&                                \
+                            ((escm_number *) (x)->ptr)->type == ESCM_RATIONAL)
+#define ESCM_ISCOMPLEX(x) (ESCM_ISNUMBER(x) &&                                \
+                           ((escm_number *) (x)->ptr)->type == ESCM_COMPLEX)
 
 #define escm_cnumber_val(x) ((escm_number *) (x)->ptr)
 #define escm_cnumber_ival(x) (escm_cnumber_val(x)->d.i)
 #define escm_cnumber_rval(x) (escm_cnumber_val(x)->d.real)
 
 #define ESCM_ISCTRUE(x) (!x || !ESCM_ISINT(x) || \
-			 (((escm_number *) (x)->ptr)->d.i != 0))
+                         (((escm_number *) (x)->ptr)->d.i != 0))
 
 #define escm_cnumber_exactp(x) (escm_cnumber_val(x)->exact)
 
@@ -61,10 +61,10 @@ typedef enum Escm_Number_Type {
 
 struct escm_number {
     union {
-	long i;
-	double real;
-	escm_rational rat;
-	escm_complex cpx;
+        long i;
+        double real;
+        escm_rational rat;
+        escm_complex cpx;
     } d;
 
     Escm_Number_Type type;
