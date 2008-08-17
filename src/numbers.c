@@ -23,16 +23,16 @@
 #endif
 
 #include "escheme.h"
-#include "bnumbers.h"
+#include "numbers.h"
 
-static unsigned long bnumbertype = 0;
+static unsigned long numbertype = 0;
 
-static void number_print(escm *, escm_bnumber *, escm_output *, int);
-static int number_equal(escm *, escm_bnumber *, escm_bnumber *, int);
+static void number_print(escm *, escm_number *, escm_output *, int);
+static int number_equal(escm *, escm_number *, escm_number *, int);
 static int number_parsetest(escm *, int);
 static escm_atom *number_parse(escm *);
 
-static escm_bnumber *inputtonumber(escm *, escm_input *, int);
+static escm_number *inputtonumber(escm *, escm_input *, int);
 static long pgcd(long, long);
 #ifdef ESCM_USE_STRINGS
 static char *bintostr(long);
@@ -40,7 +40,7 @@ static char *bintostr(long);
 static inline int isnumber(int);
 
 void
-escm_bnumbers_init(escm *e)
+escm_numbers_init(escm *e)
 {
     escm_type *t;
 
@@ -51,109 +51,108 @@ escm_bnumbers_init(escm *e)
     t->parsetest.fparsetest = number_parsetest;
     t->parse.fparse = number_parse;
 
-    bnumbertype = escm_type_add(e, t);
+    numbertype = escm_type_add(e, t);
 
-    (void) escm_procedure_new(e, "number?", 1, 1, escm_bnumber_p, NULL);
-    (void) escm_procedure_new(e, "integer?", 1, 1, escm_binteger_p, NULL);
-    (void) escm_procedure_new(e, "real?", 1, 1, escm_breal_p, NULL);
+    (void) escm_procedure_new(e, "number?", 1, 1, escm_number_p, NULL);
+    (void) escm_procedure_new(e, "integer?", 1, 1, escm_integer_p, NULL);
+    (void) escm_procedure_new(e, "real?", 1, 1, escm_real_p, NULL);
 
-    (void) escm_procedure_new(e, "=", 2, -1, escm_beq, NULL);
-    (void) escm_procedure_new(e, "<", 2, -1, escm_blt, NULL);
-    (void) escm_procedure_new(e, ">", 2, -1, escm_bgt, NULL);
-    (void) escm_procedure_new(e, "<=", 2, -1, escm_ble, NULL);
-    (void) escm_procedure_new(e, ">=", 2, -1, escm_bge, NULL);
+    (void) escm_procedure_new(e, "=", 2, -1, escm_eq, NULL);
+    (void) escm_procedure_new(e, "<", 2, -1, escm_lt, NULL);
+    (void) escm_procedure_new(e, ">", 2, -1, escm_gt, NULL);
+    (void) escm_procedure_new(e, "<=", 2, -1, escm_le, NULL);
+    (void) escm_procedure_new(e, ">=", 2, -1, escm_ge, NULL);
 
-    (void) escm_procedure_new(e, "+", 0, -1, escm_badd, NULL);
-    (void) escm_procedure_new(e, "-", 1, -1, escm_bsub, NULL);
-    (void) escm_procedure_new(e, "*", 0, -1, escm_bmul, NULL);
-    (void) escm_procedure_new(e, "/", 1, -1, escm_bdiv, NULL);
+    (void) escm_procedure_new(e, "+", 0, -1, escm_add, NULL);
+    (void) escm_procedure_new(e, "-", 1, -1, escm_sub, NULL);
+    (void) escm_procedure_new(e, "*", 0, -1, escm_mul, NULL);
+    (void) escm_procedure_new(e, "/", 1, -1, escm_div, NULL);
 
-    (void) escm_procedure_new(e, "quotient", 2, 2, escm_bquotient, NULL);
-    (void) escm_procedure_new(e, "remainder", 2, 2, escm_bremainder, NULL);
-    (void) escm_procedure_new(e, "modulo", 2, 2, escm_bmodulo, NULL);
+    (void) escm_procedure_new(e, "quotient", 2, 2, escm_quotient, NULL);
+    (void) escm_procedure_new(e, "remainder", 2, 2, escm_remainder, NULL);
+    (void) escm_procedure_new(e, "modulo", 2, 2, escm_modulo, NULL);
 
-    (void) escm_procedure_new(e, "gcd", 0, -1, escm_bgcd, NULL);
-    (void) escm_procedure_new(e, "lcm", 0, -1, escm_blcm, NULL);
+    (void) escm_procedure_new(e, "gcd", 0, -1, escm_gcd, NULL);
+    (void) escm_procedure_new(e, "lcm", 0, -1, escm_lcm, NULL);
 
-    (void) escm_procedure_new(e, "numerator", 1, 1, escm_bnumerator, NULL);
-    (void) escm_procedure_new(e, "denominator", 1, 1, escm_bdenominator, NULL);
+    (void) escm_procedure_new(e, "numerator", 1, 1, escm_numerator, NULL);
+    (void) escm_procedure_new(e, "denominator", 1, 1, escm_denominator, NULL);
 
 #ifdef ESCM_USE_MATH
-    (void) escm_procedure_new(e, "floor", 1, 1, escm_bfloor, NULL);
-    (void) escm_procedure_new(e, "ceiling", 1, 1, escm_bceiling, NULL);
-    (void) escm_procedure_new(e, "truncate", 1, 1, escm_btruncate, NULL);
-    (void) escm_procedure_new(e, "round", 1, 1, escm_bround, NULL);
+    (void) escm_procedure_new(e, "floor", 1, 1, escm_floor, NULL);
+    (void) escm_procedure_new(e, "ceiling", 1, 1, escm_ceiling, NULL);
+    (void) escm_procedure_new(e, "truncate", 1, 1, escm_truncate, NULL);
+    (void) escm_procedure_new(e, "round", 1, 1, escm_round, NULL);
 
-    (void) escm_procedure_new(e, "exp", 1, 1, escm_bexp, NULL);
-    (void) escm_procedure_new(e, "log", 1, 1, escm_blog, NULL);
-    (void) escm_procedure_new(e, "sin", 1, 1, escm_bsin, NULL);
-    (void) escm_procedure_new(e, "cos", 1, 1, escm_bcos, NULL);
-    (void) escm_procedure_new(e, "tan", 1, 1, escm_btan, NULL);
-    (void) escm_procedure_new(e, "asin", 1, 1, escm_basin, NULL);
-    (void) escm_procedure_new(e, "acos", 1, 1, escm_bacos, NULL);
-    (void) escm_procedure_new(e, "atan", 1, 2, escm_batan, NULL);
+    (void) escm_procedure_new(e, "exp", 1, 1, escm_exp, NULL);
+    (void) escm_procedure_new(e, "log", 1, 1, escm_log, NULL);
+    (void) escm_procedure_new(e, "sin", 1, 1, escm_sin, NULL);
+    (void) escm_procedure_new(e, "cos", 1, 1, escm_cos, NULL);
+    (void) escm_procedure_new(e, "tan", 1, 1, escm_tan, NULL);
+    (void) escm_procedure_new(e, "asin", 1, 1, escm_asin, NULL);
+    (void) escm_procedure_new(e, "acos", 1, 1, escm_acos, NULL);
+    (void) escm_procedure_new(e, "atan", 1, 2, escm_atan, NULL);
 
-    (void) escm_procedure_new(e, "sqrt", 1, 1, escm_bsqrt, NULL);
-    (void) escm_procedure_new(e, "expt", 2, 2, escm_bexpt, NULL);
+    (void) escm_procedure_new(e, "sqrt", 1, 1, escm_sqrt, NULL);
+    (void) escm_procedure_new(e, "expt", 2, 2, escm_expt, NULL);
 #endif
 
 #ifdef ESCM_USE_STRINGS
-    (void) escm_procedure_new(e, "number->string", 1, 2, escm_bnumber_to_string,
+    (void) escm_procedure_new(e, "number->string", 1, 2, escm_number_to_string,
                               NULL);
-    (void) escm_procedure_new(e, "string->number", 1, 2, escm_string_to_bnumber,
+    (void) escm_procedure_new(e, "string->number", 1, 2, escm_string_to_number,
                               NULL);
 #endif
-
 }
 
 size_t
-escm_bnumber_tget(void)
+escm_number_tget(void)
 {
-    return bnumbertype;
+    return numbertype;
 }
 
 escm_atom *
-escm_bint_make(escm *e, long i)
+escm_int_make(escm *e, long i)
 {
-    escm_bnumber *n;
+    escm_number *n;
 
     n = xmalloc(sizeof *n);
     n->fixnum = 1, n->d.ival = i;
 
-    return escm_atom_new(e, bnumbertype, n);
+    return escm_atom_new(e, numbertype, n);
 }
 
 escm_atom *
-escm_breal_make(escm *e, double r)
+escm_real_make(escm *e, double r)
 {
-    escm_bnumber *n;
+    escm_number *n;
 
     n = xmalloc(sizeof *n);
     n->fixnum = 0, n->d.rval = r;
 
-    return escm_atom_new(e, bnumbertype, n);
+    return escm_atom_new(e, numbertype, n);
 }
 
 escm_atom *
-escm_bnumber_p(escm *e, escm_atom *args)
+escm_number_p(escm *e, escm_atom *args)
 {
     return (ESCM_ISNUMBER(escm_cons_val(args)->car)) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
-escm_binteger_p(escm *e, escm_atom *args)
+escm_integer_p(escm *e, escm_atom *args)
 {
-    return ESCM_ISBINT(escm_cons_car(args)) ? e->TRUE : e->FALSE;
+    return ESCM_ISINT(escm_cons_car(args)) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
-escm_breal_p(escm *e, escm_atom *args)
+escm_real_p(escm *e, escm_atom *args)
 {
     return (ESCM_ISNUMBER(escm_cons_val(args)->car)) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
-escm_beq(escm *e, escm_atom *args)
+escm_eq(escm *e, escm_atom *args)
 {
     escm_atom *a, *b;
 
@@ -172,18 +171,18 @@ escm_beq(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_blt(escm *e, escm_atom *args)
+escm_lt(escm *e, escm_atom *args)
 {
-    escm_bnumber *a, *b;
+    escm_number *a, *b;
     escm_atom *c;
 
     c = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISNUMBER(c), c, e);
-    a = (escm_bnumber *) c->ptr;
+    a = (escm_number *) c->ptr;
 
     for (c = escm_cons_pop(e, &args); c; c = escm_cons_pop(e, &args)) {
         escm_assert(ESCM_ISNUMBER(c), c, e);
-        b = (escm_bnumber *) c->ptr;
+        b = (escm_number *) c->ptr;
 
         if (a->fixnum) {
             if (b->fixnum) {
@@ -208,18 +207,18 @@ escm_blt(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_bgt(escm *e, escm_atom *args)
+escm_gt(escm *e, escm_atom *args)
 {
-    escm_bnumber *a, *b;
+    escm_number *a, *b;
     escm_atom *c;
 
     c = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISNUMBER(c), c, e);
-    a = (escm_bnumber *) c->ptr;
+    a = (escm_number *) c->ptr;
 
     for (c = escm_cons_pop(e, &args); c; c = escm_cons_pop(e, &args)) {
         escm_assert(ESCM_ISNUMBER(c), c, e);
-        b = (escm_bnumber *) c->ptr;
+        b = (escm_number *) c->ptr;
 
         if (a->fixnum) {
             if (b->fixnum) {
@@ -244,18 +243,18 @@ escm_bgt(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_ble(escm *e, escm_atom *args)
+escm_le(escm *e, escm_atom *args)
 {
-    escm_bnumber *a, *b;
+    escm_number *a, *b;
     escm_atom *c;
 
     c = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISNUMBER(c), c, e);
-    a = (escm_bnumber *) c->ptr;
+    a = (escm_number *) c->ptr;
 
     for (c = escm_cons_pop(e, &args); c; c = escm_cons_pop(e, &args)) {
         escm_assert(ESCM_ISNUMBER(c), c, e);
-        b = (escm_bnumber *) c->ptr;
+        b = (escm_number *) c->ptr;
 
         if (a->fixnum) {
             if (b->fixnum) {
@@ -280,18 +279,18 @@ escm_ble(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_bge(escm *e, escm_atom *args)
+escm_ge(escm *e, escm_atom *args)
 {
-    escm_bnumber *a, *b;
+    escm_number *a, *b;
     escm_atom *c;
 
     c = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISNUMBER(c), c, e);
-    a = (escm_bnumber *) c->ptr;
+    a = (escm_number *) c->ptr;
 
     for (c = escm_cons_pop(e, &args); c; c = escm_cons_pop(e, &args)) {
         escm_assert(ESCM_ISNUMBER(c), c, e);
-        b = (escm_bnumber *) c->ptr;
+        b = (escm_number *) c->ptr;
 
         if (a->fixnum) {
             if (b->fixnum) {
@@ -316,9 +315,9 @@ escm_bge(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_badd(escm *e, escm_atom *params)
+escm_add(escm *e, escm_atom *params)
 {
-    escm_bnumber *a, *b;
+    escm_number *a, *b;
     escm_atom *c;
 
     a = xmalloc(sizeof *a);
@@ -327,7 +326,7 @@ escm_badd(escm *e, escm_atom *params)
     c = escm_cons_pop(e, &params);
     while (c) {
         escm_assert1(ESCM_ISNUMBER(c), c, e, free(a));
-        b = ((escm_bnumber *) c->ptr);
+        b = ((escm_number *) c->ptr);
 
         if (a->fixnum) {
             if (b->fixnum)
@@ -354,9 +353,9 @@ escm_badd(escm *e, escm_atom *params)
 }
 
 escm_atom *
-escm_bsub(escm *e, escm_atom *params)
+escm_sub(escm *e, escm_atom *params)
 {
-    escm_bnumber *a, *b;
+    escm_number *a, *b;
     escm_atom *c;
 
     a = xmalloc(sizeof *a);
@@ -374,7 +373,7 @@ escm_bsub(escm *e, escm_atom *params)
 
     do {
         escm_assert1(ESCM_ISNUMBER(c), c, e, free(a));
-        b = ((escm_bnumber *) c->ptr);
+        b = ((escm_number *) c->ptr);
 
         if (a->fixnum) {
             if (b->fixnum)
@@ -397,9 +396,9 @@ escm_bsub(escm *e, escm_atom *params)
 }
 
 escm_atom *
-escm_bmul(escm *e, escm_atom *params)
+escm_mul(escm *e, escm_atom *params)
 {
-    escm_bnumber *a, *b;
+    escm_number *a, *b;
     escm_atom *c;
 
     a = xmalloc(sizeof *a);
@@ -408,7 +407,7 @@ escm_bmul(escm *e, escm_atom *params)
     c = escm_cons_pop(e, &params);
     while (c) {
         escm_assert1(ESCM_ISNUMBER(c), c, e, free(a));
-        b = ((escm_bnumber *) c->ptr);
+        b = ((escm_number *) c->ptr);
 
         if ((b->fixnum && b->d.ival == 0) ||
             (!b->fixnum && DBL_EQ(b->d.ival, 0.))) {
@@ -442,9 +441,9 @@ escm_bmul(escm *e, escm_atom *params)
 }
 
 escm_atom *
-escm_bdiv(escm *e, escm_atom *params)
+escm_div(escm *e, escm_atom *params)
 {
-    escm_bnumber *a, *b;
+    escm_number *a, *b;
     escm_atom *c;
 
     a = xmalloc(sizeof *a);
@@ -462,7 +461,7 @@ escm_bdiv(escm *e, escm_atom *params)
 
     do {
         escm_assert1(ESCM_ISNUMBER(c), c, e, free(a));
-        b = ((escm_bnumber *) c->ptr);
+        b = ((escm_number *) c->ptr);
 
         if ((b->fixnum) ? b->d.ival == 0 : DBL_EQ(b->d.rval, 0)) {
             escm_error(e, "~s: division by zero.~%", escm_fun(e));
@@ -497,7 +496,7 @@ escm_bdiv(escm *e, escm_atom *params)
 }
 
 escm_atom *
-escm_bquotient(escm *e, escm_atom *args)
+escm_quotient(escm *e, escm_atom *args)
 {
     escm_atom *n, *m;
 
@@ -511,11 +510,11 @@ escm_bquotient(escm *e, escm_atom *args)
         escm_abort(e);
     }
 
-    return escm_bint_make(e, escm_number_ival(n) / escm_number_ival(m));
+    return escm_int_make(e, escm_number_ival(n) / escm_number_ival(m));
 }
 
 escm_atom *
-escm_bremainder(escm *e, escm_atom *args)
+escm_remainder(escm *e, escm_atom *args)
 {
     escm_atom *n, *m;
 
@@ -529,11 +528,11 @@ escm_bremainder(escm *e, escm_atom *args)
         escm_abort(e);
     }
 
-    return escm_bint_make(e, escm_number_ival(n) % escm_number_ival(m));
+    return escm_int_make(e, escm_number_ival(n) % escm_number_ival(m));
 }
 
 escm_atom *
-escm_bmodulo(escm *e, escm_atom *args)
+escm_modulo(escm *e, escm_atom *args)
 {
     escm_atom *n, *m;
     long res;
@@ -551,11 +550,11 @@ escm_bmodulo(escm *e, escm_atom *args)
     res = escm_number_ival(n) % escm_number_ival(m);
     if (res * escm_number_ival(m) < 0)
         res += escm_number_ival(m);
-    return escm_bint_make(e, res);
+    return escm_int_make(e, res);
 }
 
 escm_atom *
-escm_bgcd(escm *e, escm_atom *args)
+escm_gcd(escm *e, escm_atom *args)
 {
     escm_atom *n1, *n2;
     long a, b;
@@ -568,21 +567,21 @@ escm_bgcd(escm *e, escm_atom *args)
 
     n2 = escm_cons_pop(e, &args);
     if (!n2)
-        return escm_bint_make(e, escm_number_ival(n1));
+        return escm_int_make(e, escm_number_ival(n1));
     escm_assert(ESCM_ISINT(n2), n2, e);
     b = escm_number_ival(n2);
 
     for (;;) {
         if (b == 0)
-            return escm_bint_make(e, a);
+            return escm_int_make(e, a);
         if (a == 0)
-            return escm_bint_make(e, b);
+            return escm_int_make(e, b);
 
         a = pgcd(a, b);
 
         n2 = escm_cons_pop(e, &args);
         if (!n2)
-            return escm_bint_make(e, a);
+            return escm_int_make(e, a);
 
         escm_assert(ESCM_ISINT(n2), n2, e);
         b = escm_number_ival(n2);
@@ -590,7 +589,7 @@ escm_bgcd(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_blcm(escm *e, escm_atom *args)
+escm_lcm(escm *e, escm_atom *args)
 {
     escm_atom *n1, *n2;
     long a, b, c;
@@ -604,7 +603,7 @@ escm_blcm(escm *e, escm_atom *args)
 
     n2 = escm_cons_pop(e, &args);
     if (!n2)
-        return escm_bint_make(e, escm_number_ival(n1));
+        return escm_int_make(e, escm_number_ival(n1));
 
     escm_assert(ESCM_ISINT(n2), n2, e);
     b = ABS(escm_number_ival(n2));
@@ -620,7 +619,7 @@ escm_blcm(escm *e, escm_atom *args)
 
         n2 = escm_cons_pop(e, &args);
         if (!n2)
-            return escm_bint_make(e, a);
+            return escm_int_make(e, a);
 
         escm_assert(ESCM_ISINT(n2), n2, e);
         b = ABS(escm_number_ival(n2));
@@ -628,7 +627,7 @@ escm_blcm(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_bnumerator(escm *e, escm_atom *args)
+escm_numerator(escm *e, escm_atom *args)
 {
     escm_atom *n;
     double a;
@@ -652,7 +651,7 @@ escm_bnumerator(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_bdenominator(escm *e, escm_atom *args)
+escm_denominator(escm *e, escm_atom *args)
 {
     escm_atom *n;
     double a;
@@ -679,7 +678,7 @@ escm_bdenominator(escm *e, escm_atom *args)
 
 #ifdef ESCM_USE_MATH
 escm_atom *
-escm_bfloor(escm *e, escm_atom *args)
+escm_floor(escm *e, escm_atom *args)
 {
     escm_atom *a;
 
@@ -692,7 +691,7 @@ escm_bfloor(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_bceiling(escm *e, escm_atom *args)
+escm_ceiling(escm *e, escm_atom *args)
 {
     escm_atom *a;
 
@@ -705,7 +704,7 @@ escm_bceiling(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_btruncate(escm *e, escm_atom *args)
+escm_truncate(escm *e, escm_atom *args)
 {
     escm_atom *a;
 
@@ -725,7 +724,7 @@ escm_btruncate(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_bround(escm *e, escm_atom *args)
+escm_round(escm *e, escm_atom *args)
 {
     escm_atom *a;
 
@@ -738,7 +737,7 @@ escm_bround(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_bexp(escm *e, escm_atom *args)
+escm_exp(escm *e, escm_atom *args)
 {
     escm_atom *atom;
     double a;
@@ -752,7 +751,7 @@ escm_bexp(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_blog(escm *e, escm_atom *args)
+escm_log(escm *e, escm_atom *args)
 {
     escm_atom *atom;
     double a;
@@ -766,7 +765,7 @@ escm_blog(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_bsin(escm *e, escm_atom *args)
+escm_sin(escm *e, escm_atom *args)
 {
     escm_atom *atom;
     double a;
@@ -780,7 +779,7 @@ escm_bsin(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_bcos(escm *e, escm_atom *args)
+escm_cos(escm *e, escm_atom *args)
 {
     escm_atom *atom;
     double a;
@@ -794,7 +793,7 @@ escm_bcos(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_btan(escm *e, escm_atom *args)
+escm_tan(escm *e, escm_atom *args)
 {
     escm_atom *atom;
     double a;
@@ -808,7 +807,7 @@ escm_btan(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_basin(escm *e, escm_atom *args)
+escm_asin(escm *e, escm_atom *args)
 {
     escm_atom *atom;
     double a;
@@ -822,7 +821,7 @@ escm_basin(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_bacos(escm *e, escm_atom *args)
+escm_acos(escm *e, escm_atom *args)
 {
     escm_atom *atom;
     double a;
@@ -836,7 +835,7 @@ escm_bacos(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_batan(escm *e, escm_atom *args)
+escm_atan(escm *e, escm_atom *args)
 {
     escm_atom *atom;
     double a, b;
@@ -858,7 +857,7 @@ escm_batan(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_bsqrt(escm *e, escm_atom *args)
+escm_sqrt(escm *e, escm_atom *args)
 {
     escm_atom *n;
     double a;
@@ -876,7 +875,7 @@ escm_bsqrt(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_bexpt(escm *e, escm_atom *args)
+escm_expt(escm *e, escm_atom *args)
 {
     escm_atom *n;
     double a, b;
@@ -900,7 +899,7 @@ escm_bexpt(escm *e, escm_atom *args)
 
 #ifdef ESCM_USE_STRINGS
 escm_atom *
-escm_bnumber_to_string(escm *e, escm_atom *args)
+escm_number_to_string(escm *e, escm_atom *args)
 {
     escm_atom *a, *b;
     char *str;
@@ -974,11 +973,11 @@ escm_bnumber_to_string(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_string_to_bnumber(escm *e, escm_atom *args)
+escm_string_to_number(escm *e, escm_atom *args)
 {
     escm_atom *a, *b;
     escm_input *input;
-    escm_bnumber *number;
+    escm_number *number;
     int radix;
 
     if (!escm_type_ison(ESCM_TYPE_STRING)) {
@@ -1024,7 +1023,7 @@ escm_string_to_bnumber(escm *e, escm_atom *args)
     }
 
     escm_input_close(input);
-    return escm_atom_new(e, bnumbertype, number);
+    return escm_atom_new(e, numbertype, number);
 
 err:
     escm_input_close(input);
@@ -1033,7 +1032,7 @@ err:
 #endif
 
 static void
-number_print(escm *e, escm_bnumber *number, escm_output *stream, int lvl)
+number_print(escm *e, escm_number *number, escm_output *stream, int lvl)
 {
     (void) e;
     (void) lvl;
@@ -1048,7 +1047,7 @@ number_print(escm *e, escm_bnumber *number, escm_output *stream, int lvl)
 }
 
 static int
-number_equal(escm *e, escm_bnumber *n1, escm_bnumber *n2, int lvl)
+number_equal(escm *e, escm_number *n1, escm_number *n2, int lvl)
 {
     (void) e;
     (void) lvl;
@@ -1094,18 +1093,18 @@ number_parsetest(escm *e, int c)
 static escm_atom *
 number_parse(escm *e)
 {
-    escm_bnumber *n;
+    escm_number *n;
 
     n = inputtonumber(e, e->input, 10);
     if (!n)
         return NULL;
-    return escm_atom_new(e, bnumbertype, n);
+    return escm_atom_new(e, numbertype, n);
 }
 
-static escm_bnumber *
+static escm_number *
 inputtonumber(escm *e, escm_input *input, int radix)
 {
-    escm_bnumber *n;
+    escm_number *n;
     char *str, *ec;
     int c;
 

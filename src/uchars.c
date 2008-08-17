@@ -326,6 +326,11 @@ escm_integer_to_uchar(escm *e, escm_atom *args)
     n = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISINT(n), n, e);
 
+    if (escm_number_ival(n) < 0) {
+        escm_error(e, "~s: ~s out of range  (> 0).~%", escm_fun(e), n);
+        escm_abort(e);
+    }
+
     return escm_uchar_make(e, (wint_t) escm_number_ival(n));
 }
 #endif

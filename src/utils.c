@@ -23,7 +23,8 @@
 #include "types.h"
 
 #ifdef ESCM_USE_UNICODE
-#include <wchar.h>
+# include <wchar.h>
+# include <wctype.h>
 #endif
 
 #include "utils.h"
@@ -102,10 +103,8 @@ xstrcasecmp(const char *s1, const char *s2)
     for (c1 = (char *) s1, c2 = (char *) s2; *c1 != '\0'; c1++, c2++) {
         if (*c2 == '\0')
             return 1;
-        else if (tolower(*c1) < tolower(*c2))
-            return -1;
-        else if (tolower(*c1) > tolower(*c2))
-                return 1;
+        else if (towlower(*c1) != towlower(*c2))
+            return (towlower(*c1) > towlower(*c2)) ? 1 : -1;
     }
 
     return (*c2 != '\0') ? -1 : 0;
@@ -184,8 +183,8 @@ xwcscasecmp(const wchar_t *s1, const wchar_t *s2)
     for (i1 = 0, i2 = 0; s1[i1] != L'\0'; i1++, i2++) {
         if (s2[i2] == L'\0')
             return 1;
-        else if (s1[i1] != s2[i2])
-            return (s1[i1] > s2[i2]) ? 1 : -1;
+        else if (towlower(s1[i1]) != towlower(s2[i2]))
+            return (towlower(s1[i1]) > towlower(s2[i2])) ? 1 : -1;
     }
 
     return (s2[i2] != L'\0') ? -1 : 0;

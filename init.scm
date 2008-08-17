@@ -79,6 +79,6 @@
                             (printf "~s: passed.~%" name)
                             (error name y " expected, got " x)))
 ;:
-(define (test name x y) (if (not (equal? x y))
-                            (error name y 'expected, 'got x))))
+;(define (test name x y) (if (not (equal? x y))
+;                            (error name y 'expected, 'got x)))
 ;>

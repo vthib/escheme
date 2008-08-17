@@ -19,58 +19,78 @@
 
 #include "types.h"
 
-#ifndef ESCM_USE_CNUMBERS
+#define ESCM_TYPE_NUMBER escm_number_tget()
 
-# include "bnumbers.h"
+#define ESCM_ISNUMBER(x) ((x)->type == ESCM_TYPE_NUMBER)
+#define ESCM_ISINT(x) (ESCM_ISNUMBER(x) &&                      \
+                       ((escm_number *) (x)->ptr)->fixnum == 1)
+#define ESCM_ISREAL(x) (!ESCM_ISBINT(x))
 
-# define ESCM_TYPE_NUMBER ESCM_TYPE_BNUMBER
-# define ESCM_ISNUMBER ESCM_ISBNUMBER
-# define ESCM_ISINT ESCM_ISBINT
-# define ESCM_ISREAL ESCM_ISBREAL
-# define escm_number_ival escm_bnumber_ival
-# define escm_number_rval escm_bnumber_rval
-# define escm_int_make escm_bint_make
-# define escm_real_make escm_breal_make
+#define escm_number_ival(x) (((escm_number *) (x)->ptr)->d.ival)
+#define escm_number_rval(x) (((escm_number *) (x)->ptr)->d.rval)
 
-#elif !defined ESCM_USE_BNUMBERS
+typedef struct escm_number {
+    union {
+        long ival;
+        double rval;
+    } d;
 
-# include "cnumbers.h"
+    unsigned int fixnum : 1;
+} escm_number;
 
-# define ESCM_TYPE_NUMBER ESCM_TYPE_CNUMBER
-# define ESCM_ISNUMBER ESCM_ISCNUMBER
-# define ESCM_ISINT ESCM_ISCINT
-# define ESCM_ISREAL ESCM_ISCREAL
-# define escm_number_ival escm_cnumber_ival
-# define escm_number_rval escm_cnumber_rval
-# define escm_int_make(e, l) escm_cint_make(e, l, 1)
-# define escm_real_make escm_creal_make
+void escm_numbers_init(escm *);
+size_t escm_number_tget(void);
 
-#else
-# include "bnumbers.h"
-# include "cnumbers.h"
+escm_atom *escm_int_make(escm *, long);
+escm_atom *escm_real_make(escm *, double);
 
-# define ESCM_TYPE_NUMBER (ESCM_TYPE_CNUMBER | ESCM_TYPE_BNUMBER)
+escm_atom *escm_number_p(escm *, escm_atom *);
+escm_atom *escm_integer_p(escm *, escm_atom *);
+escm_atom *escm_real_p(escm *, escm_atom *);
 
-# define ESCM_ISNUMBER(x) ((x)->type == ESCM_TYPE_NUMBER)
-# define ESCM_ISINT(x)                                                        \
-    ((escm_type_ison(ESCM_TYPE_CNUMBER)) ? ESCM_ISCINT(x) : ESCM_ISBINT(x))
-# define ESCM_ISREAL(x)                                                        \
-    ((escm_type_ison(ESCM_TYPE_CNUMBER)) ? ESCM_ISCREAL(x) : ESCM_ISBREAL(x))
+escm_atom *escm_eq(escm *, escm_atom *);
+escm_atom *escm_lt(escm *, escm_atom *);
+escm_atom *escm_gt(escm *, escm_atom *);
+escm_atom *escm_le(escm *, escm_atom *);
+escm_atom *escm_ge(escm *, escm_atom *);
 
-# define escm_number_ival(x)                                                \
-    ((escm_type_ison(ESCM_TYPE_CNUMBER)) ? escm_cnumber_ival(x) :        \
-     escm_bnumber_ival(x))
-# define escm_number_rval(x)                                                \
-    ((escm_type_ison(ESCM_TYPE_CNUMBER)) ? escm_cnumber_rval(x) :        \
-     escm_bnumber_rval(x))
+escm_atom *escm_add(escm *, escm_atom *);
+escm_atom *escm_sub(escm *, escm_atom *);
+escm_atom *escm_mul(escm *, escm_atom *);
+escm_atom *escm_div(escm *, escm_atom *);
 
-# define escm_int_make(e, i) \
-    ((escm_type_ison(ESCM_TYPE_CNUMBER)) ? escm_cint_make(e, i, 1) :        \
-     escm_bint_make(e, i))
-# define escm_real_make(e, i)                                                \
-    ((escm_type_ison(ESCM_TYPE_CNUMBER)) ? escm_creal_make(e, i) :        \
-     escm_breal_make(e, i))
+escm_atom *escm_quotient(escm *, escm_atom *);
+escm_atom *escm_remainder(escm *, escm_atom *);
+escm_atom *escm_modulo(escm *, escm_atom *);
 
+escm_atom *escm_gcd(escm *, escm_atom *);
+escm_atom *escm_lcm(escm *, escm_atom *);
+
+escm_atom *escm_numerator(escm *, escm_atom *);
+escm_atom *escm_denominator(escm *, escm_atom *);
+
+#ifdef ESCM_USE_MATH
+escm_atom *escm_floor(escm *, escm_atom *);
+escm_atom *escm_ceiling(escm *, escm_atom *);
+escm_atom *escm_truncate(escm *, escm_atom *);
+escm_atom *escm_round(escm *, escm_atom *);
+
+escm_atom *escm_exp(escm *, escm_atom *);
+escm_atom *escm_log(escm *, escm_atom *);
+escm_atom *escm_sin(escm *, escm_atom *);
+escm_atom *escm_cos(escm *, escm_atom *);
+escm_atom *escm_tan(escm *, escm_atom *);
+escm_atom *escm_asin(escm *, escm_atom *);
+escm_atom *escm_acos(escm *, escm_atom *);
+escm_atom *escm_atan(escm *, escm_atom *);
+
+escm_atom *escm_sqrt(escm *, escm_atom *);
+escm_atom *escm_expt(escm *, escm_atom *);
+#endif
+
+#ifdef ESCM_USE_STRINGS
+escm_atom *escm_number_to_string(escm *, escm_atom *);
+escm_atom *escm_string_to_number(escm *, escm_atom *);
 #endif
 
 #endif /* ESCHEME_NUMBERS_H */

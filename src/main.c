@@ -21,11 +21,8 @@
 #include "escheme.h"
 
 enum {
-#ifdef ESCM_USE_CNUMBERS
-    CNUM,
-#endif
-#ifdef ESCM_USE_BNUMBERS
-    BNUM,
+#ifdef ESCM_USE_NUMBERS
+    NUM,
 #endif
 #ifdef ESCM_USE_STRINGS
     STRING,
@@ -99,27 +96,12 @@ main(int argc, char **argv)
                         else
                             *comma = '\0';
 
-#ifdef ESCM_USE_CNUMBERS
-                        if (0 == strcmp(p, "cnumbers")) {
-                            noload[CNUM] = 1; goto loop;
-                        }
-#endif
-#ifdef ESCM_USE_BNUMBERS
-                        if (0 == strcmp(p, "bnumbers")) {
-                            noload[BNUM] = 1; goto loop;
-                        }
-#endif
 #ifdef ESCM_USE_NUMBERS
                         if (0 == strcmp(p, "numbers")) {
-# ifdef ESCM_USE_BNUMBERS
-                            noload[BNUM] = 1;
-# endif
-# ifdef ESCM_USE_CNUMBERS
-                            noload[CNUM] = 1;
-# endif
+                            noload[NUM] = 1;
                             goto loop;
                         }
-#endif /* ESCM_USE_NUMBERS */
+#endif
 #ifdef ESCM_USE_STRINGS
                         if (0 == strcmp(p, "strings")) {
                             noload[STRING] = 1; goto loop;
@@ -204,19 +186,9 @@ main(int argc, char **argv)
     if (!noload[BOOL])
         escm_booleans_init(e);
 #endif
-
-#ifdef ESCM_USE_BNUMBERS
-    if (!noload[BNUM])
-        escm_bnumbers_init(e);
-#endif
-
-#ifdef ESCM_USE_CNUMBERS
-    if (!noload[CNUM]
-# ifdef ESCM_USE_BNUMBERS
- && noload[BNUM]
-# endif
-        )
-        escm_cnumbers_init(e);
+#ifdef ESCM_USE_NUMBERS
+    if (!noload[NUM])
+        escm_numbers_init(e);
 #endif
 
 #ifdef ESCM_USE_STRINGS
@@ -323,14 +295,8 @@ usage(char *name)
            "recognized :\n", name);
 
     printf(""
-#ifdef ESCM_USE_CNUMBERS
-           "\tcnumbers: the complete number implementation.\n"
-#endif
-#ifdef ESCM_USE_BNUMBERS
-           "\tbnumbers: the basic number implementation.\n"
-#endif
 #ifdef ESCM_USE_NUMBERS
-           "\tnumbers: all numbers implementations.\n"
+           "\tnumbers: the basic number implementation.\n"
 #endif
 #ifdef ESCM_USE_STRINGS
            "\tstrings: the string implementation.\n"

@@ -20,11 +20,11 @@
 #include <stdio.h>
 
 #ifdef ESCM_R5RS
+# define ESCM_USE_NUMBERS
 # define ESCM_USE_BOOLEANS
 # define ESCM_USE_CHARACTERS
 # define ESCM_USE_VECTORS
 # define ESCM_USE_STRINGS
-# define ESCM_USE_CNUMBERS
 # define ESCM_USE_PROMISES
 # define ESCM_USE_MACROS
 # define ESCM_USE_PORTS
@@ -36,10 +36,6 @@
 
 # define ESCM_CIRCULAR_LIST 2 /* 0: no handle, 1: just in list? and length
                                  2: check also when printing */
-#endif
-
-#if defined ESCM_USE_BNUMBERS || defined ESCM_USE_CNUMBERS
-# define ESCM_USE_NUMBERS
 #endif
 
 #if defined ESCM_USE_UNICODE && !defined ESCM_USE_C99

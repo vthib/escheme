@@ -409,9 +409,9 @@ escm_list_tail(escm *e, escm_atom *args)
 
     for (; k > 0; k--) {
         if (atom == e->NIL || !atom) {
-            escm_error(e, "list-tail: index ~s is too large for the list ~s.~%",
-                       ka, list);
-            return NULL;
+            escm_error(e, "~: index ~s is too large for the list ~s.~%",
+                       escm_fun(e), ka, list);
+            escm_abort(e);
         }
         if (!ESCM_ISCONS(atom)) {
             escm_error(e, "~s: improper list.~%", list);
