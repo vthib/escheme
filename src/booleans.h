@@ -19,9 +19,9 @@
 
 #include "types.h"
 
-#define ESCM_TYPE_BOOL escm_boolean_tget()
+#define ESCM_TYPE_BOOLEAN escm_boolean_tget()
 
-#define ESCM_ISBOOL(x) ((x)->type == ESCM_TYPE_BOOL)
+#define ESCM_ISBOOL(x) ((x)->type == ESCM_TYPE_BOOLEAN)
 
 void escm_booleans_init(escm *);
 

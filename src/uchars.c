@@ -69,7 +69,7 @@ escm_uchars_init(escm *e)
                               escm_uchar_whitespace_p, NULL);
     (void) escm_procedure_new(e, "char-upper-case?", 1, 1,
                               escm_uchar_upper_case_p, NULL);
-    (void) escm_procedure_new(e, "char-lower_case?", 1, 1,
+    (void) escm_procedure_new(e, "char-lower-case?", 1, 1,
                               escm_uchar_lower_case_p, NULL);
 
 #ifdef ESCM_USE_NUMBERS

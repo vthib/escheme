@@ -118,6 +118,11 @@ escm_primitives_load(escm *e)
     (void) escm_procedure_new(e, "exit", 0, 0, escm_exit, NULL);
     o = escm_procedure_new(e, "test-error", 2, 2, escm_test_error, NULL);
     escm_proc_val(o)->d.c.quoted = 0x2;
+
+#ifdef ESCM_USE_STRINGS
+    (void) escm_procedure_new(e, "printf", 1, -1, escm_prim_printf, NULL);
+    (void) escm_procedure_new(e, "format", 1, -1, escm_format, NULL);
+#endif
 }
 
 escm_atom *
@@ -1042,6 +1047,71 @@ escm_test_error(escm *e, escm_atom *args)
 
     return NULL;
 }
+
+#ifdef ESCM_USE_STRINGS
+escm_atom *
+escm_prim_printf(escm *e, escm_atom *args)
+{
+    escm_atom *format;
+
+    format = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(format), format, e);
+
+#ifdef ESCM_USE_UNICODE
+    if (escm_type_ison(ESCM_TYPE_USTRING)) {
+        char *s;
+
+        s = wcstostr(escm_ustr_val(format));
+        escm_scmpf2(e, e->output, s, args);
+        free(s);
+    } else
+#endif
+        escm_scmpf2(e, e->output, escm_astr_val(format), args);
+
+    return NULL;
+}
+
+escm_atom *
+escm_format(escm *e, escm_atom *args)
+{
+    escm_atom *atom;
+    escm_output *out;
+
+    atom = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(atom), atom, e);
+
+    out = escm_output_str();
+
+#ifdef ESCM_USE_UNICODE
+    if (escm_type_ison(ESCM_TYPE_USTRING)) {
+        char *s;
+
+        s = wcstostr(escm_ustr_val(atom));
+        escm_scmpf2(e, out, s, args);
+        free(s);
+    } else
+#endif
+        escm_scmpf2(e, out, escm_astr_val(atom), args);
+
+#ifdef ESCM_USE_UNICODE
+    if (!escm_type_ison(ESCM_TYPE_USTRING)) {
+        char *s;
+
+        s = wcstostr(escm_output_getstr(out));
+        atom = escm_astring_make(e, s, strlen(s));
+        free(s);
+    } else
+        atom = escm_ustring_make(e, escm_output_getstr(out),
+                                 out->d.str.cur - out->d.str.str);
+#else
+    atom = escm_astring_make(e, escm_output_getstr(out),
+                            out->d.str.cur - out->d.str.str);
+#endif
+    escm_output_close(out);
+
+    return atom;
+}
+#endif
 
 static escm_atom *
 named_let(escm *e, escm_atom *name, escm_atom *args)

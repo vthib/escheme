@@ -8,6 +8,9 @@
    - Cons tailrec (cons 1 (cons 2 (cons 3)))
    - Numbers checks overflows
    - Remove parsetest and add all in parse?
+   - escm_printf does not manage print levels
+   - current-error-port
+   - preproc
 
  - Features
    - Bignums

@@ -423,7 +423,7 @@ escm_input_getwtext(escm_input *f, const wchar_t *end)
     assert(end != NULL);
 
     c = escm_input_getwc(f);
-    while (c != EOF && !wcschr(end, c)) {
+    while (c != WEOF && !wcschr(end, c)) {
         if (c == L'\\') {
             c = escm_input_getwc(f);
             switch (c) {
@@ -469,7 +469,7 @@ escm_input_getwstr_fun(escm_input *f, int (*fun)(wint_t), int casesens)
         if (!casesens)
             c = towlower(c);
         wcsbuf[len++] = (wchar_t) c;
-    } while (c != EOF && fun(c));
+    } while (c != WEOF && fun(c));
 
     if (!f->end)
         escm_input_ungetwc(f, c);

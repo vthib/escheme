@@ -152,7 +152,7 @@ main(int argc, char **argv)
 #endif
 #ifdef ESCM_USE_MACROS
                         if (0 == strcmp(p, "macros")) {
-                            noload[PORT] = 1; goto loop;
+                            noload[MACRO] = 1; goto loop;
                         }
 #endif
 #ifdef ESCM_USE_CONTINUATIONS
@@ -205,14 +205,17 @@ main(int argc, char **argv)
         escm_booleans_init(e);
 #endif
 
-/* numbers needs to be declared before symbols */
 #ifdef ESCM_USE_BNUMBERS
     if (!noload[BNUM])
         escm_bnumbers_init(e);
 #endif
 
 #ifdef ESCM_USE_CNUMBERS
-    if (!noload[CNUM] && noload[BNUM])
+    if (!noload[CNUM]
+# ifdef ESCM_USE_BNUMBERS
+ && noload[BNUM]
+# endif
+        )
         escm_cnumbers_init(e);
 #endif
 

@@ -48,7 +48,7 @@
         }                                                               \
     } while(0)
 
-enum { TYPE_BUILT, TYPE_DYN, TYPE_REC };
+enum { TYPE_BUILT, TYPE_DYN };
 
 struct escm_type {
     Escm_Fun_Mark fmark;
@@ -94,15 +94,9 @@ struct escm_type {
         struct {
             unsigned long basetype;
         } dyn;
-        struct {
-            escm_atom *members;
-            char *name;
-
-            unsigned long parenttype;
-        } rec;
     } d;
 
-    unsigned int dtype : 2;
+    unsigned int dtype : 1;
     unsigned int printtype : 1;
     unsigned int equaltype : 1;
     unsigned int parsetesttype : 1;

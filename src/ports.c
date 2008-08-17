@@ -195,10 +195,8 @@ escm_with_input_from_file(escm *e, escm_atom *args)
         input = escm_input_fopen(s);
         free(s);
     } else
-        input = escm_input_fopen(escm_str_val(str));
-#else
-    input = escm_input_fopen(escm_str_val(str));
 #endif
+        input = escm_input_fopen(escm_astr_val(str));
 
     if (!input) {
         escm_abort(e);
@@ -236,10 +234,8 @@ escm_with_output_to_file(escm *e, escm_atom *args)
         o = escm_output_fopen(s);
         free(s);
     } else
-        o = escm_output_fopen(escm_str_val(str));
-#else
-    o = escm_output_fopen(escm_str_val(str));
 #endif
+        o = escm_output_fopen(escm_astr_val(str));
 
     if (!o) {
         escm_abort(e);
@@ -274,10 +270,8 @@ escm_open_input_file(escm *e, escm_atom *args)
         inp = escm_input_fopen(s);
         free(s);
     } else
-        inp = escm_input_fopen(escm_str_val(name));
-#else
-    inp = escm_input_fopen(escm_str_val(name));
 #endif
+    inp = escm_input_fopen(escm_astr_val(name));
 
     if (!inp) {
         escm_abort(e);
@@ -303,10 +297,9 @@ escm_open_output_file(escm *e, escm_atom *args)
         outp = escm_output_fopen(s);
         free(s);
     } else
-        outp = escm_output_fopen(escm_str_val(name));
-#else
-    outp = escm_output_fopen(escm_str_val(name));
 #endif
+        outp = escm_output_fopen(escm_astr_val(name));
+
     if (!outp) {
         escm_abort(e);
     }

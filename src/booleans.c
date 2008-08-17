@@ -43,8 +43,8 @@ escm_booleans_init(escm *e)
 
     booleantype = escm_type_add(e, t);
 
-    e->TRUE = escm_atom_new(e, ESCM_TYPE_BOOL, ESCM_BOOL_T);
-    e->FALSE = escm_atom_new(e, ESCM_TYPE_BOOL, ESCM_BOOL_F);
+    e->TRUE = escm_atom_new(e, ESCM_TYPE_BOOLEAN, ESCM_BOOL_T);
+    e->FALSE = escm_atom_new(e, ESCM_TYPE_BOOLEAN, ESCM_BOOL_F);
 
     (void) escm_procedure_new(e, "not", 1, 1, escm_not, NULL);
     (void) escm_procedure_new(e, "boolean?", 1, 1, escm_boolean_p, NULL);

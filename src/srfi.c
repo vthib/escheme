@@ -22,7 +22,7 @@ void
 escm_srfi_init(escm *e)
 {
 #if defined ESCM_USE_STRINGS && defined ESCM_USE_PORTS
-    (void) escm_library_enter(e, "srfi-6", 1);
+/*    (void) escm_library_enter(e, "srfi-6", 1);*/
 
     (void) escm_procedure_new(e, "open-input-string", 1, 1,
                               escm_open_input_string, NULL);
@@ -31,13 +31,13 @@ escm_srfi_init(escm *e)
     (void) escm_procedure_new(e, "get-output-string", 1, 1,
                               escm_get_output_string, NULL);
 
-    escm_library_exit(e); /* srfi-6 */
+/*    escm_library_exit(e); */
 #endif
-    (void) escm_library_enter(e, "srfi-23", 1);
+/*    (void) escm_library_enter(e, "srfi-23", 1); */
 
     (void) escm_procedure_new(e, "error", 1, -1, escm_srfi_error, NULL);
 
-    escm_library_exit(e); /* srfi-23 */
+/*    escm_library_exit(e); */
 }
 
 #if defined ESCM_USE_STRINGS && defined ESCM_USE_PORTS

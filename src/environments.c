@@ -60,8 +60,6 @@ escm_env_addprimitives(escm *e)
 
     (void) escm_procedure_new(e, "scheme-report-environment", 0, 1,
                               escm_scheme_report_environment, NULL);
-    (void) escm_procedure_new(e, "null-environment", 0, 1,
-                              escm_null_environment, NULL);
     (void) escm_procedure_new(e, "interaction-environment", 0, 0,
                               escm_interaction_environment, NULL);
 
@@ -323,53 +321,9 @@ escm_with(escm *e, escm_atom *args)
 escm_atom *
 escm_scheme_report_environment(escm *e, escm_atom *args)
 {
-    escm_atom *n;
-    escm_atom *env;
+    (void) args;
 
-    n = escm_cons_pop(e, &args);
-    if (n) {
-        escm_assert(ESCM_ISINT(n), n, e);
-
-        if (escm_number_ival(n) != 5) {
-            escm_error(e, "~s expect 5 as argument.~%", escm_fun(e));
-            escm_abort(e);
-        }
-    }
-
-    env = e->env;
-    while (((escm_env *) env->ptr)->prev)
-        env = ((escm_env *) env->ptr)->prev;
-
-    return env; /* return toplevel */
-}
-
-escm_atom *
-escm_null_environment(escm *e, escm_atom *args)
-{
-    escm_atom *o;
-    escm_atom *env, *prev;
-
-    o = escm_cons_pop(e, &args);
-    if (o) {
-        escm_assert(ESCM_ISINT(o), o, e);
-
-        if (escm_number_ival(o) != 5) {
-            escm_error(e, "~s expect 5 as argument.~%", escm_fun(e));
-            escm_abort(e);
-        }
-    }
-
-    env = escm_env_new(e, NULL);
-    prev = e->env, e->env = env;
-    o = escm_procedure_new(e, "quote", 1, 1, escm_quote, NULL);
-    escm_proc_val(o)->d.c.quoted = 0x1;
-    o = escm_procedure_new(e, "quasiquote", 1, 1, escm_quasiquote, NULL);
-    escm_proc_val(o)->d.c.quoted = 0x1;
-    o = escm_procedure_new(e, "lambda", 2, -1, escm_lambda, NULL);
-    escm_proc_val(o)->d.c.quoted = 0x7;
-    e->env = prev;
-
-    return env;
+    return e->env;
 }
 
 escm_atom *

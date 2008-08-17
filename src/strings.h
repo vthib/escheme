@@ -28,6 +28,7 @@
 # define escm_str_val escm_astr_val
 # define escm_str_len escm_astr_len
 # define escm_string_make escm_astring_make
+# define escm_string_make2(e, str) escm_astring_make(e, str, strlen(str))
 
 #else
 # include "astrings.h"
@@ -40,7 +41,13 @@
     ((escm_type_ison(ESCM_TYPE_ASTRING)) ? escm_astr_val(x) : escm_ustr_val(x))
 # define escm_str_len(x)                                                \
     ((escm_type_ison(ESCM_TYPE_ASTRING)) ? escm_astr_len(x) : escm_ustr_len(x))
-/* XXX: escm_string_make */
+# define escm_string_make(e, str, len)                                  \
+    ((escm_type_ison(ESCM_TYPE_ASTRING)) ? escm_astring_make(e, str, len) \
+     : escm_ustring_make(e, str, len))
+# define escm_string_make2(e, str)                                      \
+    ((escm_type_ison(ESCM_TYPE_ASTRING)) ?                              \
+     escm_astring_make(e, str, strlen(str)) : escm_ustring_make2(e, str))
+
 #endif
 
 #endif /* ESCHEME_STRINGS_H */

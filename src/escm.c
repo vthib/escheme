@@ -98,6 +98,7 @@ escm_free(escm *e)
     for (i = 0; i < e->ntypes; i++) {
         if (e->types[i]->dtype == TYPE_BUILT && e->types[i]->d.c.fexit)
             e->types[i]->d.c.fexit(e, e->types[i]->d.c.dexit);
+
         free(e->types[i]);
     }
     free(e->types);
@@ -257,6 +258,11 @@ escm_parse(escm *e)
                 e->ctx->dotted = 1;
             c = c2;
         } else if (c == ';') {
+            c = escm_input_getc(e->input);
+#if 0
+            if (c == '?')
+                preproc(e);
+#endif
             while (c != '\n')
                 c = escm_input_getc(e->input);
         }
@@ -327,7 +333,6 @@ escm_parse(escm *e)
 
     return ret;
 }
-
 unsigned long
 escm_type_add(escm *e, escm_type *type)
 {

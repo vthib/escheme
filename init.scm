@@ -29,12 +29,12 @@
 (define (cddddr pair) (cdr (cdr (cdr (cdr pair)))))
 
 ;; some numbers primitives can be defined as lambdas expressions
+;?number
 (define (zero? z) (= z 0))
 (define (positive? x) (> x 0))
 (define (negative? x) (< x 0))
 (define (odd? n) (and (integer? n) (= 1 (modulo n 2))))
 (define (even? n) (and (integer? n) (= 0 (remainder n 2))))
-
 (define (abs n) (if (< n 0) (- n) n))
 
 (define (max x . next)
@@ -52,8 +52,10 @@
                                   (if (< x (car list)) x (car list))
                                   (cdr list))))))
     (minrec x next)))
+;>
 
 ;; Ports primitives
+;?port
 (define (call-with-input-file string proc)
   (let* ((port (open-input-file string))
          (ret (proc port)))
@@ -62,77 +64,21 @@
   (let* ((port (open-output-file string))
          (ret (proc port)))
     (begin (close-output-port port) ret)))
+;>
 
-; srfi 28
-(define format
-  (lambda (format-string . objects)
-    (let ((buffer (open-output-string)))
-      (let loop ((format-list (string->list format-string))
-                 (objects objects))
-        (cond ((null? format-list) (get-output-string buffer))
-              ((char=? (car format-list) #\~)
-               (if (null? (cdr format-list))
-                   (error 'format "Incomplete escape sequence")
-                   (case (cadr format-list)
-                     ((#\a)
-                      (if (null? objects)
-                          (error 'format "No value for escape sequence")
-                          (begin
-                            (display (car objects) buffer)
-                            (loop (cddr format-list) (cdr objects)))))
-                     ((#\s)
-                      (if (null? objects)
-                          (error 'format "No value for escape sequence")
-                          (begin
-                            (write (car objects) buffer)
-                            (loop (cddr format-list) (cdr objects)))))
-                     ((#\%)
-                      (newline buffer)
-                      (loop (cddr format-list) objects))
-                     ((#\~)
-                      (write-char #\~ buffer)
-                      (loop (cddr format-list) objects))
-                     (else
-                      (error 'format "Unrecognized escape sequence")))))
-              (else (write-char (car format-list) buffer)
-                    (loop (cdr format-list) objects)))))))
-
-(define (printf format . args)
-  (do ((i 0 (+ i 1))
-       (len (string-length format)))
-      ((>= i len))
-    (if (char=? (string-ref format i) #\~)
-        (if (= (+ i 1) len)
-            (error 'printf format " cannot end with a ~")
-            (begin (set! i (+ i 1))
-                   (case (string-ref format i)
-                     ((#\~) (write-char #\~))
-                     ((#\a)
-                      (if (null? args)
-                          (error 'printf "Missing value for escape sequence.")
-                          (begin
-                            (display (car args))
-                            (set! args (cdr args)))))
-                     ((#\s)
-                      (if (null? args)
-                          (error 'printf "Missing value for escape sequence.")
-                          (begin
-                            (write (car args))
-                            (set! args (cdr args)))))
-                     ((#\% #\n) (write-char #\newline))
-                     (else (error 'printf "unknown escape code ~"
-                                  (string-ref format i))))))
-        (write-char (string-ref format i)))))
-
-(define let-syntax let)
-(define letrec-syntax letrec)
-
+;?macro
 (define-syntax define-macro
   (syntax-rules ()
     ((define-macro (name . args) body)
      (define name (lambda args (apply begin body))))
     ((define-macro name (lambda args body))
      (define name (lambda args (apply begin body))))))
+
+;?string
 (define (test name x y) (if (equal? x y)
                             (printf "~s: passed.~%" name)
                             (error name y " expected, got " x)))
+;:
+(define (test name x y) (if (not (equal? x y))
+                            (error name y 'expected, 'got x))))
+;>

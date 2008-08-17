@@ -30,7 +30,6 @@ escm_dyntypes_init(escm *e)
     (void) escm_procedure_new(e, "set-parse", 2, 2, escm_set_parse, NULL);
 }
 
-
 escm_atom *
 escm_prim_type(escm *e, escm_atom *args)
 {

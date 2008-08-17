@@ -80,4 +80,7 @@ escm_atom *escm_set_print_backtrace_x(escm *, escm_atom *);
 escm_atom *escm_exit(escm *, escm_atom *);
 escm_atom *escm_test_error(escm *, escm_atom *);
 
+escm_atom *escm_prim_printf(escm *, escm_atom *);
+escm_atom *escm_format(escm *, escm_atom *);
+
 #endif /* ESCHEME_PRIMITIVES_H */

@@ -38,16 +38,20 @@
                                  2: check also when printing */
 #endif
 
+#if defined ESCM_USE_BNUMBERS || defined ESCM_USE_CNUMBERS
+# define ESCM_USE_NUMBERS
+#endif
+
 #if defined ESCM_USE_UNICODE && !defined ESCM_USE_C99
 # error "unicode needs c99"
 #endif
 
-#ifndef ESCM_CIRCULAR_LIST
-# define ESCM_CIRCULAR_LIST 0 /* default */
+#if defined ESCM_USE_DYNTYPES && !defined ESCM_USE_NUMBERS
+# error "dynamic types needs number type"
 #endif
 
-#if defined ESCM_USE_BNUMBERS || defined ESCM_USE_CNUMBERS
-# define ESCM_USE_NUMBERS
+#ifndef ESCM_CIRCULAR_LIST
+# define ESCM_CIRCULAR_LIST 0 /* default */
 #endif
 
 /* typedefs */

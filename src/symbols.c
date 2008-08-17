@@ -132,7 +132,7 @@ escm_symbol_to_string(escm *e, escm_atom *args)
         return a;
     } else
 #endif
-        return escm_astring_make(e, xstrdup(escm_sym_name(sym)),
+        return escm_astring_make(e, escm_sym_name(sym),
                                  strlen(escm_sym_name(sym)));
 }
 
