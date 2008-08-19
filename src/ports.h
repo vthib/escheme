@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -49,6 +49,7 @@ escm_atom *escm_output_port_p(escm *, escm_atom *);
 
 escm_atom *escm_current_input_port(escm *, escm_atom *);
 escm_atom *escm_current_output_port(escm *, escm_atom *);
+escm_atom *escm_current_error_port(escm *, escm_atom *);
 
 escm_atom *escm_with_input_from_file(escm *, escm_atom *);
 escm_atom *escm_with_output_to_file(escm *, escm_atom *);

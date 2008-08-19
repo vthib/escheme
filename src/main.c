@@ -98,8 +98,7 @@ main(int argc, char **argv)
 
 #ifdef ESCM_USE_NUMBERS
                         if (0 == strcmp(p, "numbers")) {
-                            noload[NUM] = 1;
-                            goto loop;
+                            noload[NUM] = 1; goto loop;
                         }
 #endif
 #ifdef ESCM_USE_STRINGS
@@ -236,10 +235,6 @@ main(int argc, char **argv)
 #ifdef ESCM_USE_DYNTYPES
     if (!noload[DYNTYPE])
         escm_dyntypes_init(e);
-#endif
-
-#ifndef ESCM_USE_CHARACTERS
-    e->EOF_OBJ = e->FALSE;
 #endif
 
     e->casesensitive = casesens;

@@ -1,5 +1,7 @@
 ; define the macros
 
+;?number
+;?string
 (define-syntax cond
   (syntax-rules (else =>)
     ((cond (else result1 result2 ...))
@@ -166,12 +168,14 @@
 	  (* z x))) 
       70)
 
+;?vector
 (test 'do-1
       (do ((vec (make-vector 5))
 	   (i 0 (+ i 1)))
 	  ((= i 5) vec)
 	(vector-set! vec i i))
       '#(0 1 2 3 4))
+;>
 (test 'do-2
       (let ((x '(1 3 5 7 9)))
 	(do ((x x (cdr x))
@@ -192,3 +196,5 @@
 		     nonneg
 		     (cons (car numbers) neg)))))
       '((6 1 3) (-5 -2)))
+;>
+;>

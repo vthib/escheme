@@ -103,8 +103,8 @@ xstrcasecmp(const char *s1, const char *s2)
     for (c1 = (char *) s1, c2 = (char *) s2; *c1 != '\0'; c1++, c2++) {
         if (*c2 == '\0')
             return 1;
-        else if (towlower(*c1) != towlower(*c2))
-            return (towlower(*c1) > towlower(*c2)) ? 1 : -1;
+        else if (tolower(*c1) != tolower(*c2))
+            return (tolower(*c1) > tolower(*c2)) ? 1 : -1;
     }
 
     return (*c2 != '\0') ? -1 : 0;

@@ -64,11 +64,6 @@
 (test 'list-1 (list) '())
 (test 'list-2 (list 'a 'b 'c) '(a b c))
 
-(test-error 'length-1 (length 'a))
-(test 'length-2 (length '()) 0)
-(test 'length-3 (length '(a b c)) 3)
-(test 'length-4 (length '(a (b) (c (d)) e)) 4)
-
 (test-error 'append-1 (append 'a '()))
 (test 'append-2 (append) '())
 (test 'append-3 (append 'a) 'a)
@@ -91,6 +86,12 @@
 (test 'reverse-4 (reverse '(a b c)) '(c b a))
 (test 'reverse-5 (reverse '(a (b c) d (e (f)))) '((e (f)) d (b c) a))
 
+;?number
+(test-error 'length-1 (length 'a))
+(test 'length-2 (length '()) 0)
+(test 'length-3 (length '(a b c)) 3)
+(test 'length-4 (length '(a (b) (c (d)) e)) 4)
+
 (test-error 'list-tail-1 (list-tail '(a) 2))
 (test 'list-tail-2 (list-tail '(a) 1) '())
 (test 'list-tail-3 (list-tail '(a b c) 1) '(b c))
@@ -104,6 +105,7 @@
 (test-error 'list-ref-4 (list-ref '(a b . c) 2))
 (test-error 'list-ref-5 (list-ref '(a . b) 2))
 (test 'list-ref-6 (list-ref '(a b c) 0) 'a)
+;>
 
 (test 'memq-1 (memq 'a '(a b c)) '(a b c))
 (test 'memq-2 (memq 'b '(a b c)) '(b c))
@@ -117,4 +119,3 @@
 (test 'assq-3 (assq 'd e) #f)
 (test 'assq-4 (assq (list 'a) '(((a)) ((b)) ((c)))) #f)
 (test 'assoc-5 (assoc (list 'a) '(((a)) ((b)) ((c)))) '((a)))
-

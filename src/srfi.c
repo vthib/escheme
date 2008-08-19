@@ -145,13 +145,14 @@ escm_srfi_error(escm *e, escm_atom *args)
 
     reason = escm_cons_pop(e, &args);
 
-    escm_printf(e->errp, "Error: ");
+    escm_printf(e->errp, "error: ");
     escm_atom_print4(e, reason, e->errp, 1);
     if (args != e->NIL)
         escm_printf(e->errp, ": ");
     while (args != e->NIL) {
         reason = escm_cons_pop(e, &args);
         escm_atom_print4(e, reason, e->errp, 1);
+        escm_putc(e->errp, ' ');
     }
     escm_putc(e->errp, '\n');
 

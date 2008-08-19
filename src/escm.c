@@ -15,6 +15,7 @@
  * along with Escheme; If not, see <http://www.gnu.org/licenses/>.
  */
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 #include <stdarg.h>
 #include <ctype.h>
@@ -33,6 +34,7 @@
 static unsigned char *alloc_seg(escm *);
 static escm_atom *enterin(escm *, const char *);
 static inline escm_atom *parse(escm *, unsigned long);
+static inline void preproc(escm *);
 
 escm *
 escm_new(void)
@@ -259,11 +261,23 @@ escm_parse(escm *e)
             c = c2;
         } else if (c == ';') {
             c = escm_input_getc(e->input);
-#if 0
             if (c == '?')
                 preproc(e);
-#endif
-            while (c != '\n')
+            else if (c == ':') {
+                int lvl = 1;
+
+                while (lvl != 0 && e->input->end == 0) {
+                    c = escm_input_getc(e->input);
+                    if (c == ';') {
+                        c = escm_input_getc(e->input);
+                        if (c == '?')
+                            lvl++;
+                        if (c == '>')
+                            lvl--;
+                    }
+                }
+            }
+            while (c != '\n' && e->input->end == 0)
                 c = escm_input_getc(e->input);
         }
     } while (isspace(c) && e->input->end == 0);
@@ -723,4 +737,88 @@ parse(escm *e, unsigned long i)
             : NULL;
     }
     return NULL;
+}
+
+static inline void
+preproc(escm *e)
+{
+    char *t;
+    int c, lvl = 1;
+
+    t = escm_input_getstr_fun(e->input, isalpha, e->casesensitive);
+#ifdef ESCM_USE_NUMBERS
+    if (0 == strcmp(t, "number")) {
+        if (escm_type_ison(ESCM_TYPE_NUMBER)) goto end;
+        else goto skip;
+    }
+#endif
+#ifdef ESCM_USE_STRINGS
+    if (0 == strcmp(t, "string")) {
+        if (escm_type_ison(ESCM_TYPE_STRING)) goto end;
+        else goto skip;
+    }
+#endif
+#ifdef ESCM_USE_BOOLEANS
+    if (0 == strcmp(t, "boolean")) {
+        if (escm_type_ison(ESCM_TYPE_BOOLEAN)) goto end;
+        else goto skip;
+    }
+#endif
+#ifdef ESCM_USE_VECTORS
+    if (0 == strcmp(t, "vector")) {
+        if (escm_type_ison(ESCM_TYPE_VECTOR)) goto end;
+        else goto skip;
+    }
+#endif
+#ifdef ESCM_USE_CHARACTERS
+    if (0 == strcmp(t, "character")) {
+        if (escm_type_ison(ESCM_TYPE_CHAR)) goto end;
+        else goto skip;
+    }
+#endif
+#ifdef ESCM_USE_PROMISES
+    if (0 == strcmp(t, "promise")) {
+        if (escm_type_ison(ESCM_TYPE_PROMISE)) goto end;
+        else goto skip;
+    }
+#endif
+#ifdef ESCM_USE_PORTS
+    if (0 == strcmp(t, "port")) {
+        if (escm_type_ison(ESCM_TYPE_PORT)) goto end;
+        else goto skip;
+    }
+#endif
+#ifdef ESCM_USE_MACROS
+    if (0 == strcmp(t, "macro")) {
+        if (escm_type_ison(ESCM_TYPE_MACRO)) goto end;
+        else goto skip;
+    }
+#endif
+#ifdef ESCM_USE_CONTINUATIONS
+    if (0 == strcmp(t, "continuation")) {
+        if (escm_type_ison(ESCM_TYPE_CONTINUATION)) goto end;
+        else goto skip;
+    }
+#endif
+#ifdef ESCM_USE_DYNTYPES
+    if (0 == strcmp(t, "dyntype"))
+        goto end;
+#endif
+
+skip:
+    while (lvl != 0 && e->input->end == 0) {
+        c = escm_input_getc(e->input);
+        if (c == ';') {
+            c = escm_input_getc(e->input);
+            if (c == '?')
+                lvl++;
+            if (c == '>')
+                lvl--;
+            if (c == ':' && lvl == 1)
+                break;
+        }
+    }
+
+end:
+    free(t);
 }

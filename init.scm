@@ -73,12 +73,5 @@
      (define name (lambda args (apply begin body))))
     ((define-macro name (lambda args body))
      (define name (lambda args (apply begin body))))))
-
-;?string
-(define (test name x y) (if (equal? x y)
-                            (printf "~s: passed.~%" name)
-                            (error name y " expected, got " x)))
-;:
-;(define (test name x y) (if (not (equal? x y))
-;                            (error name y 'expected, 'got x)))
 ;>
+

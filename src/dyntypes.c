@@ -24,10 +24,11 @@ escm_dyntypes_init(escm *e)
                               NULL);
 
     (void) escm_procedure_new(e, "set-print", 2, 2, escm_set_print, NULL);
-    (void) escm_procedure_new(e, "set-eval", 2, 2, escm_set_eval, NULL);
     (void) escm_procedure_new(e, "set-equal", 2, 2, escm_set_equal, NULL);
     (void) escm_procedure_new(e, "set-parse?", 2, 2, escm_set_parse_p, NULL);
     (void) escm_procedure_new(e, "set-parse", 2, 2, escm_set_parse, NULL);
+	(void) escm_procedure_new(e, "set-eval", 2, 2, escm_set_eval, NULL);
+	(void) escm_procedure_new(e, "set-exec", 2, 2, escm_set_exec, NULL);
 }
 
 escm_atom *

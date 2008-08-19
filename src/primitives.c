@@ -18,6 +18,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef ESCM_USE_UNICODE
+# include <wchar.h>
+#endif
+
 #include "escheme.h"
 
 struct list {
@@ -116,6 +120,7 @@ escm_primitives_load(escm *e)
                               escm_set_print_backtrace_x, NULL);
 
     (void) escm_procedure_new(e, "exit", 0, 0, escm_exit, NULL);
+    (void) escm_procedure_new(e, "test", 3, 3, escm_test, NULL);
     o = escm_procedure_new(e, "test-error", 2, 2, escm_test_error, NULL);
     escm_proc_val(o)->d.c.quoted = 0x2;
 
@@ -1017,6 +1022,29 @@ escm_exit(escm *e, escm_atom *args)
     (void) args;
 
     e->input->end = 1;
+
+    return NULL;
+}
+
+escm_atom *
+escm_test(escm *e, escm_atom *args)
+{
+    escm_atom *name, *get;
+
+    name = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSYM(name), name, e);
+    get = escm_cons_pop(e, &args);
+
+    if (escm_atom_equal(e, get, escm_cons_car(args), 2))
+        escm_notice(e, "~s: passed.~%", name);
+    else {
+        if (get)
+            escm_error(e, "~s: ~s expected, got ~s.~%", name,
+                       escm_cons_car(args), get);
+        else
+            escm_error(e, "~s: ~s expected, got nothing.~%", name,
+                       escm_cons_car(args));
+    }
 
     return NULL;
 }

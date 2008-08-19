@@ -1,4 +1,4 @@
-(test 'char?-1 (char? #\A) #t)
+(test 'char?-1 (if (char? #\A) 't 'f) 't)
 (test 'char?-2 (char? 'a) #f)
 
 (test-error 'char=?-1 (char=? 'a #\a))
@@ -103,6 +103,7 @@
 (test 'char-downcase-3 (char-downcase #\F) #\f)
 (test 'char-downcase-4 (char-downcase #\space) #\space)
 
+;?number
 (test-error 'integer->char-1 (integer->char #\a))
 (test-error 'integer->char-2 (integer->char -5))
 (test 'integer->char-3 (integer->char 0) #\x0)
@@ -154,3 +155,4 @@
 (test 'char->integer-3 (char->integer #\A) 65)
 (test 'char->integer-4 (char->integer #\space) 32)
 (test 'char->integer-5 (char->integer #\`) 96)
+;>

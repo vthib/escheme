@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -32,6 +32,7 @@ static void port_print(escm *, escm_port *, escm_output *, int);
 struct escm_curports {
     escm_atom *input;
     escm_atom *output;
+    escm_atom *errp;
 } cp;
 
 void
@@ -54,6 +55,10 @@ escm_ports_init(escm *e)
     escm_port_val(cp.output)->nofree = 1;
     escm_gc_gard(e, cp.output);
 
+    cp.errp = escm_port_make(e, e->errp, 0);
+    escm_port_val(cp.errp)->nofree = 1;
+    escm_gc_gard(e, cp.errp);
+
     (void) escm_procedure_new(e, "port?", 1, 1, escm_port_p, NULL);
     (void) escm_procedure_new(e, "input-port?", 1, 1, escm_input_port_p, NULL);
     (void) escm_procedure_new(e, "output-port?", 1, 1, escm_output_port_p,
@@ -63,6 +68,8 @@ escm_ports_init(escm *e)
                               (Escm_Fun_Prim) escm_current_input_port, NULL);
     (void) escm_procedure_new(e, "current-output-port", 0, 0,
                               (Escm_Fun_Prim) escm_current_output_port, NULL);
+    (void) escm_procedure_new(e, "current-error-port", 0, 0,
+                              (Escm_Fun_Prim) escm_current_error_port, NULL);
 
     (void) escm_procedure_new(e, "with-input-from-file", 2, 2,
                               (Escm_Fun_Prim) escm_with_input_from_file, NULL);
@@ -173,6 +180,15 @@ escm_current_output_port(escm *e, escm_atom *args)
     (void) args;
 
     return cp.output;
+}
+
+escm_atom *
+escm_current_error_port(escm *e, escm_atom *args)
+{
+    (void) e;
+    (void) args;
+
+    return cp.errp;
 }
 
 escm_atom *

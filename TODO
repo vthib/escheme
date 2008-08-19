@@ -1,26 +1,20 @@
  - Bugs/TODO
    - Verify compatibility with various scheme libraries
    - Try to implement some SRFIs
-   - Macros don't support multiples ...
-   - Do not add or set a new variable in a read only env
    - Add the ability to add (& remove?) new rules in macros
    - Grow stacks when memory full
    - Cons tailrec (cons 1 (cons 2 (cons 3)))
-   - Numbers checks overflows
    - Remove parsetest and add all in parse?
    - escm_printf does not manage print levels
-   - current-error-port
-   - preproc
 
  - Features
    - Bignums
    - Common Lisp Macros
-   - test library
+   - gettext
 
  - Maybe:
    - Slashification
    - Continuations
-   - Recode Macro implementation
    - Clean bnumber implementation
    - Funny variables ($fun$ for lambda names, etc) ?
    - make null returns use a default value (eg #<undefined>) ?

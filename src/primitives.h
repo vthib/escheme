@@ -78,6 +78,7 @@ escm_atom *escm_set_brackets_parens_x(escm *, escm_atom *);
 escm_atom *escm_set_print_backtrace_x(escm *, escm_atom *);
 
 escm_atom *escm_exit(escm *, escm_atom *);
+escm_atom *escm_test(escm *, escm_atom *);
 escm_atom *escm_test_error(escm *, escm_atom *);
 
 escm_atom *escm_prim_printf(escm *, escm_atom *);

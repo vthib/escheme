@@ -18,6 +18,9 @@
 # define ESCHEME_UTILS_H
 
 #include <float.h>
+#ifdef ESCM_USE_UNICODE
+# include <wchar.h>
+#endif
 
 #ifdef _
 # undef _
