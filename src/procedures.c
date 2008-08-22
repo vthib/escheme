@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -26,7 +26,7 @@ static void procedure_free(escm_procedure *);
 static void procedure_mark(escm *, escm_procedure *);
 static void procedure_print(escm *, escm_procedure *, escm_output *, int);
 static escm_atom *procedure_exec(escm *, escm_procedure *, escm_atom *);
- 
+
 static escm_atom *runprimitive(escm *, escm_atom *, escm_atom *, int);
 static escm_atom *runlambda(escm *, escm_atom *, escm_atom *, int);
 
@@ -218,7 +218,7 @@ runprimitive(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
                     goto err;
                 if (!atom) {
                     escm_error(e, "~s: ~s must return a real value.~%", atomfun,
-                               args->car);      
+                               args->car);
                     goto err;
                 }
             }
@@ -392,14 +392,14 @@ foreach(escm *e, escm_atom *args, int map)
         escm_ctx_enter(e);
 
         for (c = escm_cons_val(args); c; c = escm_cons_next(c)) {
-            if (!c->car || c->car == e->NIL) {
+            if (c->car == e->NIL) {
                 escm_cons *c2;
 
                 if (c != escm_cons_val(args)) /* not the first list, so they
                                                  dont have same length */
                     goto err_length;
                 for (c2 = escm_cons_next(c); c2; c2 = escm_cons_next(c2)) {
-                    if (c2->car != NULL)
+                    if (c2->car != e->NIL)
                         goto err_length;
                 }
                 escm_ctx_discard(e);

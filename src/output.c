@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -26,13 +26,13 @@
 # include <wchar.h>
 #endif
 
-#define vscmpf(e, stream, format, next)                 \
-    {                                                   \
-        char *p;                                        \
-                                                        \
-        if (!(stream))                                  \
-            return;                                     \
-                                                        \
+#define vscmpf(e, stream, format, next)                                 \
+    {                                                                   \
+        char *p;                                                        \
+                                                                        \
+        if (!(stream))                                                  \
+            return;                                                     \
+                                                                        \
         for (p = (char *) (format); *p != '\0'; p++) {                  \
             if (*p == '~') {                                            \
                 p++;                                                    \
@@ -58,6 +58,48 @@
                 escm_putc((stream), *p);                                \
         }                                                               \
     }
+
+#define slashify(stream, str)                                   \
+{                                                               \
+    size_t i;                                                   \
+                                                                \
+    if (!stream)                                                \
+        return;                                                 \
+                                                                \
+    for (i = 0; str[i] != '\0'; i++) {                          \
+        switch (str[i]) {                                       \
+        case '"':                                               \
+        case '\\':                                              \
+            escm_putc(stream, '\\');                            \
+            escm_putc(stream, str[i]);                          \
+            break;                                              \
+        case '\a':                                              \
+            escm_putc(stream, '\\'); escm_putc(stream, 'a');    \
+            break;                                              \
+        case '\b':                                              \
+            escm_putc(stream, '\\'); escm_putc(stream, 'b');    \
+            break;                                              \
+        case '\f':                                              \
+            escm_putc(stream, '\\'); escm_putc(stream, 'f');    \
+            break;                                              \
+        case '\n':                                              \
+            escm_putc(stream, '\\'); escm_putc(stream, 'n');    \
+            break;                                              \
+        case '\r':                                              \
+            escm_putc(stream, '\\'); escm_putc(stream, 'r');    \
+            break;                                              \
+        case '\t':                                              \
+            escm_putc(stream, '\\'); escm_putc(stream, 't');    \
+            break;                                              \
+        case '\v':                                              \
+            escm_putc(stream, '\\'); escm_putc(stream, 'v');    \
+            break;                                              \
+        default:                                                \
+            escm_putc(stream, str[i]);                          \
+            break;                                              \
+        }                                                       \
+    }                                                           \
+}
 
 /**
  * @brief open `name' with the read rights
@@ -299,7 +341,7 @@ escm_warning(escm *e, const char *format, ...)
     va_start(va, format);
 
     vscmpf(e, e->errp, format, va_arg(va, escm_atom *));
- 
+
     va_end(va);
 }
 
@@ -321,88 +363,14 @@ escm_error(escm *e, const char *format, ...)
 void
 escm_print_slashify(escm_output *stream, const char *str)
 {
-    size_t i;
-
-    if (!stream)
-        return;
-
-    for (i = 0; str[i] != '\0'; i++) {
-        switch (str[i]) {
-        case '"':
-        case '\\':
-            escm_putc(stream, '\\');
-            escm_putc(stream, str[i]);
-            break;
-        case '\a':
-            escm_putc(stream, '\\'); escm_putc(stream, 'a');
-            break;
-        case '\b':
-            escm_putc(stream, '\\'); escm_putc(stream, 'b');
-            break;
-        case '\f':
-            escm_putc(stream, '\\'); escm_putc(stream, 'f');
-            break;
-        case '\n':
-            escm_putc(stream, '\\'); escm_putc(stream, 'n');
-            break;
-        case '\r':
-            escm_putc(stream, '\\'); escm_putc(stream, 'r');
-            break;
-        case '\t':
-            escm_putc(stream, '\\'); escm_putc(stream, 't');
-            break;
-        case '\v':
-            escm_putc(stream, '\\'); escm_putc(stream, 'v');
-            break;
-        default:
-            escm_putc(stream, str[i]);
-            break;
-        }
-    }
+   slashify(stream, str);
 }
 
 #ifdef ESCM_USE_UNICODE
 void
 escm_print_wslashify(escm_output *stream, const wchar_t *str)
 {
-    size_t i;
-
-    if (!stream)
-        return;
-
-    for (i = 0; str[i] != '\0'; i++) {
-        switch (str[i]) {
-        case '"':
-        case '\\':
-            escm_putc(stream, '\\');
-            escm_putc(stream, str[i]);
-            break;
-        case '\a':
-            escm_putc(stream, '\\'); escm_putc(stream, 'a');
-            break;
-        case '\b':
-            escm_putc(stream, '\\'); escm_putc(stream, 'b');
-            break;
-        case '\f':
-            escm_putc(stream, '\\'); escm_putc(stream, 'f');
-            break;
-        case '\n':
-            escm_putc(stream, '\\'); escm_putc(stream, 'n');
-            break;
-        case '\r':
-            escm_putc(stream, '\\'); escm_putc(stream, 'r');
-            break;
-        case '\t':
-            escm_putc(stream, '\\'); escm_putc(stream, 't');
-            break;
-        case '\v':
-            escm_putc(stream, '\\'); escm_putc(stream, 'v');
-            break;
-        default:
-            escm_putc(stream, str[i]);
-            break;
-        }
-    }
+    slashify(stream, str);
 }
 #endif
 

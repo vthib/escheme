@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -38,6 +38,8 @@ static long pgcd(long, long);
 static char *bintostr(long);
 #endif
 static inline int isnumber(int);
+static inline escm_atom *exeround(escm *, escm_atom *, double (*)(double));
+static inline escm_atom *exemath(escm *, escm_atom *, double (*)(double));
 
 void
 escm_numbers_init(escm *e)
@@ -640,7 +642,7 @@ escm_numerator(escm *e, escm_atom *args)
 
     a = escm_number_rval(n);
     while (!DBL_EQ(a, floor(a))) {
-        if (DBL_LT((LONG_MAX / 2), a)) {        
+        if (DBL_LT((LONG_MAX / 2), a)) {
             escm_error(e, "~s: integer overflow.~%", escm_fun(e));
             escm_abort(e);
         }
@@ -680,27 +682,13 @@ escm_denominator(escm *e, escm_atom *args)
 escm_atom *
 escm_floor(escm *e, escm_atom *args)
 {
-    escm_atom *a;
-
-    a = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISNUMBER(a), a, e);
-    if (ESCM_ISINT(a))
-        return a;
-
-    return escm_real_make(e, floor(escm_number_rval(a)));
+    return exeround(e, args, floor);
 }
 
 escm_atom *
 escm_ceiling(escm *e, escm_atom *args)
 {
-    escm_atom *a;
-
-    a = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISNUMBER(a), a, e);
-    if (ESCM_ISINT(a))
-        return a;
-
-    return escm_real_make(e, ceil(escm_number_rval(a)));
+    return exeround(e, args, ceil);
 }
 
 escm_atom *
@@ -726,112 +714,49 @@ escm_truncate(escm *e, escm_atom *args)
 escm_atom *
 escm_round(escm *e, escm_atom *args)
 {
-    escm_atom *a;
-
-    a = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISNUMBER(a), a, e);
-    if (ESCM_ISINT(a))
-        return a;
-
-    return escm_real_make(e, xround(escm_number_rval(a)));
+    return exeround(e, args, xround);
 }
 
 escm_atom *
 escm_exp(escm *e, escm_atom *args)
 {
-    escm_atom *atom;
-    double a;
-
-    atom = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISNUMBER(atom), atom, e);
-    a = (ESCM_ISINT(atom)) ? (double) escm_number_ival(atom) :
-        escm_number_rval(atom);
-
-    return escm_real_make(e, exp(a));
+    return exemath(e, args, exp);
 }
 
 escm_atom *
 escm_log(escm *e, escm_atom *args)
 {
-    escm_atom *atom;
-    double a;
-
-    atom = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISNUMBER(atom), atom, e);
-    a = (ESCM_ISINT(atom)) ? (double) escm_number_ival(atom) :
-        escm_number_rval(atom);
-
-    return escm_real_make(e, log(a));
+    return exemath(e, args, log);
 }
 
 escm_atom *
 escm_sin(escm *e, escm_atom *args)
 {
-    escm_atom *atom;
-    double a;
-
-    atom = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISNUMBER(atom), atom, e);
-    a = (ESCM_ISINT(atom)) ? (double) escm_number_ival(atom) :
-        escm_number_rval(atom);
-
-    return escm_real_make(e, sin(a));
+    return exemath(e, args, sin);
 }
 
 escm_atom *
 escm_cos(escm *e, escm_atom *args)
 {
-    escm_atom *atom;
-    double a;
-
-    atom = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISNUMBER(atom), atom, e);
-    a = (ESCM_ISINT(atom)) ? (double) escm_number_ival(atom) :
-        escm_number_rval(atom);
-
-    return escm_real_make(e, cos(a));
+    return exemath(e, args, cos);
 }
 
 escm_atom *
 escm_tan(escm *e, escm_atom *args)
 {
-    escm_atom *atom;
-    double a;
-
-    atom = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISNUMBER(atom), atom, e);
-    a = (ESCM_ISINT(atom)) ? (double) escm_number_ival(atom) :
-        escm_number_rval(atom);
-
-    return escm_real_make(e, tan(a));
+    return exemath(e, args, tan);
 }
 
 escm_atom *
 escm_asin(escm *e, escm_atom *args)
 {
-    escm_atom *atom;
-    double a;
-
-    atom = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISNUMBER(atom), atom, e);
-    a = (ESCM_ISINT(atom)) ? (double) escm_number_ival(atom) :
-        escm_number_rval(atom);
-
-    return escm_real_make(e, asin(a));
+    return exemath(e, args, asin);
 }
 
 escm_atom *
 escm_acos(escm *e, escm_atom *args)
 {
-    escm_atom *atom;
-    double a;
-
-    atom = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISNUMBER(atom), atom, e);
-    a = (ESCM_ISINT(atom)) ? (double) escm_number_ival(atom) :
-        escm_number_rval(atom);
-
-    return escm_real_make(e, acos(a));
+    return exemath(e, args, acos);
 }
 
 escm_atom *
@@ -1068,27 +993,16 @@ number_parsetest(escm *e, int c)
     (void) e;
 
     if (c == '+' || c == '-') {
-        int c2;
-        int ret;
-
-        c2 = escm_input_getc(e->input);
-        ret = isdigit(c2) || c2 == '.';
-        escm_input_ungetc(e->input, c2);
-
-        return ret;
+        c = escm_input_peek(e->input);
+        return isdigit(c) || c == '.';
     } else if (isdigit(c) || c == '.')
         return 1;
     else if (c == '#') {
-        int ret;
-
-        c = escm_input_getc(e->input);
-        ret = (c == 'b' || c == 'o' || c == 'x' || c == 'd');
-        escm_input_ungetc(e->input, c);
-
-        return ret;
+        c = escm_input_peek(e->input);
+        return (c == 'b' || c == 'o' || c == 'x' || c == 'd');
     } else
         return 0;
-}    
+}
 
 static escm_atom *
 number_parse(escm *e)
@@ -1226,4 +1140,31 @@ static inline int
 isnumber(int c)
 {
     return (strchr("+-i/#.e", c) != NULL || isxdigit(c));
+}
+
+static inline escm_atom *
+exeround(escm *e, escm_atom *args, double (*fun)(double))
+{
+    escm_atom *a;
+
+    a = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISNUMBER(a), a, e);
+    if (ESCM_ISINT(a))
+        return a;
+
+    return escm_real_make(e, fun(escm_number_rval(a)));
+}
+
+static inline escm_atom *
+exemath(escm *e, escm_atom *args, double (*fun)(double))
+{
+    escm_atom *atom;
+    double a;
+
+    atom = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISNUMBER(atom), atom, e);
+    a = (ESCM_ISINT(atom)) ? (double) escm_number_ival(atom) :
+        escm_number_rval(atom);
+
+    return escm_real_make(e, fun(a));
 }

@@ -7,6 +7,18 @@
 (test 'char=?-4 (char=? #\a #\A) #f)
 (test 'char=?-5 (char=? #\a #\alarm) #f)
 
+(test 'char=?-6 (char=? #\newline #\x0A) #t)
+(test 'char=?-7 (char=? #\space #\x20) #t)
+(test 'char=?-8 (char=? #\nul #\x00) #t)
+(test 'char=?-9 (char=? #\alarm #\x07) #t)
+(test 'char=?-10 (char=? #\backspace #\x08) #t)
+(test 'char=?-11 (char=? #\tab #\x09) #t)
+(test 'char=?-12 (char=? #\vtab #\x0B) #t)
+(test 'char=?-13 (char=? #\page #\x0C) #t)
+(test 'char=?-14 (char=? #\return #\x0D) #t)
+(test 'char=?-15 (char=? #\esc #\x1B) #t)
+(test 'char=?-16 (char=? #\delete #\x7F) #t)
+
 (test-error 'char>?-1 (char>? 'a #\a))
 (test-error 'char>?-2 (char>? #\a 'a))
 (test 'char>?-3 (char>? #\a #\b) #f)

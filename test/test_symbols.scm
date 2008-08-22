@@ -1,11 +1,11 @@
-(test 'symbol?-1 (symbol? 'foo) $true$)
-(test 'symbol?-2 (symbol? (car '(a b))) $true$)
-(test 'symbol?-3 (symbol? 'nil) $true$)
+(test 'symbol?-1 (symbol? 'foo) #t)
+(test 'symbol?-2 (symbol? (car '(a b))) #t)
+(test 'symbol?-3 (symbol? 'nil) #t)
 (test 'symbol?-4 (symbol? '()) #f)
 
 ;?string
 (test 'symbol?-5 (symbol? (symbol->string 'a)) #f)
-(test 'symbol?-6 (symbol? (string->symbol (symbol->string 'a))) $true$)
+(test 'symbol?-6 (symbol? (string->symbol (symbol->string 'a))) #t)
 
 (test 'symbol->string-1 (symbol->string 'flying-fish) "flying-fish")
 (test 'symbol->string-2 (symbol->string 'MaRtiN) "MaRtiN")
@@ -19,7 +19,7 @@
   "Mal\nina")
 (test-error 'symbol->string-6 (symbol->string "abc"))
 
-(set-case-sensitive! $true$)
+(set-case-sensitive! #t)
 (test 'string->symbol-1 (string->symbol "mISSISSIppi") 'mISSISSIppi)
 (test 'string->symbol-2
   (symbol->string (string->symbol "Mal\nina"))
@@ -33,3 +33,5 @@
   "Mal\nina")
 (test-error 'string->symbol-5 (string->symbol 'abc))
 ;>
+
+(set-case-sensitive! #f)

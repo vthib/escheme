@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -24,11 +24,11 @@ enum {
 #ifdef ESCM_USE_NUMBERS
     NUM,
 #endif
-#ifdef ESCM_USE_STRINGS
-    STRING,
-#endif
 #ifdef ESCM_USE_BOOLEANS
     BOOL,
+#endif
+#ifdef ESCM_USE_STRINGS
+    STRING,
 #endif
 #ifdef ESCM_USE_VECTORS
     VECT,
@@ -54,14 +54,63 @@ enum {
     MAXTYPE
 };
 
+struct types {
+    char *name;
+    char *desc;
+    void (*funinit)(escm *);
+    int load;
+};
+
+static struct types desc[MAXTYPE] = {
+#ifdef ESCM_USE_NUMBERS
+    { "numbers", "numbers: the basic number implementation.",
+      escm_numbers_init, 1 },
+#endif
+#ifdef ESCM_USE_BOOLEANS
+    { "booleans", "booleans: the boolean implementation.",
+      escm_booleans_init, 1 },
+#endif
+#ifdef ESCM_USE_STRINGS
+    { "strings", "strings: the string implementation.",
+      escm_astrings_init, 1 },
+#endif
+#ifdef ESCM_USE_VECTORS
+    { "vectors", "vectors: the vector implementation.",
+      escm_vectors_init, 1 },
+#endif
+#ifdef ESCM_USE_CHARACTERS
+    { "characters", "characters: the character implementation.",
+      escm_achars_init, 1 },
+#endif
+#ifdef ESCM_USE_PROMISES
+    { "promises", "promises: the promises implementation (delay and force).",
+      escm_promises_init, 1 },
+#endif
+#ifdef ESCM_USE_PORTS
+    { "ports", "ports: the port implementation.", escm_ports_init, 1 },
+#endif
+#ifdef ESCM_USE_MACROS
+    { "macros", "macros: the macro implementation (scheme hygienic macros).",
+      escm_macros_init, 1 },
+#endif
+#ifdef ESCM_USE_CONTINUATIONS
+    { "continuations", "continuations: the continuation implementation.",
+      escm_continuations_init, 1 },
+#endif
+#ifdef ESCM_USE_DYNTYPES
+    { "dyntypes", "dyntypes: the dynamic types implementation (escheme "
+      "system to create or \n\t\tmodify types impl at runtime).",
+      escm_dyntypes_init, 1 },
+#endif
+};
+
 static void usage(char *);
 
 int
 main(int argc, char **argv)
 {
     escm *e;
-    int i;
-    int noload[MAXTYPE];
+    int i, j;
     int casesens = 1;
     int useascii = 0;
     int resume = 0;
@@ -69,8 +118,6 @@ main(int argc, char **argv)
     char *p;
     char *evalstr;
     int ret;
-
-    memset(noload, 0, sizeof noload);
 
     if (!setlocale(LC_ALL, "") ||
         !setlocale(LC_NUMERIC, "C"))  /* corrects strtod interpretation */
@@ -96,61 +143,17 @@ main(int argc, char **argv)
                         else
                             *comma = '\0';
 
-#ifdef ESCM_USE_NUMBERS
-                        if (0 == strcmp(p, "numbers")) {
-                            noload[NUM] = 1; goto loop;
+                        for (j = 0; j < MAXTYPE; j++) {
+                            if (0 == strcmp(p, desc[j].name)) {
+                                desc[j].load = 0;
+                                break;
+                            }
                         }
-#endif
-#ifdef ESCM_USE_STRINGS
-                        if (0 == strcmp(p, "strings")) {
-                            noload[STRING] = 1; goto loop;
-                        }
-#endif
-#ifdef ESCM_USE_BOOLEANS
-                        if (0 == strcmp(p, "booleans")) {
-                            noload[BOOL] = 1; goto loop;
-                        }
-#endif
-#ifdef ESCM_USE_VECTORS
-                        if (0 == strcmp(p, "vectors")) {
-                            noload[VECT] = 1; goto loop;
-                        }
-#endif
-#ifdef ESCM_USE_CHARACTERS
-                        if (0 == strcmp(p, "characters")) {
-                            noload[CHAR] = 1; goto loop;
-                        }
-#endif
-#ifdef ESCM_USE_PROMISES
-                        if (0 == strcmp(p, "promises")) {
-                            noload[PROMISE] = 1; goto loop;
-                        }
-#endif
-#ifdef ESCM_USE_PORTS
-                        if (0 == strcmp(p, "ports")) {
-                            noload[PORT] = 1; goto loop;
-                        }
-#endif
-#ifdef ESCM_USE_MACROS
-                        if (0 == strcmp(p, "macros")) {
-                            noload[MACRO] = 1; goto loop;
-                        }
-#endif
-#ifdef ESCM_USE_CONTINUATIONS
-                        if (0 == strcmp(p, "continuations")) {
-                            noload[CONT] = 1; goto loop;
-                        }
-#endif
-#ifdef ESCM_USE_DYNTYPES
-                        if (0 == strcmp(p, "dyntypes")) {
-                            noload[DYNTYPE] = 1; goto loop;
-                        }
-#endif
 
-                        fprintf(stderr, "unknown argument to --noload: %s.\n",
-                                p);
+                        if (j == MAXTYPE)
+                            fprintf(stderr, "unknown argument to --noload: %s.\n",
+                                    p);
 
-                    loop:
                         p = comma + 1;
                     }
                     i++;
@@ -181,61 +184,21 @@ main(int argc, char **argv)
     if (!e)
         return EXIT_FAILURE;
 
-#ifdef ESCM_USE_BOOLEANS
-    if (!noload[BOOL])
-        escm_booleans_init(e);
-#endif
-#ifdef ESCM_USE_NUMBERS
-    if (!noload[NUM])
-        escm_numbers_init(e);
-#endif
-
-#ifdef ESCM_USE_STRINGS
-    if (!noload[STRING]) {
-# ifdef ESCM_USE_UNICODE
-        if (!useascii)
-            escm_ustrings_init(e);
-        else
+#ifdef ESCM_USE_UNICODE
+    if (!use_ascii) {
+# ifdef ESCM_USE_STRINGS
+        desc[STRING].funinit = escm_ustrings_init;
 # endif
-            escm_astrings_init(e);
-    }
-#endif
-#ifdef ESCM_USE_VECTORS
-    if (!noload[VECT])
-        escm_vectors_init(e);
-#endif
-#ifdef ESCM_USE_CHARACTERS
-    if (!noload[CHAR]) {
-# ifdef ESCM_USE_UNICODE
-        if (!useascii)
-            escm_uchars_init(e);
-        else
+# ifdef ESCM_USE_CHARACTERS
+        desc[STRING].funinit = escm_uchars_init;
 # endif
-            escm_achars_init(e);
     }
-#endif
+#endif /* ESCM_USE_UNICODE */
 
-#ifdef ESCM_USE_PROMISES
-    if (!noload[PROMISE])
-        escm_promises_init(e);
-#endif
-#ifdef ESCM_USE_PORTS
-    if (!noload[PORT])
-        escm_ports_init(e);
-#endif
-#ifdef ESCM_USE_MACROS
-    if (!noload[MACRO])
-        escm_macros_init(e);
-#endif
-#ifdef ESCM_USE_CONTINUATIONS
-    if (!noload[CONT])
-        escm_continuations_init(e);
-#endif
-
-#ifdef ESCM_USE_DYNTYPES
-    if (!noload[DYNTYPE])
-        escm_dyntypes_init(e);
-#endif
+    for (j = 0; j < MAXTYPE; j++) {
+        if (desc[j].load)
+            desc[j].funinit(e);
+    }
 
     e->casesensitive = casesens;
     e->backtrace = 1;
@@ -274,6 +237,8 @@ end:
 static void
 usage(char *name)
 {
+    int i;
+
     printf("Escheme -- A small and smart scheme interpreter.\n"
            "\n"
            "%s [option ...] [file ...]\n"
@@ -289,39 +254,6 @@ usage(char *name)
            "    Do not load the given types. The following types are "
            "recognized :\n", name);
 
-    printf(""
-#ifdef ESCM_USE_NUMBERS
-           "\tnumbers: the basic number implementation.\n"
-#endif
-#ifdef ESCM_USE_STRINGS
-           "\tstrings: the string implementation.\n"
-#endif
-#ifdef ESCM_USE_BOOLEANS
-           "\tbooleans: the boolean implementation.\n"
-#endif
-#ifdef ESCM_USE_VECTORS
-           "\tvectors: the vector implementation.\n"
-#endif
-#ifdef ESCM_USE_CHARACTERS
-           "\tcharacters: the character implementation.\n"
-#endif
-#ifdef ESCM_USE_PROMISES
-           "\tpromises: the promises implementation (delay and force)\n"
-#endif
-        );
-    printf(""
-#ifdef ESCM_USE_PORTS
-           "\tports: the port implementation.\n"
-#endif
-#ifdef ESCM_USE_MACROS
-           "\tmacros: the macro implementation (scheme hygienic macros).\n"
-#endif
-#ifdef ESCM_USE_CONTINUATIONS
-           "\tcontinuations: the continuation implementation.\n"
-#endif
-#ifdef ESCM_USE_DYNTYPES
-           "\tdyntypes: the dynamic types implementation (escheme system "
-           "to create or \n\t\tmodify types impl at runtime).\n"
-#endif
-        );
+    for (i = 0; i < MAXTYPE; i++)
+        printf("\t%s\n", desc[i].desc);
 }

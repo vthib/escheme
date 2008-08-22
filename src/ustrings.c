@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -300,185 +300,78 @@ escm_ustring_set_x(escm *e, escm_atom *args)
 }
 #endif
 
+#define cmpstr(e, args, cmp, fun)                               \
+{                                                               \
+    escm_atom *a1, *a2;                                         \
+    int i;                                                      \
+                                                                \
+    a1 = escm_cons_pop(e, &args);                               \
+    escm_assert(ESCM_ISUSTR(a1), a1, e);                        \
+    a2 = escm_cons_pop(e, &args);                               \
+    escm_assert(ESCM_ISUSTR(a2), a2, e);                        \
+                                                                \
+    return (fun(escm_ustr_val(a1), escm_ustr_val(a2)) cmp 0)    \
+        ? e->TRUE : e->FALSE;                                   \
+}
+
 escm_atom *
 escm_ustring_eq_p(escm *e, escm_atom *args)
 {
-    escm_atom *s1, *s2;
-
-    s1 = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISUSTR(s1), s1, e);
-    s2 = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISUSTR(s2), s2, e);
-
-    return (ustring_equal(e, s1->ptr, s2->ptr, 2)) ? e->TRUE : e->FALSE;
+    cmpstr(e, args, ==, wcscmp);
 }
 
 escm_atom *
 escm_ustring_lt_p(escm *e, escm_atom *args)
 {
-    escm_atom *a1, *a2;
-    int i;
-
-    a1 = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISUSTR(a1), a1, e);
-    a2 = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISUSTR(a2), a2, e);
-
-    if (a1 == a2)
-        return e->FALSE;
-
-    i = wcscmp(escm_ustr_val(a1), escm_ustr_val(a2));
-    return (i < 0) ? e->TRUE : e->FALSE;
+    cmpstr(e, args, <, wcscmp);
 }
 
 escm_atom *
 escm_ustring_gt_p(escm *e, escm_atom *args)
 {
-    escm_atom *a1, *a2;
-    int i;
-
-    a1 = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISUSTR(a1), a1, e);
-    a2 = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISUSTR(a2), a2, e);
-
-    if (a1 == a2)
-        return e->FALSE;
-
-    i = wcscmp(escm_ustr_val(a1), escm_ustr_val(a2));
-    return (i > 0) ? e->TRUE : e->FALSE;
+    cmpstr(e, args, >, wcscmp);
 }
 
 escm_atom *
 escm_ustring_le_p(escm *e, escm_atom *args)
 {
-    escm_atom *a1, *a2;
-    int i;
-
-    a1 = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISUSTR(a1), a1, e);
-    a2 = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISUSTR(a2), a2, e);
-
-    if (a1 == a2)
-        return e->FALSE;
-
-    i = wcscmp(escm_ustr_val(a1), escm_ustr_val(a2));
-    return (i <= 0) ? e->TRUE : e->FALSE;
+    cmpstr(e, args, <=, wcscmp);
 }
 
 escm_atom *
 escm_ustring_ge_p(escm *e, escm_atom *args)
 {
-    escm_atom *a1, *a2;
-    int i;
-
-    a1 = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISUSTR(a1), a1, e);
-    a2 = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISUSTR(a2), a2, e);
-
-    if (a1 == a2)
-        return e->FALSE;
-
-    i = wcscmp(escm_ustr_val(a1), escm_ustr_val(a2));
-    return (i >= 0) ? e->TRUE : e->FALSE;
+    cmpstr(e, args, >=, wcscmp);
 }
 
 escm_atom *
 escm_ustring_ci_eq_p(escm *e, escm_atom *args)
 {
-    escm_atom *a1, *a2;
-    wchar_t *s1, *s2;
-    size_t i;
-
-    a1 = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISUSTR(a1), a1, e);
-    a2 = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISUSTR(a2), a2, e);
-
-    if (a1 == a2 || escm_ustr_len(a1) != escm_ustr_len(a2))
-        return e->TRUE;
-
-    s1 = escm_ustr_val(a1), s2 = escm_ustr_val(a2);
-    for (i = 0; i < escm_ustr_len(a1); i++) {
-        if (towlower(s1[i]) != towlower(s2[i]))
-            return e->FALSE;
-    }
-
-    return e->TRUE;
+    cmpstr(e, args, ==, xwcscasecmp);
 }
 
 escm_atom *
 escm_ustring_ci_lt_p(escm *e, escm_atom *args)
 {
-    escm_atom *a1, *a2;
-    int i;
-
-    a1 = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISUSTR(a1), a1, e);
-    a2 = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISUSTR(a2), a2, e);
-
-    if (a1 == a2)
-        return e->FALSE;
-
-    i = xwcscasecmp(escm_ustr_val(a1), escm_ustr_val(a2));
-    return (i < 0) ? e->TRUE : e->FALSE;
+    cmpstr(e, args, <, xwcscasecmp);
 }
 
 escm_atom *
 escm_ustring_ci_gt_p(escm *e, escm_atom *args)
 {
-    escm_atom *a1, *a2;
-    int i;
-
-    a1 = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISUSTR(a1), a1, e);
-    a2 = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISUSTR(a2), a2, e);
-
-    if (a1 == a2)
-        return e->FALSE;
-
-    i = xwcscasecmp(escm_ustr_val(a1), escm_ustr_val(a2));
-    return (i > 0) ? e->TRUE : e->FALSE;
+    cmpstr(e, args, >, xwcscasecmp);
 }
 
 escm_atom *
 escm_ustring_ci_le_p(escm *e, escm_atom *args)
 {
-    escm_atom *a1, *a2;
-    int i;
-
-    a1 = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISUSTR(a1), a1, e);
-    a2 = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISUSTR(a2), a2, e);
-
-    if (a1 == a2)
-        return e->FALSE;
-
-    i = xwcscasecmp(escm_ustr_val(a1), escm_ustr_val(a2));
-    return (i <= 0) ? e->TRUE : e->FALSE;
+    cmpstr(e, args, <=, xwcscasecmp);
 }
 
 escm_atom *
 escm_ustring_ci_ge_p(escm *e, escm_atom *args)
 {
-    escm_atom *a1, *a2;
-    int i;
-
-    a1 = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISUSTR(a1), a1, e);
-    a2 = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISUSTR(a2), a2, e);
-
-    if (a1 == a2)
-        return e->FALSE;
-
-    i = xwcscasecmp(escm_ustr_val(a1), escm_ustr_val(a2));
-    return (i >= 0) ? e->TRUE : e->FALSE;
+    cmpstr(e, args, >=, xwcscasecmp);
 }
 
 #ifdef ESCM_USE_NUMBERS

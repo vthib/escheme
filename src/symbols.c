@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -196,19 +196,17 @@ symbol_parsetest(escm *e, int c)
     (void) e;
 
     if (c == '+' || c == '-') {
-        int c2;
-
-        c2 = escm_input_getc(e->input);
-        if (c2 == '.') {
+        c = escm_input_peek(e->input);
+        if (c == '.') {
             int ret;
 
             ret = !isdigit(escm_input_peek(e->input));
-            escm_input_ungetc(e->input, c2);
+            escm_input_ungetc(e->input, c);
             return ret;
         }
- 
-        escm_input_ungetc(e->input, c2);
-        return !(isdigit(c2) || c2 == 'i');
+
+        escm_input_ungetc(e->input, c);
+        return !(isdigit(c) || c == 'i');
     } else if (c == '.')
         return !isdigit(escm_input_peek(e->input));
     else if (isdigit(c))

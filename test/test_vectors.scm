@@ -21,7 +21,7 @@
 (test-error 'vector-ref-3 (vector-ref #(a b c) 3))
 (test-error 'vector-ref-4 (vector-ref #() 0))
 (test 'vector-ref-5 (vector-ref #(a b c) 0) 'a)
-(test 'vector-ref-6 (vector-ref #(0 (2 2 2 2) #(Anna a) 2) #(Anna 3))
+(test 'vector-ref-6 (vector-ref #(0 (2 2 2 2) #(Anna a)) 2) #(Anna a))
 
 (test-error 'vector-set!-1 (vector-set! 5 1 'a))
 (test-error 'vector-set!-2 (vector-set! #(a b c) -2 'a))

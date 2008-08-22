@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -28,6 +28,27 @@ static int achar_equal(escm *, escm_intptr, escm_intptr, int);
 static int achar_parsetest(escm *, int);
 static escm_atom *achar_parse(escm *);
 static int input_getchar(escm *, escm_input *);
+static inline escm_atom *testchar(escm *, escm_atom *, int (*)(int));
+
+struct charcode {
+    char *name;
+    int c;
+};
+
+#define CHCODELEN 11
+static struct charcode chcode[CHCODELEN] = {
+    { "newline", '\n' },
+    { "space", ' ' },
+    { "nul", '\0' },
+    { "alarm", '\a' },
+    { "backspace", '\b' },
+    { "tab", '\t' },
+    { "vtab", '\v' },
+    { "page", '\f' },
+    { "return", '\r' },
+    { "esc", '\x1B' },
+    { "delete", '\x7F' }
+};
 
 void
 escm_achars_init(escm *e)
@@ -103,194 +124,108 @@ escm_achar_p(escm *e, escm_atom *args)
     return ESCM_ISACHAR(a) ? e->TRUE : e->FALSE;
 }
 
+#define ID(x) x
+#define charcmp(e, args, cmp, fun)                                      \
+{                                                                       \
+    escm_atom *c1, *c2;                                                 \
+                                                                        \
+    c1 = escm_cons_pop(e, &args);                                       \
+    c2 = escm_cons_pop(e, &args);                                       \
+    escm_assert(ESCM_ISACHAR(c1), c1, e);                               \
+    escm_assert(ESCM_ISACHAR(c2), c2, e);                               \
+                                                                        \
+    return (fun(escm_achar_val(c1)) cmp fun(escm_achar_val(c2))) ?      \
+    e->TRUE : e->FALSE;                                                 \
+}
+
 escm_atom *
 escm_achar_eq_p(escm *e, escm_atom *args)
 {
-    escm_atom *c1, *c2;
-
-    c1 = escm_cons_pop(e, &args);
-    c2 = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISACHAR(c1), c1, e);
-    escm_assert(ESCM_ISACHAR(c2), c2, e);
-
-    return (escm_achar_val(c1) == escm_achar_val(c2)) ? e->TRUE : e->FALSE;
+    charcmp(e, args, ==, ID);
 }
 
 escm_atom *
 escm_achar_lt_p(escm *e, escm_atom *args)
 {
-    escm_atom *c1, *c2;
-
-    c1 = escm_cons_pop(e, &args);
-    c2 = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISACHAR(c1), c1, e);
-    escm_assert(ESCM_ISACHAR(c2), c2, e);
-
-    return (escm_achar_val(c1) < escm_achar_val(c2)) ? e->TRUE : e->FALSE;
+    charcmp(e, args,<, ID);
 }
 
 escm_atom *
 escm_achar_gt_p(escm *e, escm_atom *args)
 {
-    escm_atom *c1, *c2;
-
-    c1 = escm_cons_pop(e, &args);
-    c2 = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISACHAR(c1), c1, e);
-    escm_assert(ESCM_ISACHAR(c2), c2, e);
-
-    return (escm_achar_val(c1) > escm_achar_val(c2)) ? e->TRUE : e->FALSE;
+    charcmp(e, args, >, ID);
 }
 
 escm_atom *
 escm_achar_le_p(escm *e, escm_atom *args)
 {
-    escm_atom *c1, *c2;
-
-    c1 = escm_cons_pop(e, &args);
-    c2 = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISACHAR(c1), c1, e);
-    escm_assert(ESCM_ISACHAR(c2), c2, e);
-
-    return (escm_achar_val(c1) <= escm_achar_val(c2)) ? e->TRUE : e->FALSE;
+    charcmp(e, args, <=, ID);
 }
 
 escm_atom *
 escm_achar_ge_p(escm *e, escm_atom *args)
 {
-    escm_atom *c1, *c2;
-
-    c1 = escm_cons_pop(e, &args);
-    c2 = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISACHAR(c1), c1, e);
-    escm_assert(ESCM_ISACHAR(c2), c2, e);
-
-    return (escm_achar_val(c1) >= escm_achar_val(c2)) ? e->TRUE : e->FALSE;
+    charcmp(e, args, >=, ID);
 }
 
 escm_atom *
 escm_achar_ci_eq_p(escm *e, escm_atom *args)
 {
-    escm_atom *c1, *c2;
-
-    c1 = escm_cons_pop(e, &args);
-    c2 = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISACHAR(c1), c1, e);
-    escm_assert(ESCM_ISACHAR(c2), c2, e);
-
-    return (tolower(escm_achar_val(c1)) == tolower(escm_achar_val(c2))) ?
-        e->TRUE : e->FALSE;
+    charcmp(e, args, ==, tolower);
 }
 
 escm_atom *
 escm_achar_ci_lt_p(escm *e, escm_atom *args)
 {
-    escm_atom *c1, *c2;
-
-    c1 = escm_cons_pop(e, &args);
-    c2 = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISACHAR(c1), c1, e);
-    escm_assert(ESCM_ISACHAR(c2), c2, e);
-
-    return (tolower(escm_achar_val(c1)) < tolower(escm_achar_val(c2))) ?
-        e->TRUE : e->FALSE;
+    charcmp(e, args, <, tolower);
 }
 
 escm_atom *
 escm_achar_ci_gt_p(escm *e, escm_atom *args)
 {
-    escm_atom *c1, *c2;
-
-    c1 = escm_cons_pop(e, &args);
-    c2 = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISACHAR(c1), c1, e);
-    escm_assert(ESCM_ISACHAR(c2), c2, e);
-
-    return (tolower(escm_achar_val(c1)) > tolower(escm_achar_val(c2))) ?
-        e->TRUE : e->FALSE;
+    charcmp(e, args, >, tolower);
 }
 
 escm_atom *
 escm_achar_ci_le_p(escm *e, escm_atom *args)
 {
-    escm_atom *c1, *c2;
-
-    c1 = escm_cons_pop(e, &args);
-    c2 = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISACHAR(c1), c1, e);
-    escm_assert(ESCM_ISACHAR(c2), c2, e);
-
-    return (tolower(escm_achar_val(c1)) <= tolower(escm_achar_val(c2))) ?
-        e->TRUE : e->FALSE;
+    charcmp(e, args, <=, tolower);
 }
 
 escm_atom *
 escm_achar_ci_ge_p(escm *e, escm_atom *args)
 {
-    escm_atom *c1, *c2;
-
-    c1 = escm_cons_pop(e, &args);
-    c2 = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISACHAR(c1), c1, e);
-    escm_assert(ESCM_ISACHAR(c2), c2, e);
-
-    return (tolower(escm_achar_val(c1)) >= tolower(escm_achar_val(c2))) ?
-        e->TRUE : e->FALSE;
+    charcmp(e, args, >=, tolower);
 }
 
 escm_atom *
 escm_achar_alphabetic_p(escm *e, escm_atom *args)
 {
-    escm_atom *c;
-
-    c = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISACHAR(c), c, e);
-
-    return isalpha(escm_achar_val(c)) ? e->TRUE : e->FALSE;
+    return testchar(e, args, isalpha);
 }
 
 escm_atom *
 escm_achar_numeric_p(escm *e, escm_atom *args)
 {
-    escm_atom *c;
-
-    c = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISACHAR(c), c, e);
-
-    return isdigit(escm_achar_val(c)) ? e->TRUE : e->FALSE;
+    return testchar(e, args, isdigit);
 }
 
 escm_atom *
 escm_achar_whitespace_p(escm *e, escm_atom *args)
 {
-    escm_atom *c;
-
-    c = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISACHAR(c), c, e);
-
-    return isspace(escm_achar_val(c)) ? e->TRUE : e->FALSE;
+    return testchar(e, args, isspace);
 }
 
 escm_atom *
 escm_achar_upper_case_p(escm *e, escm_atom *args)
 {
-    escm_atom *c;
-
-    c = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISACHAR(c), c, e);
-
-    return isupper(escm_achar_val(c)) ? e->TRUE : e->FALSE;
+    return testchar(e, args, isupper);
 }
 
 escm_atom *
 escm_achar_lower_case_p(escm *e, escm_atom *args)
 {
-    escm_atom *c;
-
-    c = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISACHAR(c), c, e);
-
-    return islower(escm_achar_val(c)) ? e->TRUE : e->FALSE;
+    return testchar(e, args, islower);
 }
 
 #ifdef ESCM_USE_NUMBERS
@@ -357,6 +292,8 @@ escm_achar_downcase(escm *e, escm_atom *args)
 static void
 achar_print(escm *e, int c, escm_output *stream, int lvl)
 {
+    int i;
+
     (void) e;
 
     if (lvl == 1) {
@@ -372,16 +309,17 @@ achar_print(escm *e, int c, escm_output *stream, int lvl)
     }
 
     escm_printf(stream, "#\\");
-    if (c == '\n')
-        escm_printf(stream, "newline");
-    else if (c == ' ')
-        escm_printf(stream, "space");
-    else {
-        if (isprint(c))
-            escm_printf(stream, "%c", c);
-        else
-            escm_printf(stream, "x%x", (unsigned char) c);
+
+    for (i = 0; i < CHCODELEN; i++) {
+        if (c == chcode[i].c) {
+            escm_printf(stream, chcode[i].name);
+            return;
+        }
     }
+    if (isprint(c))
+        escm_printf(stream, "%c", c);
+    else
+        escm_printf(stream, "x%x", (unsigned char) c);
 }
 
 static int
@@ -400,7 +338,7 @@ achar_parsetest(escm *e, int c)
         return escm_input_peek(e->input) == '\\';
 
     return 0;
-}    
+}
 
 static escm_atom *
 achar_parse(escm *e)
@@ -442,7 +380,7 @@ input_getchar(escm *e, escm_input *input)
             }
 
             for (p = str + 1; *p != '\0'; p++) {
-                if (*p < '0' || *p > 'f') {
+                if (*p < '0' || tolower(*p) > 'f') {
                     escm_parse_print(input, e->errp, "invalid character: "
                                      "#\\%s.\n", str);
                     goto err;
@@ -450,33 +388,21 @@ input_getchar(escm *e, escm_input *input)
                 if (*p <= '9')
                     c <<= 4, c |= (*p - '0');
                 else
-                    c <<= 4, c |= ((*p - 'a') + 10);
+                    c <<= 4, c |= ((tolower(*p) - 'a') + 10);
             }
-        } else if (strcmp(str, "newline") == 0 || strcmp(str, "linefeed") == 0)
-            c = '\n';
-        else if (strcmp(str, "space") == 0)
-            c = ' ';
-        else if (strcmp(str, "nul") == 0)
-            c = '\0';
-        else if (strcmp(str, "alarm") == 0)
-            c = '\a';
-        else if (strcmp(str, "backspace") == 0)
-            c = '\b';
-        else if (strcmp(str, "tab") == 0)
-            c = '\t';
-        else if (strcmp(str, "vtab") == 0)
-            c = '\v';
-        else if (strcmp(str, "page") == 0)
-            c = '\f';
-        else if (strcmp(str, "return") == 0)
-            c = '\r';
-        else if (strcmp(str, "esc") == 0)
-            c = '\x1B';
-        else if (strcmp(str, "delete") == 0)
-            c = '\x7F';
-        else {
-            escm_parse_print(input, e->errp, "unknown character #\\%s.", str);
-            goto err;
+        } else {
+            int i;
+
+            for (i = 0; i < CHCODELEN; i++) {
+                if (0 == strcmp(chcode[i].name, str)) {
+                    c = chcode[i].c;
+                    break;
+                }
+            }
+            if (i == CHCODELEN) {
+                escm_parse_print(input, e->errp, "unknown character #\\%s.", str);
+                goto err;
+            }
         }
     }
 
@@ -487,4 +413,15 @@ err:
     free(str);
     e->err = 1;
     return '\0';
+}
+
+static inline escm_atom *
+testchar(escm *e, escm_atom *args, int (*fun)(int))
+{
+    escm_atom *c;
+
+    c = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISACHAR(c), c, e);
+
+    return fun(escm_achar_val(c)) ? e->TRUE : e->FALSE;
 }
