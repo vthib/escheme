@@ -196,7 +196,7 @@ symbol_parsetest(escm *e, int c)
     (void) e;
 
     if (c == '+' || c == '-') {
-        c = escm_input_peek(e->input);
+        c = escm_input_getc(e->input);
         if (c == '.') {
             int ret;
 

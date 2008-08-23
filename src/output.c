@@ -207,11 +207,9 @@ escm_output_close(escm_output *f)
 void
 escm_vprintf(escm_output *f, const char *format, va_list args)
 {
-#ifdef ESCM_USE_C99
     va_list va;
 
     va_copy(va, args);
-#endif
 
     if (!f)
         return;
@@ -234,30 +232,19 @@ escm_vprintf(escm_output *f, const char *format, va_list args)
                to print the format in the string and we can't grow the string
                each time it failed. */
 #ifndef ESCM_USE_C99
-            f->d.str.maxlen += 30;
-#else
             f->d.str.maxlen += 80;
+#else
+            f->d.str.maxlen += 30;
 #endif
 
             f->d.str.str = xrealloc(f->d.str.str, f->d.str.maxlen);
             f->d.str.cur = f->d.str.str + offset;
 
 #ifdef ESCM_USE_UNICODE
-            write = vswprintf(f->d.str.cur, f->d.str.maxlen - offset, fmt,
-# ifdef ESCM_USE_C99
-                              va
-# else
-                              args
-# endif
-                );
+            write = vswprintf(f->d.str.cur, f->d.str.maxlen - offset, fmt, va);
 #else
             write = vsnprintf(f->d.str.cur, f->d.str.maxlen - offset, format,
-# ifdef ESCM_USE_C99
-                              va
-# else
-                              args
-# endif
-                );
+                              va);
 #endif
             if ((size_t) write < f->d.str.maxlen - offset) {
                 f->d.str.cur += write;
@@ -267,11 +254,7 @@ escm_vprintf(escm_output *f, const char *format, va_list args)
                 return;
             } else {
                 va_end(args);
-#ifdef ESCM_USE_C99
                 va_copy(va, args);
-#else
-                return;
-#endif
             }
         }
     }
