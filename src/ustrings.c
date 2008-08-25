@@ -303,7 +303,6 @@ escm_ustring_set_x(escm *e, escm_atom *args)
 #define cmpstr(e, args, cmp, fun)                               \
 {                                                               \
     escm_atom *a1, *a2;                                         \
-    int i;                                                      \
                                                                 \
     a1 = escm_cons_pop(e, &args);                               \
     escm_assert(ESCM_ISUSTR(a1), a1, e);                        \

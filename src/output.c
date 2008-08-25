@@ -21,6 +21,7 @@
 #include <assert.h>
 
 #include "escheme.h"
+#include "config.h"
 
 #ifdef ESCM_USE_UNICODE
 # include <wchar.h>
@@ -241,7 +242,11 @@ escm_vprintf(escm_output *f, const char *format, va_list args)
             f->d.str.cur = f->d.str.str + offset;
 
 #ifdef ESCM_USE_UNICODE
+# ifdef HAVE_VSNWPRINTF
+            write = _vsnwprintf(f->d.str.cur, f->d.str.maxlen - offset, fmt, va);
+# else
             write = vswprintf(f->d.str.cur, f->d.str.maxlen - offset, fmt, va);
+# endif
 #else
             write = vsnprintf(f->d.str.cur, f->d.str.maxlen - offset, format,
                               va);

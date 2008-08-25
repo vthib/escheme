@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -66,16 +66,21 @@ escm_new(void)
 }
 
 void
-escm_init(escm *e, int loadinit)
+escm_init(escm *e)
 {
     if (!e->EOF_OBJ)
         e->EOF_OBJ = escm_atom_new(e, ESCM_TYPE_ENV, NULL);
+    if (!e->TRUE) {
+        e->TRUE = escm_symbol_make(e, "t");
+        escm_env_set(e, e->env, e->TRUE, e->TRUE);
+    }
+    if (!e->FALSE)
+        e->FALSE = e->NIL;
 
     escm_primitives_load(e);
     escm_srfi_init(e);
 
-    if (loadinit)
-        (void) escm_fparse(e, ESCM_SHARE_PATH "init.scm");
+    (void) escm_fparse(e, ESCM_SHARE_PATH "init.scm");
 }
 
 void
@@ -225,11 +230,11 @@ escm_shell(escm *e)
             perror("fflush");
         atom = escm_parse(e);
     } while (e->input->end == 0);
-            
+
     if (!stdinp)
         escm_input_close(e->input), e->input = old;
 }
-    
+
 escm_atom *
 escm_parse(escm *e)
 {

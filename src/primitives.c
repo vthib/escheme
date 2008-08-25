@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -167,7 +167,7 @@ escm_lambda(escm *e, escm_atom *args)
     params = escm_cons_pop(e, &args);
 
     escm_assert(ESCM_ISCONS(params) || ESCM_ISSYM(params), params, e);
- 
+
     if (ESCM_ISCONS(params)) { /* verify that all identifiers are symbols */
         escm_cons *c;
 
@@ -1154,7 +1154,7 @@ named_let(escm *e, escm_atom *name, escm_atom *args)
         escm_error(e, "~s: missing body.~%", escm_fun(e));
         escm_abort(e);
     }
-    
+
     escm_ctx_enter(e); /* the context of the lambda construction */
 
     /* first we create a list of the values */

@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -76,7 +76,7 @@ xrealloc(void *ptr, size_t size)
         exit(EXIT_FAILURE);
     }
 
-    return p;    
+    return p;
 }
 
 /**
@@ -113,8 +113,8 @@ xstrcasecmp(const char *s1, const char *s2)
 double
 xround(double a)
 {
-#ifdef ESCM_USE_UNICODE
-    return rint(a);
+#ifdef ESCM_USE_C99
+    return round(a);
 #else
     double c;
 

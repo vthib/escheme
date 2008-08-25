@@ -114,7 +114,6 @@ main(int argc, char **argv)
     int casesens = 1;
     int useascii = 0;
     int resume = 0;
-    int loadinit = 1;
     char *p;
     char *evalstr;
     int ret;
@@ -151,8 +150,8 @@ main(int argc, char **argv)
                         }
 
                         if (j == MAXTYPE)
-                            fprintf(stderr, "unknown argument to --noload: %s.\n",
-                                    p);
+                            fprintf(stderr, "unknown argument to --noload: "
+                                    "%s.\n", p);
 
                         p = comma + 1;
                     }
@@ -166,7 +165,6 @@ main(int argc, char **argv)
                     case 'g': casesens = 1; break;
                     case 'G': casesens = 0; break;
                     case 'r': resume = 1; break;
-                    case 'S': loadinit = 0; break;
                     case 'e': evalstr = argv[++i]; break;
                     case 'h':
                         usage(argv[0]);
@@ -185,12 +183,12 @@ main(int argc, char **argv)
         return EXIT_FAILURE;
 
 #ifdef ESCM_USE_UNICODE
-    if (!use_ascii) {
+    if (!useascii) {
 # ifdef ESCM_USE_STRINGS
         desc[STRING].funinit = escm_ustrings_init;
 # endif
 # ifdef ESCM_USE_CHARACTERS
-        desc[STRING].funinit = escm_uchars_init;
+        desc[CHAR].funinit = escm_uchars_init;
 # endif
     }
 #endif /* ESCM_USE_UNICODE */
@@ -203,7 +201,7 @@ main(int argc, char **argv)
     e->casesensitive = casesens;
     e->backtrace = 1;
 
-    escm_init(e, loadinit);
+    escm_init(e);
 
     ret = 1;
     if (evalstr) {

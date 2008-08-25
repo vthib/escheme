@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -156,7 +156,7 @@ struct escm {
 };
 
 escm *escm_new(void);
-void escm_init(escm *, int);
+void escm_init(escm *);
 void escm_free(escm *);
 
 int escm_fparse(escm *, const char *);

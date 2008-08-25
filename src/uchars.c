@@ -31,7 +31,7 @@ static int uchar_equal(escm *, escm_intptr, escm_intptr, int);
 static int uchar_parsetest(escm *, int);
 static escm_atom *uchar_parse(escm *);
 static wchar_t input_getuchar(escm *, escm_input *);
-static inline escm_atom *testchar(escm *, escm_atom *, int (*)(wint_t);
+static inline escm_atom *testchar(escm *, escm_atom *, int (*)(wint_t));
 
 struct charcode {
     wchar_t *name;
@@ -315,7 +315,7 @@ uchar_print(escm *e, int c, escm_output *stream, int lvl)
 
     for (i = 0; i < CHCODELEN; i++) {
         if (c == chcode[i].c) {
-            escm_printf(stream, chcode[i].name);
+            escm_printf(stream, "%ls", chcode[i].name);
             return;
         }
     }
@@ -376,16 +376,16 @@ input_getuchar(escm *e, escm_input *input)
         wchar_t *p;
 
         if (*str == 'x') {
-            for (p = str + 1; *p != '\0'; p++) {
-                if (*p < '0' || *p > 'f') {
+            for (p = str + 1; *p != L'\0'; p++) {
+                if (*p < L'0' || towlower(*p) > L'f') {
                     escm_parse_print(input, e->errp, "invalid character: "
                                      "#\\%ls.\n", str);
                     goto err;
                 }
-                if (*p <= '9')
-                    c <<= 4, c |= (*p - '0');
+                if (*p <= L'9')
+                    c <<= 4, c |= (*p - L'0');
                 else
-                    c <<= 4, c |= ((*p - 'a') + 10);
+                    c <<= 4, c |= ((towlower(*p) - L'a') + 10);
             }
         } else {
             int i;
@@ -413,7 +413,7 @@ err:
 }
 
 static inline escm_atom *
-testchar(escm *e, escm_atom *args, int (*fun)(wint_t)
+testchar(escm *e, escm_atom *args, int (*fun)(wint_t))
 {
     escm_atom *c;
 

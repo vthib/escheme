@@ -1,3 +1,42 @@
+; test if the macros are hygienics
+
+(test 'hygienic?-1
+    (let ((when (syntax-rules ()
+                     ((when test stmt1 stmt2 ...)
+                      (if test
+                          (begin stmt1
+                                 stmt2 ...))))))
+        (let ((if #t))
+            (when if (set! if 'now))
+            if))
+    'now)
+(test 'hygienic?-2
+    (let ((x 'outer))
+      (let ((m (syntax-rules () ((m) x))))
+        (let ((x 'inner))
+        (m))))
+    'outer)
+(test 'hygienic?-3
+    (letrec
+      ((my-or (syntax-rules ()
+                ((my-or) #f)
+                ((my-or e) e)
+                ((my-or e1 e2 ...)
+                 (let ((temp e1))
+                   (if temp
+                       temp
+                       (my-or e2 ...)))))))
+      (let ((x #f)
+            (y 7)
+            (temp 8)
+            (let odd?)
+            (if even?))
+        (my-or x
+               (let temp)
+               (if y)
+               y)))
+    7)
+
 ; define the macros
 
 ;?number
@@ -114,87 +153,7 @@
 
 ; run the tests
 
-(test 'cond-1
-      (cond ((> 3 2) 'greater)
-	    ((< 3 2) 'less))
-      'greater)
-(test 'cond-2
-      (cond ((> 3 3) 'greater)
-      ((< 3 3) 'less)
-      (else 'equal))
-      'equal)
-(test 'cond-3
-      (cond ((assv 'b '((a 1) (b 2))) => cadr)
-      (else #f))
-      2)
+(let ((test-macros #t))
+	(load "test/test_primitives.scm"))
 
-(test 'case-1
-      (case (* 2 3)
-	((2 3 5 7) 'prime)
-	((1 4 6 8 9) 'composite))
-      'composite)
-; TODO: case-2
-(test 'case-3
-      (case (car '(c d))
-	((a e i o u) 'vowel)
-	((w y) 'semivowel)
-	(else 'consonant))
-      'consonant)
-
-(test 'and-1 (and (= 2 2) (> 2 1)) #t)
-(test 'and-2 (and (= 2 2) (< 2 1)) #f)
-(test 'and-3 (and 1 2 'c '(f g)) '(f g))
-(test 'and-4 (and) #t)
-
-(test 'or-1 (or (= 2 2) (> 2 1)) #t)
-(test 'or-2 (or (= 2 2) (< 2 1)) #t)
-(test 'or-3 (or #f #f #f) #f)
-(test 'or-4 (or (memq 'b '(a b c))  (/ 3 0)) '(b c))
-
-(test 'let-1
-      (let ((x 2) (y 3))
-	(* x y))
-      6)
-(test 'let-2
-      (let ((x 2) (y 3))
-	(let ((x 7)
-	      (z (+ x y)))
-	  (* z x))) 
-      35)
-(test 'let*
-      (let ((x 2) (y 3))
-	(let* ((x 7)
-	       (z (+ x y)))
-	  (* z x))) 
-      70)
-
-;?vector
-(test 'do-1
-      (do ((vec (make-vector 5))
-	   (i 0 (+ i 1)))
-	  ((= i 5) vec)
-	(vector-set! vec i i))
-      '#(0 1 2 3 4))
-;>
-(test 'do-2
-      (let ((x '(1 3 5 7 9)))
-	(do ((x x (cdr x))
-	     (sum 0 (+ sum (car x))))
-	    ((null? x) sum)))
-      25)
-(test 'named-let
-      (let loop ((numbers '(3 -2 1 6 -5))
-		 (nonneg '())
-		 (neg '()))
-	(cond ((null? numbers) (list nonneg neg))
-	      ((>= (car numbers) 0)
-	       (loop (cdr numbers)
-		     (cons (car numbers) nonneg)
-		     neg))
-	      ((< (car numbers) 0)
-	       (loop (cdr numbers)
-		     nonneg
-		     (cons (car numbers) neg)))))
-      '((6 1 3) (-5 -2)))
-;>
-;>
+;> string

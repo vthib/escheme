@@ -156,17 +156,34 @@ escm_real_p(escm *e, escm_atom *args)
 escm_atom *
 escm_eq(escm *e, escm_atom *args)
 {
-    escm_atom *a, *b;
+    escm_number *a, *b;
+    escm_atom *c;
 
-    a = escm_cons_pop(e, &args);
+    c = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISNUMBER(c), c, e);
+    a = (escm_number *) c->ptr;
 
-    escm_assert(ESCM_ISNUMBER(a), a, e);
+    for (c = escm_cons_pop(e, &args); c; c = escm_cons_pop(e, &args)) {
+        escm_assert(ESCM_ISNUMBER(c), c, e);
+        b = (escm_number *) c->ptr;
 
-    for (b = escm_cons_pop(e, &args); b; b = escm_cons_pop(e, &args)) {
-        escm_assert(ESCM_ISNUMBER(b), b, e);
+        if (a->fixnum) {
+            if (b->fixnum) {
+                if (!(a->d.ival == b->d.ival))
+                    return e->FALSE;
+            } else
+                if (!DBL_EQ(a->d.ival, b->d.rval))
+                    return e->FALSE;
+        } else {
+            if (b->fixnum) {
+                if (!DBL_EQ(a->d.rval, b->d.ival))
+                    return e->FALSE;
+            } else
+                if (!DBL_EQ(a->d.rval, b->d.rval))
+                    return e->FALSE;
+        }
 
-        if (0 == escm_atom_equal(e, a, b, 0))
-            return e->FALSE;
+        a = b;
     }
 
     return e->TRUE;
@@ -410,13 +427,6 @@ escm_mul(escm *e, escm_atom *params)
     while (c) {
         escm_assert1(ESCM_ISNUMBER(c), c, e, free(a));
         b = ((escm_number *) c->ptr);
-
-        if ((b->fixnum && b->d.ival == 0) ||
-            (!b->fixnum && DBL_EQ(b->d.ival, 0.))) {
-            a->fixnum = b->fixnum;
-            memcpy(&a->d, &b->d, sizeof b->d);
-            break;
-        }
 
         if (a->fixnum) {
             if (b->fixnum)
