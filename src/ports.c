@@ -341,11 +341,7 @@ escm_read_char(escm *e, escm_atom *args)
 {
     escm_atom *a;
     escm_port *port;
-#ifdef ESCM_USE_UNICODE
-    wint_t c;
-#else
-    int c;
-#endif
+    escm_int c;
 
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
         escm_error(e, "~s: character type is off.~%", escm_fun(e));
@@ -366,22 +362,11 @@ escm_read_char(escm *e, escm_atom *args)
         escm_abort(e);
     }
 
-#ifdef ESCM_USE_UNICODE
-    c = escm_input_getwc(port->d.input);
-    if (c == WEOF)
-        return e->EOF_OBJ;
-
-    if (escm_type_ison(ESCM_TYPE_UCHAR))
-        return escm_uchar_make(e, c);
-    else
-        return escm_achar_make(e, c);
-#else
     c = escm_input_getc(port->d.input);
-    if (c == EOF)
+    if (c == ESCM_EOF)
         return e->EOF_OBJ;
 
-    return escm_achar_make(e, c);
-#endif
+    return escm_char_make(e, c);
 }
 
 escm_atom *
@@ -389,11 +374,7 @@ escm_peek_char(escm *e, escm_atom *args)
 {
     escm_atom *a;
     escm_port *port;
-#ifdef ESCM_USE_UNICODE
-    wint_t c;
-#else
-    int c;
-#endif
+    escm_int c;
 
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
         escm_error(e, "~s: character type is off.~%", escm_fun(e));
@@ -414,24 +395,12 @@ escm_peek_char(escm *e, escm_atom *args)
         escm_abort(e);
     }
 
-#ifdef ESCM_USE_UNICODE
-    c = escm_input_getwc(port->d.input);
-    if (c == WEOF)
-        return e->EOF_OBJ;
-    escm_input_ungetc(port->d.input, c);
-
-    if (escm_type_ison(ESCM_TYPE_UCHAR))
-        return escm_uchar_make(e, c);
-    else
-        return escm_achar_make(e, c);
-#else
     c = escm_input_getc(port->d.input);
-    if (c == EOF)
+    if (c == ESCM_EOF)
         return e->EOF_OBJ;
-
     escm_input_ungetc(port->d.input, c);
-    return escm_achar_make(e, c);
-#endif
+
+    return escm_char_make(e, c);
 }
 
 escm_atom *

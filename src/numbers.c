@@ -898,11 +898,7 @@ escm_number_to_string(escm *e, escm_atom *args)
         len = maxlen - 1;
     }
 
-#ifdef ESCM_USE_UNICODE
-    a = escm_ustring_make2(e, str);
-#else
-    a = escm_astring_make(e, str, len);
-#endif
+    a = escm_string_make2(e, str);
     free(str);
     return a;
 }

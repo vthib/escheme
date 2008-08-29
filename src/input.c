@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -33,6 +33,16 @@
 static char strbuf[MAX_BUFFSIZE];
 #ifdef ESCM_USE_UNICODE
 static wchar_t wcsbuf[MAX_BUFFSIZE];
+#endif
+
+#ifdef ESCM_USE_UNICODE
+# define ESCM_GETC fgetwc
+# define ESCM_EOF WEOF
+# define C(char) L ## char
+#else
+# define ESCM_GETC fgetc
+# define ESCM_EOF EOF
+#define C(char) char
 #endif
 
 /**
@@ -88,11 +98,7 @@ escm_input_fmng(FILE *fp, const char *name)
  * @brief set the string as input
  */
 escm_input *
-#ifdef ESCM_USE_UNICODE
-escm_input_str(const wchar_t *str)
-#else
-escm_input_str(const char *str)
-#endif
+escm_input_str(const escm_char *str)
 {
     escm_input *f;
 
@@ -166,7 +172,7 @@ escm_input_gettext(escm_input *f, const char *end)
         } else
             strbuf[len++] = c;
         c = escm_input_getc(f);
-    } 
+    }
 
     if (!f->end)
         escm_input_ungetc(f, c);
@@ -246,14 +252,13 @@ escm_input_print(escm_input *f, escm_output *outp)
     }
 }
 
-#ifndef ESCM_USE_UNICODE
 /**
  * @brief return the next char in the stream
  */
-int
+escm_int
 escm_input_getc(escm_input *f)
 {
-    int c;
+    escm_int c;
 
     assert(f != NULL);
 
@@ -264,11 +269,11 @@ escm_input_getc(escm_input *f)
         if (f->d.file.un > 0)
             c = f->d.file.ub[--f->d.file.un];
         else
-            c = getc(f->d.file.fp);
+            c = ESCM_GETC(f->d.file.fp);
 
-        if (c == EOF)
+        if (c == ESCM_EOF)
             f->end = 1;
-        else if (c == '\n') {
+        else if (c == C('\n')) {
             if (f->d.file.line != -1)
                 f->d.file.line++;
             f->d.file.car = 0;
@@ -277,8 +282,8 @@ escm_input_getc(escm_input *f)
                 f->d.file.car++;
         }
     } else {
-        if (*f->d.str.cur == '\0')
-            f->end = 1, c = EOF;
+        if (*f->d.str.cur == C('\0'))
+            f->end = 1, c = ESCM_EOF;
         else
             c = *f->d.str.cur++;
     }
@@ -286,7 +291,7 @@ escm_input_getc(escm_input *f)
     return c;
 }
 
-int
+escm_int
 escm_input_peek(escm_input *f)
 {
     int c;
@@ -294,14 +299,14 @@ escm_input_peek(escm_input *f)
     assert(f != NULL);
 
     if (f->end)
-        return EOF;
+        return ESCM_EOF;
 
     if (f->type == INPUT_FILE) {
         if (f->d.file.un > 0)
             return f->d.file.ub[f->d.file.un - 1];
 
-        c = getc(f->d.file.fp);
-        
+        c = ESCM_GETC(f->d.file.fp);
+
         if (f->d.file.usize <= f->d.file.un) {
             f->d.file.usize += 2;
             f->d.file.ub = xrealloc(f->d.file.ub,
@@ -318,7 +323,7 @@ escm_input_peek(escm_input *f)
  * @brief put a character back in the input
  */
 void
-escm_input_ungetc(escm_input *f, int c)
+escm_input_ungetc(escm_input *f, escm_int c)
 {
     assert(f != NULL);
 
@@ -344,75 +349,7 @@ escm_input_ungetc(escm_input *f, int c)
     f->end = 0;
 }
 
-#else
-
-/**
- * @brief return the next wide char in the stream
- */
-wint_t
-escm_input_getwc(escm_input *f)
-{
-    wint_t c;
-
-    assert(f != NULL);
-
-    if (f->end)
-        return EOF;
-
-    if (f->type == INPUT_FILE) {
-        if (f->d.file.un > 0)
-            c = f->d.file.ub[--f->d.file.un];
-        else
-            c = fgetwc(f->d.file.fp);
-
-        if (c == WEOF)
-            f->end = 1, c = EOF;
-        else if (c == L'\n') {
-            if (f->d.file.line != -1)
-                f->d.file.line++;
-            f->d.file.car = 0;
-        } else {
-            if (f->d.file.car != -1)
-                f->d.file.car++;
-        }
-    } else {
-        if (*f->d.str.cur == L'\0')
-            f->end = 1, c = EOF;
-        else
-            c = *f->d.str.cur++;
-    }
-
-    return c;
-}
-
-wint_t
-escm_input_wpeek(escm_input *f)
-{
-    wint_t c;
-
-    assert(f != NULL);
-
-    if (f->end)
-        return EOF;
-
-    if (f->type == INPUT_FILE) {
-        if (f->d.file.un > 0)
-            return f->d.file.ub[f->d.file.un - 1];
-
-        c = fgetwc(f->d.file.fp);
-        
-        if (f->d.file.usize <= f->d.file.un) {
-            f->d.file.usize += 2;
-            f->d.file.ub = xrealloc(f->d.file.ub,
-                                    f->d.file.usize * sizeof *f->d.file.ub);
-        }
-        f->d.file.ub[f->d.file.un++] = c;
-    } else
-        c = *f->d.str.cur;
-
-    return c;
-}
-
+#ifdef ESCM_USE_UNICODE
 wchar_t *
 escm_input_getwtext(escm_input *f, const wchar_t *end)
 {
@@ -422,10 +359,10 @@ escm_input_getwtext(escm_input *f, const wchar_t *end)
     assert(f != NULL);
     assert(end != NULL);
 
-    c = escm_input_getwc(f);
-    while (c != WEOF && !wcschr(end, c)) {
+    c = escm_input_getc(f);
+    while (c != ESCM_EOF && !wcschr(end, c)) {
         if (c == L'\\') {
-            c = escm_input_getwc(f);
+            c = escm_input_getc(f);
             switch (c) {
             case L'a': c = L'\a'; break;
             case L'b': c = L'\b'; break;
@@ -442,11 +379,11 @@ escm_input_getwtext(escm_input *f, const wchar_t *end)
             wcsbuf[len++] = c;
         } else
             wcsbuf[len++] = c;
-        c = escm_input_getwc(f);
-    } 
+        c = escm_input_getc(f);
+    }
 
     if (!f->end)
-        escm_input_ungetwc(f, c);
+        escm_input_ungetc(f, c);
     wcsbuf[len] = L'\0';
 
     return xwcsdup(wcsbuf);
@@ -465,46 +402,16 @@ escm_input_getwstr_fun(escm_input *f, int (*fun)(wint_t), int casesens)
     assert(f != NULL);
 
     do {
-        c = escm_input_getwc(f);
+        c = escm_input_getc(f);
         if (!casesens)
             c = towlower(c);
         wcsbuf[len++] = (wchar_t) c;
     } while (c != WEOF && fun(c));
 
     if (!f->end)
-        escm_input_ungetwc(f, c);
+        escm_input_ungetc(f, c);
     wcsbuf[len - 1] = L'\0';
 
     return xwcsdup(wcsbuf);
-}
-
-/**
- * @brief put a wide character back in the input
- */
-void
-escm_input_ungetwc(escm_input *f, wint_t c)
-{
-    assert(f != NULL);
-
-    if (f->type == INPUT_FILE) {
-        if (f->d.file.car != -1) {
-            if (f->d.file.car > 0)
-                f->d.file.car--;
-            else if (f->d.file.car == 0 && c == L'\n' && f->d.file.line != -1)
-                f->d.file.line--;
-        }
-
-        if (f->d.file.usize <= f->d.file.un) {
-            f->d.file.usize += 2;
-            f->d.file.ub = xrealloc(f->d.file.ub,
-                                    f->d.file.usize * sizeof *f->d.file.ub);
-        }
-        f->d.file.ub[f->d.file.un++] = c;
-    } else {
-        if (f->d.str.cur > f->d.str.str)
-            f->d.str.cur--;
-    }
-
-    f->end = 0;
 }
 #endif

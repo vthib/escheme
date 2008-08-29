@@ -116,19 +116,7 @@ escm_symbol_to_string(escm *e, escm_atom *args)
     sym = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSYM(sym), sym, e);
 
-#ifdef ESCM_USE_UNICODE
-    if (escm_type_ison(ESCM_TYPE_USTRING)) {
-        wchar_t *w;
-        escm_atom *a;
-
-        w = strtowcs(escm_sym_name(sym));
-        a = escm_ustring_make(e, w, wcslen(w));
-        free(w);
-        return a;
-    } else
-#endif
-        return escm_astring_make(e, escm_sym_name(sym),
-                                 strlen(escm_sym_name(sym)));
+    return escm_string_make2(e, escm_sym_name(sym));
 }
 
 escm_atom *

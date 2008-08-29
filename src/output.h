@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -49,11 +49,7 @@ escm_output *escm_output_fopen(const char *);
 escm_output *escm_output_fmng(FILE *, const char *);
 
 escm_output *escm_output_str(void);
-#ifdef ESCM_USE_UNICODE
-wchar_t *escm_output_getstr(escm_output *);
-#else
-char *escm_output_getstr(escm_output *);
-#endif
+escm_char *escm_output_getstr(escm_output *);
 
 void escm_output_close(escm_output *);
 
@@ -69,14 +65,10 @@ void escm_error(escm *, const char *, ...);
 
 void escm_print_slashify(escm_output *, const char *);
 
+void escm_putc(escm_output *, escm_int);
+
 #ifdef ESCM_USE_UNICODE
-# define escm_putwc(o, c) escm_printf(o, "%lc", c)
-
 void escm_print_wslashify(escm_output *, const wchar_t *);
-
-# define escm_putc escm_putwc
-#else
-void escm_putc(escm_output *, int);
 #endif /* ESCM_USE_UNICODE */
 
 #endif /* ESCHEME_OUTPUT_H */

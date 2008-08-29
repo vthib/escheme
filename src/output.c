@@ -25,6 +25,11 @@
 
 #ifdef ESCM_USE_UNICODE
 # include <wchar.h>
+# define C(char) L ## char
+# define ESCM_PUTC fputwc
+#else
+# define C(char) char
+# define ESCM_PUTC fputc
 #endif
 
 #define vscmpf(e, stream, format, next)                                 \
@@ -163,8 +168,7 @@ escm_output_str(void)
     return f;
 }
 
-#ifdef ESCM_USE_UNICODE
-wchar_t *
+escm_char *
 escm_output_getstr(escm_output *o)
 {
     assert(o != NULL);
@@ -172,22 +176,9 @@ escm_output_getstr(escm_output *o)
     if (o->type == OUTPUT_FILE)
         return NULL;
 
-    *o->d.str.cur = L'\0';
+    *o->d.str.cur = C('\0');
     return o->d.str.str;
 }
-#else
-char *
-escm_output_getstr(escm_output *o)
-{
-    assert(o != NULL);
-
-    if (o->type == OUTPUT_FILE)
-        return NULL;
-
-    *o->d.str.cur = '\0';
-    return o->d.str.str;
-}
-#endif /* ESCM_USE_UNICODE */
 
 void
 escm_output_close(escm_output *f)
@@ -362,15 +353,14 @@ escm_print_wslashify(escm_output *stream, const wchar_t *str)
 }
 #endif
 
-#ifndef ESCM_USE_UNICODE
 void
-escm_putc(escm_output *f, int c)
+escm_putc(escm_output *f, escm_int c)
 {
     if (!f)
         return;
 
     if (f->type == OUTPUT_FILE) {
-        if (EOF == fputc(c, f->d.file.fp))
+        if (ESCM_EOF == ESCM_PUTC(c, f->d.file.fp))
             fprintf(stderr, "fputc('%c') failed.\n", c);
     } else {
         size_t offset;
@@ -386,4 +376,3 @@ escm_putc(escm_output *f, int c)
         }
     }
 }
-#endif /* ESCM_USE_UNICODE */

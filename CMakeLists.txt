@@ -11,7 +11,7 @@ add_test(test_lists escheme test/test_lists.scm)
 set (FILES src/atom.c src/cons.c src/environments.c src/escm.c src/input.c
   src/output.c src/primitives.c src/procedures.c src/srfi.c src/symbols.c
   src/tst.c src/utils.c)
-set (HEADER src/escheme.h src/atom.h src/cons.h src/environments.h
+set (HEADER src/types.h src/escheme.h src/atom.h src/cons.h src/environments.h
   src/escm.h src/input.h src/output.h src/primitives.h src/procedures.h
   src/srfi.h src/symbols.h src/tst.h src/utils.h)
 set (DEFINES -Dinline="__inline__" -I.. -I. -Wall -W -Wmissing-prototypes

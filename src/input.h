@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -18,6 +18,12 @@
 # define ESCHEME_INPUT_H
 
 #include "types.h"
+
+#ifdef ESCM_USE_UNICODE
+# define ESCM_EOF WEOF
+#else
+# define ESCM_EOF EOF
+#endif
 
 enum { INPUT_FILE, INPUT_STR };
 
@@ -58,11 +64,7 @@ struct escm_input {
 
 escm_input *escm_input_fopen(const char *);
 escm_input *escm_input_fmng(FILE *, const char *);
-#ifdef ESCM_USE_UNICODE
-escm_input *escm_input_str(const wchar_t *);
-#else
-escm_input *escm_input_str(const char *);
-#endif
+escm_input *escm_input_str(const escm_char *);
 
 char *escm_input_gettext(escm_input *, const char *);
 char *escm_input_getstr_fun(escm_input *, int (*)(int), int);
@@ -73,21 +75,13 @@ void escm_input_rewind(escm_input *);
 
 void escm_input_print(escm_input *, escm_output *);
 
-#ifdef ESCM_USE_UNICODE
-wint_t escm_input_getwc(escm_input *);
-wint_t escm_input_wpeek(escm_input *);
-void escm_input_ungetwc(escm_input *, wint_t);
+escm_int escm_input_getc(escm_input *);
+escm_int escm_input_peek(escm_input *);
+void escm_input_ungetc(escm_input *, escm_int);
 
+#ifdef ESCM_USE_UNICODE
 wchar_t *escm_input_getwtext(escm_input *, const wchar_t *);
 wchar_t *escm_input_getwstr_fun(escm_input *, int (*)(wint_t), int);
-
-# define escm_input_getc escm_input_getwc
-# define escm_input_ungetc escm_input_ungetwc
-# define escm_input_peek escm_input_wpeek
-#else
-int escm_input_getc(escm_input *);
-void escm_input_ungetc(escm_input *, int);
-int escm_input_peek(escm_input *);
 #endif
 
 #endif /* ESCHEME_INPUT_H */

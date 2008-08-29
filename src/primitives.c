@@ -801,11 +801,7 @@ escm_load(escm *e, escm_atom *args)
 escm_atom *
 escm_read_char(escm *e, escm_atom *args)
 {
-#ifdef ESCM_USE_UNICODE
-    wint_t c;
-#else
-    int c;
-#endif
+    escm_int c;
 
     (void) args;
 
@@ -814,32 +810,17 @@ escm_read_char(escm *e, escm_atom *args)
         escm_abort(e);
     }
 
-#ifdef ESCM_USE_UNICODE
-    c = escm_input_getwc(e->input);
-    if (c == WEOF)
-        return e->EOF_OBJ;
-
-    if (escm_type_ison(ESCM_TYPE_UCHAR))
-        return escm_uchar_make(e, c);
-    else
-        return escm_achar_make(e, (char) c);
-#else
     c = escm_input_getc(e->input);
-    if (c == EOF)
+    if (c == ESCM_EOF)
         return e->EOF_OBJ;
 
-    return escm_achar_make(e, c);
-#endif
+    return escm_char_make(e, c);
 }
 
 escm_atom *
 escm_peek_char(escm *e, escm_atom *args)
 {
-#ifdef ESCM_USE_UNICODE
-    wint_t c;
-#else
-    int c;
-#endif
+    escm_int c;
 
     (void) args;
 
@@ -848,24 +829,12 @@ escm_peek_char(escm *e, escm_atom *args)
         escm_abort(e);
     }
 
-#ifdef ESCM_USE_UNICODE
-    c = escm_input_getwc(e->input);
-    if (c == WEOF)
+    c = escm_input_getc(e->input);
+    if (c == ESCM_EOF)
         return e->EOF_OBJ;
 
     escm_input_ungetwc(e->input, c);
-    if (escm_type_ison(ESCM_TYPE_UCHAR))
-        return escm_uchar_make(e, c);
-    else
-        return escm_achar_make(e, (char) c);
-#else
-    c = escm_input_getc(e->input);
-    if (c == EOF)
-        return e->EOF_OBJ;
-
-    escm_input_ungetc(e->input, c);
-    return escm_achar_make(e, c);
-#endif
+    return escm_char_make(e, c);
 }
 
 escm_atom *

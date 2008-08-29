@@ -366,16 +366,16 @@ input_getuchar(escm *e, escm_input *input)
     str = escm_input_getwstr_fun(input, iswalnum, e->casesensitive);
     len = wcslen(str);
 
-    c = '\0';
+    c = L'\0';
     if (len < 1) {
         free(str);
-        return escm_input_getwc(input);
+        return escm_input_getc(input);
     } else if (len == 1)
         c = *str;
     else {
         wchar_t *p;
 
-        if (*str == 'x') {
+        if (*str == L'x') {
             for (p = str + 1; *p != L'\0'; p++) {
                 if (*p < L'0' || towlower(*p) > L'f') {
                     escm_parse_print(input, e->errp, "invalid character: "
@@ -409,7 +409,7 @@ input_getuchar(escm *e, escm_input *input)
 err:
     free(str);
     e->err = 1;
-    return '\0';
+    return L'\0';
 }
 
 static inline escm_atom *
