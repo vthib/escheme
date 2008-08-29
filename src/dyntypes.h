@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -19,6 +19,9 @@
 
 #include "types.h"
 
+#define ESCM_ISTYPE(e, t) (ESCM_ISINT(t) && escm_number_ival(t) > 0 \
+                           && (unsigned long) escm_number_ival(t) < e->ntypes)
+
 void escm_dyntypes_init(escm *);
 
 escm_atom *escm_prim_type(escm *, escm_atom *);
@@ -33,5 +36,8 @@ escm_atom *escm_set_parse_p(escm *, escm_atom *);
 escm_atom *escm_set_parse(escm *, escm_atom *);
 escm_atom *escm_set_eval(escm *, escm_atom *);
 escm_atom *escm_set_exec(escm *, escm_atom *);
+
+escm_atom *escm_prim_type_parse_p(escm *, escm_atom *);
+escm_atom *escm_prim_type_parse(escm *, escm_atom *);
 
 #endif /* ESCHEME_DYNTYPES_H */

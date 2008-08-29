@@ -34,4 +34,4 @@
 (test-error 'string->symbol-5 (string->symbol 'abc))
 ;>
 
-(set-case-sensitive! #f)
+(set-case-sensitive! #t)

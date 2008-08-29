@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -58,11 +58,6 @@ escm_atom_free(escm *e, escm_atom *atom)
     assert(atom != NULL);
     if (!atom->ptr)
         return;
-    if (atom->type >= e->ntypes) {
-        fprintf(stderr, "An atom have a unknown type.\n");
-        e->err = 1;
-        return;
-    }
 
     if (e->types[atom->type]->ffree && atom->nofree == 0)
         e->types[atom->type]->ffree(atom->ptr);
@@ -78,11 +73,6 @@ escm_atom_mark(escm *e, escm_atom *atom)
     assert(e != NULL);
     if (!atom || atom->marked == 1)
         return;
-    if (atom->type >= e->ntypes) {
-        fprintf(stderr, "An atom have a unknown type.\n");
-        e->err = 1;
-        return;
-    }
 
     atom->marked = 1;
     mark(e, atom->type, atom->ptr);
@@ -96,10 +86,6 @@ escm_atom_eval(escm *e, escm_atom *atom)
     assert(e != NULL);
     if (!atom)
         return NULL;
-    if (atom->type >= e->ntypes) {
-        fprintf(stderr, "An atom have a unknown type.\n");
-        escm_abort(e);
-    }
     if (atom->noeval)
         return atom;
 
@@ -132,10 +118,6 @@ escm_atom_exec(escm *e, escm_atom *atom, escm_atom *args)
     assert(e != NULL);
     if (!atom)
         return NULL;
-    if (atom->type >= e->ntypes) {
-        fprintf(stderr, "An atom have a unknown type.\n");
-        escm_abort(e);
-    }
 
     old = e->curobj, e->curobj = atom;
     switch (e->types[atom->type]->exectype) {
@@ -171,11 +153,6 @@ escm_atom_print4(escm *e, escm_atom *atom, escm_output *stream, int lvl)
     assert(e != NULL);
     if (!atom)
         return;
-    if (atom->type >= e->ntypes) {
-        fprintf(stderr, "An atom have a unknown type.\n");
-        e->err = 1;
-        return;
-    }
 
     old = e->curobj, e->curobj = atom;
     switch (e->types[atom->type]->printtype) {
@@ -216,11 +193,6 @@ escm_atom_equal(escm *e, escm_atom *o1, escm_atom *o2, int lvl)
 
     if (!o1 || !o2 || o1->type != o2->type)
         return 0;
-    if (o1->type >= e->ntypes) {
-        fprintf(stderr, "An atom have a unknown type.\n");
-        e->err = 1;
-        return 0;
-    }
     if (o1->ptr == o2->ptr)
         return 1;
 

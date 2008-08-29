@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -29,6 +29,11 @@ escm_dyntypes_init(escm *e)
     (void) escm_procedure_new(e, "set-parse", 2, 2, escm_set_parse, NULL);
 	(void) escm_procedure_new(e, "set-eval", 2, 2, escm_set_eval, NULL);
 	(void) escm_procedure_new(e, "set-exec", 2, 2, escm_set_exec, NULL);
+
+    (void) escm_procedure_new(e, "type-parse?", 2, 2, escm_prim_type_parse_p,
+                              NULL);
+    (void) escm_procedure_new(e, "type-parse", 1, 1, escm_prim_type_parse,
+                              NULL);
 }
 
 escm_atom *
@@ -51,18 +56,13 @@ escm_create_type(escm *e, escm_atom *args)
     pred = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSYM(pred), pred, e);
     basetype = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISINT(basetype), basetype, e);
-    i = escm_number_ival(basetype);
-    if (i < 0 || ((unsigned long) i) >= e->ntypes) {
-        escm_error(e, "~s is not a proper type number.~%", basetype);
-        escm_abort(e);
-    }
+    escm_assert(ESCM_ISTYPE(e, basetype), basetype, e);
 
     t = xcalloc(1, sizeof *t);
     t->dtype = TYPE_DYN;
     t->d.dyn.basetype = i;
     t->fmark = (Escm_Fun_Mark) escm_atom_mark;
- 
+
     i = (long) escm_type_add(e, t);
 
     (void) escm_procedure_new(e, escm_sym_name(constructor), 1, 1,
@@ -127,12 +127,7 @@ escm_set_print(escm *e, escm_atom *args)
     escm_atom *type, *proc;
 
     type = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISINT(type), type, e);
-    if (escm_number_ival(type) < 0 ||
-        (unsigned long) escm_number_ival(type) >= e->ntypes) {
-        escm_error(e, "~s: ~s is not a type.~%", escm_fun(e), type);
-        escm_abort(e);
-    }
+    escm_assert(ESCM_ISTYPE(e, type), type, e);
 
     proc = escm_cons_pop(e, &args);
     e->types[escm_number_ival(type)]->print.pprint = proc;
@@ -146,12 +141,7 @@ escm_set_equal(escm *e, escm_atom *args)
     escm_atom *type, *proc;
 
     type = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISINT(type), type, e);
-    if (escm_number_ival(type) < 0 ||
-        (unsigned long) escm_number_ival(type) >= e->ntypes) {
-        escm_error(e, "~s: ~s is not a type.~%", escm_fun(e), type);
-        escm_abort(e);
-    }
+    escm_assert(ESCM_ISTYPE(e, type), type, e);
 
     proc = escm_cons_pop(e, &args);
     e->types[escm_number_ival(type)]->equal.pequal = proc;
@@ -165,12 +155,7 @@ escm_set_parse_p(escm *e, escm_atom *args)
     escm_atom *type, *proc;
 
     type = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISINT(type), type, e);
-    if (escm_number_ival(type) < 0 ||
-        (unsigned long) escm_number_ival(type) >= e->ntypes) {
-        escm_error(e, "~s: ~s is not a type.~%", escm_fun(e), type);
-        escm_abort(e);
-    }
+    escm_assert(ESCM_ISTYPE(e, type), type, e);
 
     proc = escm_cons_pop(e, &args);
     e->types[escm_number_ival(type)]->parsetest.pparsetest = proc;
@@ -184,12 +169,7 @@ escm_set_parse(escm *e, escm_atom *args)
     escm_atom *type, *proc;
 
     type = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISINT(type), type, e);
-    if (escm_number_ival(type) < 0 ||
-        (unsigned long) escm_number_ival(type) >= e->ntypes) {
-        escm_error(e, "~s: ~s is not a type.~%", escm_fun(e), type);
-        escm_abort(e);
-    }
+    escm_assert(ESCM_ISTYPE(e, type), type, e);
 
     proc = escm_cons_pop(e, &args);
     e->types[escm_number_ival(type)]->parse.pparse = proc;
@@ -203,12 +183,7 @@ escm_set_eval(escm *e, escm_atom *args)
     escm_atom *type, *proc;
 
     type = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISINT(type), type, e);
-    if (escm_number_ival(type) < 0 ||
-        (unsigned long) escm_number_ival(type) >= e->ntypes) {
-        escm_error(e, "~s: ~s is not a type.~%", escm_fun(e), type);
-        escm_abort(e);
-    }
+    escm_assert(ESCM_ISTYPE(e, type), type, e);
 
     proc = escm_cons_pop(e, &args);
     e->types[escm_number_ival(type)]->eval.peval = proc;
@@ -222,15 +197,47 @@ escm_set_exec(escm *e, escm_atom *args)
     escm_atom *type, *proc;
 
     type = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISINT(type), type, e);
-    if (escm_number_ival(type) < 0 ||
-        (unsigned long) escm_number_ival(type) >= e->ntypes) {
-        escm_error(e, "~s: ~s is not a type.~%", escm_fun(e), type);
-        escm_abort(e);
-    }
+    escm_assert(ESCM_ISTYPE(e, type), type, e);
 
     proc = escm_cons_pop(e, &args);
     e->types[escm_number_ival(type)]->exec.pexec = proc;
     e->types[escm_number_ival(type)]->exectype = TYPE_DYN;
     return NULL;
+}
+
+escm_atom *
+escm_prim_type_parse_p(escm *e, escm_atom *args)
+{
+    escm_atom *type, *character;
+    int c;
+
+    type = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISTYPE(e, type), type, e);
+
+    character = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISCHAR(character), character, e);
+
+    c = escm_input_getc(e->input);
+    if (c != '\n')
+        escm_input_ungetc(e->input, c);
+
+    return escm_type_parsetest(e, (size_t) escm_number_ival(type),
+                               escm_char_val(character))
+        ? e->TRUE : e->FALSE;
+}
+
+escm_atom *
+escm_prim_type_parse(escm *e, escm_atom *args)
+{
+    escm_atom *type;
+    int c;
+
+    type = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISTYPE(e, type), type, e);
+
+    c = escm_input_getc(e->input);
+    if (c != '\n')
+        escm_input_ungetc(e->input, c);
+
+    return escm_type_parse(e, (size_t) escm_number_ival(type));
 }

@@ -6,6 +6,7 @@
    - Cons tailrec (cons 1 (cons 2 (cons 3)))
    - Remove parsetest and add all in parse?
    - escm_printf does not manage print level.
+   - create typedef for char/wchar_t int/wint_t
 
  - Features
    - Bignums

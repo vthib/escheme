@@ -33,7 +33,6 @@
 
 static unsigned char *alloc_seg(escm *);
 static escm_atom *enterin(escm *, const char *);
-static inline escm_atom *parse(escm *, unsigned long);
 static inline void preproc(escm *);
 
 escm *
@@ -306,34 +305,9 @@ escm_parse(escm *e)
     } else {
         atom = NULL;
         for (i = 0; i < e->ntypes && !atom; i++) {
-            switch (e->types[i]->parsetesttype) {
-            case TYPE_BUILT:
-                if (e->types[i]->parsetest.fparsetest) {
-                    if (e->types[i]->parsetest.fparsetest(e, c)) {
-                        escm_input_ungetc(e->input, c);
-                        atom = parse(e, i);
-                    }
-                }
-                break;
-#ifdef ESCM_USE_CHARACTERS
-            case TYPE_DYN:
-                if (e->types[i]->parsetest.pparsetest) {
-                    escm_atom *args;
-
-                    args = escm_cons_make(e, escm_char_make(e, c), e->NIL);
-                    atom =
-                        escm_procedure_exec(e,
-                                            e->types[i]->parsetest.pparsetest,
-                                            args, 0);
-                    if (atom && ESCM_ISTRUE(e, atom)) {
-                        escm_input_ungetc(e->input, c);
-                        atom = parse(e, i);
-                    } else
-                        atom = NULL;
-                }
-#endif
-            default:
-                break;
+            if (escm_type_parsetest(e, i, c)) {
+                escm_input_ungetc(e->input, c);
+                atom = escm_type_parse(e, i);
             }
         }
         if (i >= e->ntypes) {
@@ -352,6 +326,9 @@ escm_parse(escm *e)
 
     return ret;
 }
+
+/*--- types ---*/
+
 unsigned long
 escm_type_add(escm *e, escm_type *type)
 {
@@ -365,6 +342,46 @@ escm_type_add(escm *e, escm_type *type)
 
     return e->ntypes - 1;
 }
+
+int
+escm_type_parsetest(escm *e, size_t i, int c)
+{
+    switch (e->types[i]->parsetesttype) {
+    case TYPE_BUILT:
+        return (e->types[i]->parsetest.fparsetest)
+            ? e->types[i]->parsetest.fparsetest(e, c)
+            : 0;
+#ifdef ESCM_USE_CHARACTERS
+    case TYPE_DYN:
+        if (!e->types[i]->parsetest.pparsetest)
+            return 0;
+        return ESCM_ISTRUE(e,
+            escm_procedure_exec(e, e->types[i]->parsetest.pparsetest,
+                                escm_cons_make(e, escm_char_make(e, c), e->NIL),
+                                0))
+            ? 1 : 0;
+#endif
+    }
+    return 0;
+}
+
+escm_atom *
+escm_type_parse(escm *e, size_t i)
+{
+    switch (e->types[i]->parsetype) {
+    case TYPE_BUILT:
+        return (e->types[i]->parse.fparse)
+            ? e->types[i]->parse.fparse(e)
+            : NULL;
+    case TYPE_DYN:
+        return (e->types[i]->parse.pparse)
+            ? escm_procedure_exec(e, e->types[i]->parse.pparse, e->NIL, 0)
+            : NULL;
+    }
+    return NULL;
+}
+
+/*--- context ---*/
 
 void
 escm_ctx_enter(escm *e)
@@ -726,22 +743,6 @@ enterin(escm *e, const char *name)
     }
     escm_ctx_put(e, atom);
     return escm_ctx_leave(e);
-}
-
-static inline escm_atom *
-parse(escm *e, unsigned long i)
-{
-    switch (e->types[i]->parsetype) {
-    case TYPE_BUILT:
-        return (e->types[i]->parse.fparse)
-            ? e->types[i]->parse.fparse(e)
-            : NULL;
-    case TYPE_DYN:
-        return (e->types[i]->parse.pparse)
-            ? escm_procedure_exec(e, e->types[i]->parse.pparse, e->NIL, 0)
-            : NULL;
-    }
-    return NULL;
 }
 
 static inline void

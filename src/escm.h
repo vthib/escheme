@@ -167,6 +167,8 @@ void escm_shell(escm *);
 
 #define escm_type_ison(type) ((type) != 0)
 unsigned long escm_type_add(escm *, escm_type *);
+int escm_type_parsetest(escm *, size_t, int);
+escm_atom *escm_type_parse(escm *, size_t);
 
 void escm_ctx_enter(escm *);
 void escm_ctx_put(escm *, escm_atom *);

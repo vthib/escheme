@@ -1085,12 +1085,7 @@ inputtonumber(escm *e, escm_input *input, int radix)
         if (input->type == INPUT_FILE)
             input->d.file.car -= strlen(str) - (ec - str) - 1;
         else
-#ifdef ESCM_USE_UNICODE
-            input->d.str.cur = (wchar_t *) input->d.str.str +
-                ((ec - str + 1) * sizeof (wchar_t));
-#else
-            input->d.str.cur = (char *) input->d.str.str + (ec - str + 1);
-#endif
+            input->d.str.cur = input->d.str.str + (ec - str + 1);
         escm_parse_print(input, e->errp, "Character `%c' unexpected.\n", *ec);
         free(str);
         free(n);
@@ -1149,7 +1144,7 @@ bintostr(long a)
 static inline int
 isnumber(int c)
 {
-    return (strchr("+-i/#.e", c) != NULL || isxdigit(c));
+    return (strchr("+-/.e", c) != NULL || isxdigit(c));
 }
 
 static inline escm_atom *
