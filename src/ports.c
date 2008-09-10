@@ -26,14 +26,7 @@
 static unsigned long porttype = 0;
 
 static void port_free(escm_port *);
-static void port_exit(escm *);
 static void port_print(escm *, escm_port *, escm_output *, int);
-
-struct escm_curports {
-    escm_atom *input;
-    escm_atom *output;
-    escm_atom *errp;
-} cp;
 
 void
 escm_ports_init(escm *e)
@@ -43,21 +36,8 @@ escm_ports_init(escm *e)
     t = xcalloc(1, sizeof *t);
     t->ffree = (Escm_Fun_Free) port_free;
     t->print.fprint = (Escm_Fun_Print) port_print;
-    t->d.c.fexit = (Escm_Fun_Exit) port_exit;
 
     porttype = escm_type_add(e, t);
-
-    cp.input = escm_port_make(e, e->input, 1);
-    escm_port_val(cp.input)->nofree = 1;
-    escm_gc_gard(e, cp.input);
-
-    cp.output = escm_port_make(e, e->output, 0);
-    escm_port_val(cp.output)->nofree = 1;
-    escm_gc_gard(e, cp.output);
-
-    cp.errp = escm_port_make(e, e->errp, 0);
-    escm_port_val(cp.errp)->nofree = 1;
-    escm_gc_gard(e, cp.errp);
 
     (void) escm_procedure_new(e, "port?", 1, 1, escm_port_p, NULL);
     (void) escm_procedure_new(e, "input-port?", 1, 1, escm_input_port_p, NULL);
@@ -86,37 +66,12 @@ escm_ports_init(escm *e)
     (void) escm_procedure_new(e, "close-output-port", 1, 1, escm_close_port,
                               NULL);
 
-#ifdef ESCM_USE_CHARACTERS
-    (void) escm_procedure_new(e, "read-char", 0, 1,
-                              (Escm_Fun_Prim) escm_read_char, NULL);
-    (void) escm_procedure_new(e, "peek-char", 0, 1,
-                              (Escm_Fun_Prim) escm_peek_char, NULL);
-    (void) escm_procedure_new(e, "write-char", 1, 2,
-                              (Escm_Fun_Prim) escm_write_char, NULL);
-#endif
-
-    (void) escm_procedure_new(e, "read", 0, 1, (Escm_Fun_Prim) escm_read, NULL);
-    (void) escm_procedure_new(e, "write", 1, 2, (Escm_Fun_Prim) escm_write,
-                              NULL);
-    (void) escm_procedure_new(e, "display", 1, 2, (Escm_Fun_Prim) escm_display,
-                              NULL);
-    (void) escm_procedure_new(e, "newline", 0, 1, (Escm_Fun_Prim) escm_newline,
-                              NULL);
 }
 
 size_t
 escm_port_tget(void)
 {
     return porttype;
-}
-
-void
-escm_port_update(escm *e)
-{
-    if (e->input != escm_port_val(cp.input)->d.input)
-        escm_port_val(cp.input)->d.input = e->input;
-    if (e->output != escm_port_val(cp.output)->d.output)
-        escm_port_val(cp.output)->d.output = e->output;
 }
 
 escm_atom *
@@ -170,7 +125,7 @@ escm_current_input_port(escm *e, escm_atom *args)
     (void) e;
     (void) args;
 
-    return cp.input;
+    return escm_port_make(e, e->input, 1);
 }
 
 escm_atom *
@@ -179,7 +134,7 @@ escm_current_output_port(escm *e, escm_atom *args)
     (void) e;
     (void) args;
 
-    return cp.output;
+    return escm_port_make(e, e->output, 0);
 }
 
 escm_atom *
@@ -188,14 +143,14 @@ escm_current_error_port(escm *e, escm_atom *args)
     (void) e;
     (void) args;
 
-    return cp.errp;
+    return escm_port_make(e, e->errp, 0);
 }
 
 escm_atom *
 escm_with_input_from_file(escm *e, escm_atom *args)
 {
-    escm_atom *str, *thunk, *save;
-    escm_input *input;
+    escm_atom *str, *thunk;
+    escm_input *input, *save;
 
     str = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(str), str, e);
@@ -214,18 +169,16 @@ escm_with_input_from_file(escm *e, escm_atom *args)
 #endif
         input = escm_input_fopen(escm_astr_val(str));
 
-    if (!input) {
+    if (!input)
         escm_abort(e);
-    }
 
-    save = cp.input;
-    cp.input = escm_port_make(e, input, 1);
-    escm_gc_gard(e, cp.input);
+    save = e->input;
+    e->input = input;
 
     str = escm_procedure_exec(e, thunk, e->NIL, 0);
 
-    escm_gc_ungard(e, cp.input);
-    cp.input = save;
+    e->input = save;
+    escm_input_close(input);
 
     return str;
 }
@@ -233,8 +186,8 @@ escm_with_input_from_file(escm *e, escm_atom *args)
 escm_atom *
 escm_with_output_to_file(escm *e, escm_atom *args)
 {
-    escm_atom *str, *thunk, *save;
-    escm_output *o;
+    escm_atom *str, *thunk;
+    escm_output *save, *o;
 
     str = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(str), str, e);
@@ -253,18 +206,53 @@ escm_with_output_to_file(escm *e, escm_atom *args)
 #endif
         o = escm_output_fopen(escm_astr_val(str));
 
-    if (!o) {
+    if (!o)
         escm_abort(e);
-    }
 
-    save = cp.output;
-    cp.output = escm_port_make(e, o, 0);
-    escm_gc_gard(e, cp.output);
+    save = e->output;
+    e->output = o;
 
     str = escm_procedure_exec(e, thunk, e->NIL, 0);
 
-    escm_gc_ungard(e, cp.output);
-    cp.output = save;
+    e->output = save;
+    escm_output_close(o);
+
+    return str;
+}
+
+escm_atom *
+escm_with_error_to_file(escm *e, escm_atom *args)
+{
+    escm_atom *str, *thunk;
+    escm_output *save, *o;
+
+    str = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISSTR(str), str, e);
+
+    thunk = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISPROC(thunk), thunk, e);
+
+#ifdef ESCM_USE_UNICODE
+    if (escm_type_ison(ESCM_TYPE_USTRING)) {
+        char *s;
+
+        s = wcstostr(escm_ustr_val(str));
+        o = escm_output_fopen(s);
+        free(s);
+    } else
+#endif
+        o = escm_output_fopen(escm_astr_val(str));
+
+    if (!o)
+        escm_abort(e);
+
+    save = e->errp;
+    e->errp = o;
+
+    str = escm_procedure_exec(e, thunk, e->NIL, 0);
+
+    e->errp = save;
+    escm_output_close(o);
 
     return str;
 }
@@ -289,9 +277,8 @@ escm_open_input_file(escm *e, escm_atom *args)
 #endif
     inp = escm_input_fopen(escm_astr_val(name));
 
-    if (!inp) {
+    if (!inp)
         escm_abort(e);
-    }
 
     return escm_port_make(e, inp, 1);
 }
@@ -316,9 +303,8 @@ escm_open_output_file(escm *e, escm_atom *args)
 #endif
         outp = escm_output_fopen(escm_astr_val(name));
 
-    if (!outp) {
+    if (!outp)
         escm_abort(e);
-    }
 
     return escm_port_make(e, outp, 0);
 }
@@ -332,220 +318,6 @@ escm_close_port(escm *e, escm_atom *args)
     escm_assert(ESCM_ISPORT(port), port, e);
 
     escm_port_val(port)->closed = 1;
-    return NULL;
-}
-
-#ifdef ESCM_USE_CHARACTERS
-escm_atom *
-escm_read_char(escm *e, escm_atom *args)
-{
-    escm_atom *a;
-    escm_port *port;
-    escm_int c;
-
-    if (!escm_type_ison(ESCM_TYPE_CHAR)) {
-        escm_error(e, "~s: character type is off.~%", escm_fun(e));
-        escm_abort(e);
-    }
-
-    a = escm_cons_pop(e, &args);
-    if (a)
-        escm_assert(ESCM_ISPORT(a), a, e);
-    port = (a) ? escm_port_val(a) : escm_port_val(cp.input);
-
-    if (!port->input) {
-        escm_error(e, "~s: given port is not an input port.~%", escm_fun(e));
-        escm_abort(e);
-    }
-    if (port->closed) {
-        escm_error(e, "~s: port is closed.~%", escm_fun(e));
-        escm_abort(e);
-    }
-
-    c = escm_input_getc(port->d.input);
-    if (c == ESCM_EOF)
-        return e->EOF_OBJ;
-
-    return escm_char_make(e, c);
-}
-
-escm_atom *
-escm_peek_char(escm *e, escm_atom *args)
-{
-    escm_atom *a;
-    escm_port *port;
-    escm_int c;
-
-    if (!escm_type_ison(ESCM_TYPE_CHAR)) {
-        escm_error(e, "~s: character type is off.~%", escm_fun(e));
-        escm_abort(e);
-    }
-
-    a = escm_cons_pop(e, &args);
-    if (a)
-        escm_assert(ESCM_ISPORT(a), a, e);
-    port = (a) ? escm_port_val(a) : escm_port_val(cp.input);
-
-    if (!port->input) {
-        escm_error(e, "~s: given port is not an input port.~%", escm_fun(e));
-        escm_abort(e);
-    }
-    if (port->closed) {
-        escm_error(e, "~s: port is closed.~%", escm_fun(e));
-        escm_abort(e);
-    }
-
-    c = escm_input_getc(port->d.input);
-    if (c == ESCM_EOF)
-        return e->EOF_OBJ;
-    escm_input_ungetc(port->d.input, c);
-
-    return escm_char_make(e, c);
-}
-
-escm_atom *
-escm_write_char(escm *e, escm_atom *args)
-{
-    escm_atom *c, *p;
-    escm_port *port;
-
-    if (!escm_type_ison(ESCM_TYPE_CHAR)) {
-        escm_error(e, "~s: character type is off.~%", escm_fun(e));
-        escm_abort(e);
-    }
-
-    c = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISCHAR(c), c, e);
-
-    p = escm_cons_pop(e, &args);
-    if (p)
-        escm_assert(ESCM_ISPORT(p), p, e);
-    port = (p) ? escm_port_val(p) : escm_port_val(cp.output);
-
-    if (port->input) {
-        escm_error(e, "~s: given port is not an output port.~%", escm_fun(e));
-        escm_abort(e);
-    }
-    if (port->closed) {
-        escm_error(e, "~s: port is closed.~%", escm_fun(e));
-        escm_abort(e);
-    }
-
-    escm_putc(port->d.output, escm_char_val(c));
-
-    return NULL;
-}
-#endif /* ESCM_USE_CHARACTERS */
-
-escm_atom *
-escm_read(escm *e, escm_atom *args)
-{
-    escm_atom *a;
-    escm_port *port;
-    escm_input *save;
-
-    a = escm_cons_pop(e, &args);
-    if (a)
-        escm_assert(ESCM_ISPORT(a), a, e);
-    port = (a) ? escm_port_val(a) : escm_port_val(cp.input);
-
-    if (!port->input) {
-        escm_error(e, "~s: given port is not an input port.~%", escm_fun(e));
-        escm_abort(e);
-    }
-    if (port->closed) {
-        escm_error(e, "~s: port is closed.~%", escm_fun(e));
-        escm_abort(e);
-    }
-
-    save = e->input;
-    e->input = port->d.input;
-    escm_port_update(e);
-
-    a = escm_parse(e);
-
-    e->input = save;
-    escm_port_update(e);
-
-    return a;
-}
-
-escm_atom *
-escm_write(escm *e, escm_atom *args)
-{
-    escm_atom *atom, *p;
-    escm_port *port;
-
-    atom = escm_cons_pop(e, &args);
-
-    p = escm_cons_pop(e, &args);
-    if (p)
-        escm_assert(ESCM_ISPORT(p), p, e);
-    port = (p) ? escm_port_val(p) : escm_port_val(cp.output);
-
-    if (port->input) {
-        escm_error(e, "~s: given port is not an output port.~%", escm_fun(e));
-        escm_abort(e);
-    }
-    if (port->closed) {
-        escm_error(e, "~s: port is closed.~%", escm_fun(e));
-        escm_abort(e);
-    }
-
-    escm_atom_print4(e, atom, port->d.output, 0);
-
-    return NULL;
-}
-
-escm_atom *
-escm_display(escm *e, escm_atom *args)
-{
-    escm_atom *atom, *p;
-    escm_port *port;
-
-    atom = escm_cons_pop(e, &args);
-
-    p = escm_cons_pop(e, &args);
-    if (p)
-        escm_assert(ESCM_ISPORT(p), p, e);
-    port = (p) ? escm_port_val(p) : escm_port_val(cp.output);
-
-    if (port->input) {
-        escm_error(e, "~s: given port is not an output port.~%", escm_fun(e));
-        escm_abort(e);
-    }
-    if (port->closed) {
-        escm_error(e, "~s: port is closed.~%", escm_fun(e));
-        escm_abort(e);
-    }
-
-    escm_atom_print4(e, atom, port->d.output, 1);
-
-    return NULL;
-}
-
-escm_atom *
-escm_newline(escm *e, escm_atom *args)
-{
-    escm_atom *p;
-    escm_port *port;
-
-    p = escm_cons_pop(e, &args);
-    if (p)
-        escm_assert(ESCM_ISPORT(p), p, e);
-    port = (p) ? escm_port_val(p) : escm_port_val(cp.output);
-
-    if (port->input) {
-        escm_error(e, "~s: given port is not an output port.~%", escm_fun(e));
-        escm_abort(e);
-    }
-    if (port->closed) {
-        escm_error(e, "~s: port is closed.~%", escm_fun(e));
-        escm_abort(e);
-    }
-
-    escm_putc(port->d.output, '\n');
-
     return NULL;
 }
 
@@ -563,13 +335,6 @@ port_free(escm_port *port)
     }
 
     free(port);
-}
-
-static void
-port_exit(escm *e)
-{
-    escm_gc_ungard(e, cp.output);
-    escm_gc_ungard(e, cp.input);
 }
 
 static void

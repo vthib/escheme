@@ -27,8 +27,8 @@
 static unsigned long symboltype = 2;
 
 static void symbol_print(escm *, escm_tst *, escm_output *, int);
-static int symbol_parsetest(escm *, int);
-static escm_atom *symbol_parse(escm *);
+static int symbol_parsetest(escm *, escm_input *, int);
+static escm_atom *symbol_parse(escm *, escm_input *);
 static escm_atom *symbol_eval(escm *, escm_tst *);
 static void symbol_mark(escm *, escm_tst *);
 static int symbol_equal(escm *, escm_tst *, escm_tst *, int);
@@ -174,24 +174,24 @@ symbol_print(escm *e, escm_tst *symbol, escm_output *stream, int lvl)
 }
 
 static int
-symbol_parsetest(escm *e, int c)
+symbol_parsetest(escm *e, escm_input *stream, int c)
 {
     (void) e;
 
     if (c == '+' || c == '-') {
-        c = escm_input_getc(e->input);
+        c = escm_input_getc(stream);
         if (c == '.') {
             int ret;
 
-            ret = !isdigit(escm_input_peek(e->input));
-            escm_input_ungetc(e->input, c);
+            ret = !isdigit(escm_input_peek(stream));
+            escm_input_ungetc(stream, c);
             return ret;
         }
 
-        escm_input_ungetc(e->input, c);
+        escm_input_ungetc(stream, c);
         return !(isdigit(c) || c == 'i');
     } else if (c == '.')
-        return !isdigit(escm_input_peek(e->input));
+        return !isdigit(escm_input_peek(stream));
     else if (isdigit(c))
         return 0;
     else
@@ -199,12 +199,12 @@ symbol_parsetest(escm *e, int c)
 }
 
 static escm_atom *
-symbol_parse(escm *e)
+symbol_parse(escm *e, escm_input *stream)
 {
     char *str;
     escm_atom *a;
 
-    str = escm_input_getstr_fun(e->input, issymbol, e->casesensitive);
+    str = escm_input_getstr_fun(stream, issymbol, e->casesensitive);
 
     a = escm_symbol_make(e, str);
     free(str);

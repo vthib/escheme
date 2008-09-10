@@ -26,8 +26,8 @@ static unsigned long constype = 0;
 static void cons_mark(escm *, escm_cons *);
 static void cons_print(escm *, escm_cons *, escm_output *, int);
 static int cons_equal(escm *, escm_cons *, escm_cons *, int);
-static int cons_parsetest(escm *, int);
-static escm_atom *cons_parse(escm *);
+static int cons_parsetest(escm *, escm_input *, int);
+static escm_atom *cons_parse(escm *, escm_input *);
 static escm_atom *cons_eval(escm *, escm_cons *);
 
 static escm_atom *member(escm *, escm_atom *, int);
@@ -564,44 +564,36 @@ cons_equal(escm *e, escm_cons *c1, escm_cons *c2, int lvl)
 }
 
 static int
-cons_parsetest(escm *e, int c)
+cons_parsetest(escm *e, escm_input *stream, int c)
 {
     (void) e;
+    (void) stream;
 
     return (c == '(' || (e->brackets == 1 && c == '['));
 }
 
 static escm_atom *
-cons_parse(escm *e)
+cons_parse(escm *e, escm_input *stream)
 {
     escm_atom *atom;
-    int c, open;
+    int c;
 
     assert(e != NULL);
 
-    open = escm_input_getc(e->input);
+    (void) escm_input_getc(stream); /* skip '(' */
 
     escm_ctx_enter(e);
 
     for (;;) {
         do {
-            c = escm_input_getc(e->input);
-            if (e->brackets == 1 && (c == ')' || c == ']')) {
-                if ((open == '(' && c == ']') || (open == '[' && c == ')')) {
-                    escm_parse_print(e->input, e->errp,
-                                     "expecting a '%c' to close a '%c'.\n",
-                                     (open == '(') ? ')' : ']', open);
-                    escm_ctx_discard(e);
-                    escm_abort(e);
-                }
-                goto end;
-            } else if (e->brackets == 0 && c == ')')
+            c = escm_input_getc(stream);
+            if (c == ')' || (e->brackets == 1 && c == ']'))
                 goto end;
             else if (!isspace(c))
-                escm_input_ungetc(e->input, c);
+                escm_input_ungetc(stream, c);
         } while (isspace(c));
 
-        atom = escm_parse(e);
+        atom = escm_parse(e, stream);
         if (e->err != 0 || atom == e->EOF_OBJ) {
             escm_ctx_discard(e);
             return NULL;

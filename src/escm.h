@@ -153,6 +153,7 @@ struct escm {
     unsigned int casesensitive : 1;
     unsigned int brackets : 1;
     unsigned int err : 1;
+    unsigned int quit : 1;
 };
 
 escm *escm_new(void);
@@ -161,14 +162,14 @@ void escm_free(escm *);
 
 int escm_fparse(escm *, const char *);
 int escm_sparse(escm *, const char *);
-escm_atom *escm_parse(escm *);
+escm_atom *escm_parse(escm *, escm_input *);
 
 void escm_shell(escm *);
 
 #define escm_type_ison(type) ((type) != 0)
 unsigned long escm_type_add(escm *, escm_type *);
-int escm_type_parsetest(escm *, size_t, int);
-escm_atom *escm_type_parse(escm *, size_t);
+int escm_type_parsetest(escm *, size_t, escm_input *, int);
+escm_atom *escm_type_parse(escm *, size_t, escm_input *);
 
 void escm_ctx_enter(escm *);
 void escm_ctx_put(escm *, escm_atom *);

@@ -25,8 +25,8 @@ static unsigned long achartype = 0;
 
 static void achar_print(escm *, int, escm_output *, int);
 static int achar_equal(escm *, escm_intptr, escm_intptr, int);
-static int achar_parsetest(escm *, int);
-static escm_atom *achar_parse(escm *);
+static int achar_parsetest(escm *, escm_input *, int);
+static escm_atom *achar_parse(escm *, escm_input *);
 static int input_getchar(escm *, escm_input *);
 static inline escm_atom *testchar(escm *, escm_atom *, int (*)(int));
 
@@ -332,21 +332,22 @@ achar_equal(escm *e, escm_intptr c1, escm_intptr c2, int lvl)
 }
 
 static int
-achar_parsetest(escm *e, int c)
+achar_parsetest(escm *e, escm_input *stream, int c)
 {
-    if (c == '#')
-        return escm_input_peek(e->input) == '\\';
+    (void) e;
 
+    if (c == '#')
+        return escm_input_peek(stream) == '\\';
     return 0;
 }
 
 static escm_atom *
-achar_parse(escm *e)
+achar_parse(escm *e, escm_input *stream)
 {
     int c;
 
-    (void) escm_input_getc(e->input), escm_input_getc(e->input); /* skip #\ */
-    c = input_getchar(e, e->input);
+    (void) escm_input_getc(stream), escm_input_getc(stream); /* skip #\ */
+    c = input_getchar(e, stream);
     if (c == '\0' && e->err == 1)
         return NULL;
 

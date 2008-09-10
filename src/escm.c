@@ -32,8 +32,8 @@
 #endif
 
 static unsigned char *alloc_seg(escm *);
-static escm_atom *enterin(escm *, const char *);
-static inline void preproc(escm *);
+static escm_atom *enterin(escm *, escm_input *, const char *);
+static inline void preproc(escm_input *);
 
 escm *
 escm_new(void)
@@ -127,21 +127,15 @@ int
 escm_fparse(escm *e, const char *filename)
 {
     escm_atom *atom;
-    escm_input *save;
+    escm_input *in;
     int ret = 1;
 
     assert(e != NULL);
 
-    save = e->input, e->input = escm_input_fopen(filename);
-    if (!e->input) {
-        e->input = save;
+    in = escm_input_fopen(filename);
+    if (!in)
         return 0;
-    }
-#ifdef ESCM_USE_PORTS
-    if (escm_type_ison(ESCM_TYPE_PORT))
-        escm_port_update(e);
-#endif
-    while ((atom = escm_parse(e)) != e->EOF_OBJ) {
+    while ((atom = escm_parse(e, in)) != e->EOF_OBJ) {
         if (atom) {
             escm_atom_print(e, atom);
             printf("\n");
@@ -152,11 +146,7 @@ escm_fparse(escm *e, const char *filename)
         }
     }
 
-    escm_input_close(e->input), e->input = save;
-#ifdef ESCM_USE_PORTS
-    if (escm_type_ison(ESCM_TYPE_PORT))
-        escm_port_update(e);
-#endif
+    escm_input_close(in);
     return ret;
 }
 
@@ -164,43 +154,32 @@ int
 escm_sparse(escm *e, const char *str)
 {
     escm_atom *atom;
-    escm_input *save;
+    escm_input *in;
 
     assert(e != NULL);
 
-    save = e->input;
 #ifdef ESCM_USE_UNICODE
     {
         wchar_t *w;
 
         w = strtowcs(str);
-        e->input = escm_input_str(w);
+        in = escm_input_str(w);
         free(w);
     }
 #else
-    e->input = escm_input_str(str);
+    in = escm_input_str(str);
 #endif
 
-    if (!e->input) {
-        e->input = save;
+    if (!in)
         return 0;
-    }
-#ifdef ESCM_USE_PORTS
-    if (escm_type_ison(ESCM_TYPE_PORT))
-        escm_port_update(e);
-#endif
-    while ((atom = escm_parse(e)) != e->EOF_OBJ) {
+    while ((atom = escm_parse(e, in)) != e->EOF_OBJ) {
         if (atom) {
             escm_atom_print(e, atom);
             printf("\n");
         }
     }
 
-    escm_input_close(e->input), e->input = save;
-#ifdef ESCM_USE_PORTS
-    if (escm_type_ison(ESCM_TYPE_PORT))
-        escm_port_update(e);
-#endif
+    escm_input_close(in);
     return 1;
 }
 
@@ -227,7 +206,7 @@ escm_shell(escm *e)
         printf("> ");
         if (EOF == fflush(stdout))
             perror("fflush");
-        atom = escm_parse(e);
+        atom = escm_parse(e, e->input);
     } while (e->input->end == 0);
 
     if (!stdinp)
@@ -235,7 +214,7 @@ escm_shell(escm *e)
 }
 
 escm_atom *
-escm_parse(escm *e)
+escm_parse(escm *e, escm_input *in)
 {
     escm_atom *atom, *ret;
     size_t i;
@@ -243,37 +222,42 @@ escm_parse(escm *e)
 
     assert(e != NULL);
 
-    if (!e->input)
+    if (!in)
         return NULL;
-    if (e->input->end)
+    if (in->end)
         return e->EOF_OBJ;
+    if (e->quit) {
+        e->quit = 0;
+        in->end = 1;
+        return e->EOF_OBJ;
+    }
 
     e->err = 0;
     do {
-        c = escm_input_getc(e->input);
+        c = escm_input_getc(in);
         if (c == '.') {
             int c2;
 
             if (!e->ctx)
                 break;
-            c2 = escm_input_getc(e->input);
+            c2 = escm_input_getc(in);
             if (c2 == '.') {
-                escm_input_ungetc(e->input, c2);
+                escm_input_ungetc(in, c2);
                 break;
             } else if (!isdigit(c2))
                 e->ctx->dotted = 1;
             c = c2;
         } else if (c == ';') {
-            c = escm_input_getc(e->input);
+            c = escm_input_getc(in);
             if (c == '?')
-                preproc(e);
+                preproc(in);
             else if (c == ':') {
                 int lvl = 1;
 
-                while (lvl != 0 && e->input->end == 0) {
-                    c = escm_input_getc(e->input);
+                while (lvl != 0 && in->end == 0) {
+                    c = escm_input_getc(in);
                     if (c == ';') {
-                        c = escm_input_getc(e->input);
+                        c = escm_input_getc(in);
                         if (c == '?')
                             lvl++;
                         if (c == '>')
@@ -281,37 +265,37 @@ escm_parse(escm *e)
                     }
                 }
             }
-            while (c != '\n' && e->input->end == 0)
-                c = escm_input_getc(e->input);
+            while (c != '\n' && in->end == 0)
+                c = escm_input_getc(in);
         }
-    } while (isspace(c) && e->input->end == 0);
-    if (e->input->end)
+    } while (isspace(c) && in->end == 0);
+    if (in->end)
         return e->EOF_OBJ;
 
     if (c == '\'')
-        atom = enterin(e, "quote");
+        atom = enterin(e, in, "quote");
     else if (c == '`')
-        atom = enterin(e, "quasiquote");
+        atom = enterin(e, in, "quasiquote");
     else if (c == ',') {
         int c2;
 
-        c2 = escm_input_getc(e->input);
+        c2 = escm_input_getc(in);
         if (c2 == '@')
-            atom = enterin(e, "unquote-splicing");
+            atom = enterin(e, in, "unquote-splicing");
         else {
-            escm_input_ungetc(e->input, c2);
-            atom = enterin(e, "unquote");
+            escm_input_ungetc(in, c2);
+            atom = enterin(e, in, "unquote");
         }
     } else {
         atom = NULL;
         for (i = 0; i < e->ntypes && !atom; i++) {
-            if (escm_type_parsetest(e, i, c)) {
-                escm_input_ungetc(e->input, c);
-                atom = escm_type_parse(e, i);
+            if (escm_type_parsetest(e, i, in, c)) {
+                escm_input_ungetc(in, c);
+                atom = escm_type_parse(e, i, in);
             }
         }
         if (i >= e->ntypes) {
-            escm_parse_print(e->input, e->errp, "unknown character `%c'.\n",
+            escm_parse_print(in, e->errp, "unknown character `%c'.\n",
                              c);
             escm_abort(e);
         }
@@ -344,38 +328,48 @@ escm_type_add(escm *e, escm_type *type)
 }
 
 int
-escm_type_parsetest(escm *e, size_t i, int c)
+escm_type_parsetest(escm *e, size_t i, escm_input *stream, int c)
 {
     switch (e->types[i]->parsetesttype) {
     case TYPE_BUILT:
         return (e->types[i]->parsetest.fparsetest)
-            ? e->types[i]->parsetest.fparsetest(e, c)
+            ? e->types[i]->parsetest.fparsetest(e, stream, c)
             : 0;
-#ifdef ESCM_USE_CHARACTERS
+#if defined ESCM_USE_CHARACTERS && defined ESCM_USE_PORTS
     case TYPE_DYN:
-        if (!e->types[i]->parsetest.pparsetest)
-            return 0;
-        return ESCM_ISTRUE(e,
-            escm_procedure_exec(e, e->types[i]->parsetest.pparsetest,
-                                escm_cons_make(e, escm_char_make(e, c), e->NIL),
-                                0))
-            ? 1 : 0;
+        {
+            escm_atom *a;
+
+            if (!e->types[i]->parsetest.pparsetest)
+                return 0;
+
+            a = escm_cons_make(e, escm_port_make(e, stream, 1),
+                               escm_cons_make(e, escm_char_make(e, c),
+                                              e->NIL));
+            return ESCM_ISTRUE(e,
+                escm_procedure_exec(e, e->types[i]->parsetest.pparsetest,
+                                    a, 0))
+                ? 1 : 0;
+        }
 #endif
     }
     return 0;
 }
 
 escm_atom *
-escm_type_parse(escm *e, size_t i)
+escm_type_parse(escm *e, size_t i, escm_input *stream)
 {
     switch (e->types[i]->parsetype) {
     case TYPE_BUILT:
         return (e->types[i]->parse.fparse)
-            ? e->types[i]->parse.fparse(e)
+            ? e->types[i]->parse.fparse(e, stream)
             : NULL;
     case TYPE_DYN:
         return (e->types[i]->parse.pparse)
-            ? escm_procedure_exec(e, e->types[i]->parse.pparse, e->NIL, 0)
+            ? escm_procedure_exec(
+                e, e->types[i]->parse.pparse,
+                escm_cons_make(e, escm_port_make(e, stream, 1), e->NIL),
+                0)
             : NULL;
     }
     return NULL;
@@ -415,7 +409,7 @@ escm_ctx_put(escm *e, escm_atom *atom)
         e->ctx->first = new;
     else {
         if (!ESCM_ISCONS(e->ctx->last) || e->ctx->last == e->NIL) {
-            escm_parse_print(e->input, e->errp, "illegal dotted form.\n");
+            escm_printf(e->errp, "illegal dotted form.\n");
             e->err = 1;
             return;
         }
@@ -728,7 +722,7 @@ alloc_seg(escm *e)
 }
 
 static escm_atom *
-enterin(escm *e, const char *name)
+enterin(escm *e, escm_input *stream, const char *name)
 {
     escm_atom *atom;
 
@@ -736,7 +730,7 @@ enterin(escm *e, const char *name)
 
     escm_ctx_enter(e);
     escm_ctx_put(e, escm_symbol_make(e, name));
-    atom = escm_parse(e);
+    atom = escm_parse(e, stream);
     if (!atom) {
         escm_ctx_discard(e);
         return NULL;
@@ -746,12 +740,12 @@ enterin(escm *e, const char *name)
 }
 
 static inline void
-preproc(escm *e)
+preproc(escm_input *in)
 {
     char *t;
     int c, lvl = 1;
 
-    t = escm_input_getstr_fun(e->input, isalpha, e->casesensitive);
+    t = escm_input_getstr_fun(in, isalpha, 1);
 #ifdef ESCM_USE_NUMBERS
     if (0 == strcmp(t, "number")) {
         if (escm_type_ison(ESCM_TYPE_NUMBER)) goto end;
@@ -812,10 +806,10 @@ preproc(escm *e)
 #endif
 
 skip:
-    while (lvl != 0 && e->input->end == 0) {
-        c = escm_input_getc(e->input);
+    while (lvl != 0 && in->end == 0) {
+        c = escm_input_getc(in);
         if (c == ';') {
-            c = escm_input_getc(e->input);
+            c = escm_input_getc(in);
             if (c == '?')
                 lvl++;
             if (c == '>')

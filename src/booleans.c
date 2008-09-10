@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -27,8 +27,8 @@ static unsigned long booleantype = 0;
 
 static void boolean_print(escm *, void *, escm_output *, int);
 static int boolean_equal(escm *, void *, void *, int);
-static int boolean_parsetest(escm *, int);
-static escm_atom *boolean_parse(escm *);
+static int boolean_parsetest(escm *, escm_input *, int);
+static escm_atom *boolean_parse(escm *, escm_input *);
 
 void
 escm_booleans_init(escm *e)
@@ -87,28 +87,28 @@ boolean_equal(escm *e, void *b1, void *b2, int lvl)
 }
 
 static int
-boolean_parsetest(escm *e, int c)
+boolean_parsetest(escm *e, escm_input *stream, int c)
 {
     if (c == '#') {
         int c2;
 
-        c2 = escm_input_peek(e->input);
+        c2 = escm_input_peek(stream);
         if (e->casesensitive == 0)
             c2 = tolower(c2);
         return (c2 == 't' || c2 == 'f');
     }
 
     return 0;
-}    
+}
 
 static escm_atom *
-boolean_parse(escm *e)
+boolean_parse(escm *e, escm_input *stream)
 {
     int c;
 
-    (void) escm_input_getc(e->input); /* skip '#' */
+    (void) escm_input_getc(stream); /* skip '#' */
 
-    c = escm_input_getc(e->input);
+    c = escm_input_getc(stream);
     if (e->casesensitive == 0)
         c = tolower(c);
     return (c == 't') ? e->TRUE : e->FALSE;

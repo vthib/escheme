@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -27,8 +27,8 @@ static void vector_free(escm_vector *);
 static void vector_mark(escm *, escm_vector *);
 static void vector_print(escm *, escm_vector *, escm_output *, int);
 static int vector_equal(escm *, escm_vector *, escm_vector *, int);
-static int vector_parsetest(escm *, int);
-static escm_atom *vector_parse(escm *);
+static int vector_parsetest(escm *, escm_input *, int);
+static escm_atom *vector_parse(escm *, escm_input *);
 
 void
 escm_vectors_init(escm *e)
@@ -305,55 +305,40 @@ vector_equal(escm *e, escm_vector *v1, escm_vector *v2, int lvl)
 }
 
 static int
-vector_parsetest(escm *e, int c)
+vector_parsetest(escm *e, escm_input *stream, int c)
 {
-    int c2, ret;
-
     if (c != '#')
         return 0;
 
-    c2 = escm_input_getc(e->input);
-    ret = (c2 == '(' || (e->brackets == 1 && c2 == '['));
-    escm_input_ungetc(e->input, c2);
-
-    return ret;
+    c = escm_input_peek(stream);
+    return (c == '(' || (e->brackets == 1 && c == '['));
 }
 
 static escm_atom *
-vector_parse(escm *e)
+vector_parse(escm *e, escm_input *stream)
 {
     escm_atom *atom;
     escm_atom **vec;
     size_t len, i;
-    int c, open;
+    int c;
 
     assert(e != NULL);
 
-    (void) escm_input_getc(e->input); /* skip # */
-    open = escm_input_getc(e->input);
+    (void) escm_input_getc(stream), escm_input_getc(stream); /* skip #( */
 
     escm_ctx_enter(e);
 
     len = 0;
     for (;;) {
         do {
-            c = escm_input_getc(e->input);
-            if (e->brackets == 1 && (c == ')' || c == ']')) {
-                if ((open == '(' && c == ']') || (open == '[' && c == ')')) {
-                    escm_parse_print(e->input, e->errp, "expecting a '%c' to "
-                                     "close a '%c'.\n",
-                                     (open == '(') ? ')' : ']', open);
-                    escm_ctx_discard(e);
-                    escm_abort(e);
-                }
-                goto end;
-            } else if (e->brackets == 0 && c == ')')
+            c = escm_input_getc(stream);
+            if (c == ')' || (e->brackets == 1 && c == ']'))
                 goto end;
             else if (!isspace(c))
-                escm_input_ungetc(e->input, c);
+                escm_input_ungetc(stream, c);
         } while (isspace(c));
 
-        atom = escm_parse(e);
+        atom = escm_parse(e, stream);
         if (e->ctx->dotted) {
             escm_error(e, "parse error: dotted notation is forbidden in a "
                        "vector context.~%");

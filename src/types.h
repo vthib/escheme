@@ -81,8 +81,8 @@ typedef void (*Escm_Fun_Free)(void *);
 typedef void (*Escm_Fun_Print)(escm *, void *, escm_output *, int);
 typedef int (*Escm_Fun_Equal)(escm *, void *, void *, int);
 
-typedef int (*Escm_Fun_Parsetest)(escm *, int);
-typedef escm_atom *(*Escm_Fun_Parse)(escm *);
+typedef int (*Escm_Fun_Parsetest)(escm *, escm_input *, int);
+typedef escm_atom *(*Escm_Fun_Parse)(escm *, escm_input *);
 typedef escm_atom *(*Escm_Fun_Eval)(escm *, void *);
 typedef escm_atom *(*Escm_Fun_Exec)(escm *, void *, escm_atom *);
 

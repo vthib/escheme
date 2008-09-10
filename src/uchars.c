@@ -28,8 +28,8 @@ static unsigned long uchartype = 0;
 
 static void uchar_print(escm *, int, escm_output *, int);
 static int uchar_equal(escm *, escm_intptr, escm_intptr, int);
-static int uchar_parsetest(escm *, int);
-static escm_atom *uchar_parse(escm *);
+static int uchar_parsetest(escm *, escm_input *, int);
+static escm_atom *uchar_parse(escm *, escm_input *);
 static wchar_t input_getuchar(escm *, escm_input *);
 static inline escm_atom *testchar(escm *, escm_atom *, int (*)(wint_t));
 
@@ -335,21 +335,23 @@ uchar_equal(escm *e, escm_intptr c1, escm_intptr c2, int lvl)
 }
 
 static int
-uchar_parsetest(escm *e, int c)
+uchar_parsetest(escm *e, escm_input *stream, int c)
 {
+    (void) e;
+
     if (c == '#')
-        return escm_input_peek(e->input) == '\\';
+        return escm_input_peek(stream) == '\\';
 
     return 0;
 }
 
 static escm_atom *
-uchar_parse(escm *e)
+uchar_parse(escm *e, escm_input *stream)
 {
     wchar_t c;
 
-    (void) escm_input_getc(e->input), escm_input_getc(e->input); /* skip #\ */
-    c = input_getuchar(e, e->input);
+    (void) escm_input_getc(stream), escm_input_getc(stream); /* skip #\ */
+    c = input_getuchar(e, stream);
     if (c == L'\0' && e->err == 1)
         return NULL;
 

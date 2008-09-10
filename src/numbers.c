@@ -29,8 +29,8 @@ static unsigned long numbertype = 0;
 
 static void number_print(escm *, escm_number *, escm_output *, int);
 static int number_equal(escm *, escm_number *, escm_number *, int);
-static int number_parsetest(escm *, int);
-static escm_atom *number_parse(escm *);
+static int number_parsetest(escm *, escm_input *, int);
+static escm_atom *number_parse(escm *, escm_input *);
 
 static escm_number *inputtonumber(escm *, escm_input *, int);
 static long pgcd(long, long);
@@ -994,28 +994,28 @@ number_equal(escm *e, escm_number *n1, escm_number *n2, int lvl)
 }
 
 static int
-number_parsetest(escm *e, int c)
+number_parsetest(escm *e, escm_input *stream, int c)
 {
     (void) e;
 
     if (c == '+' || c == '-') {
-        c = escm_input_peek(e->input);
+        c = escm_input_peek(stream);
         return isdigit(c) || c == '.';
     } else if (isdigit(c) || c == '.')
         return 1;
     else if (c == '#') {
-        c = escm_input_peek(e->input);
+        c = escm_input_peek(stream);
         return (c == 'b' || c == 'o' || c == 'x' || c == 'd');
     } else
         return 0;
 }
 
 static escm_atom *
-number_parse(escm *e)
+number_parse(escm *e, escm_input *stream)
 {
     escm_number *n;
 
-    n = inputtonumber(e, e->input, 10);
+    n = inputtonumber(e, stream, 10);
     if (!n)
         return NULL;
     return escm_atom_new(e, numbertype, n);

@@ -85,8 +85,9 @@ escm_rep_to_data(escm *e, escm_atom *args, escm_type **type)
     atom = escm_cons_pop(e, &args);
 
     if (atom->type != (*type)->d.dyn.basetype) {
-        escm_error(e, "~s: can't create differents atoms with same type.~%",
-                   escm_fun(e));
+        escm_error(e, "~s: ~s type and basetype for this dynamic type "
+                   "mismatch.~%", escm_fun(e), atom);
+        printf("%ld\n", (*type)->d.dyn.basetype);
         escm_abort(e);
     }
 
@@ -222,7 +223,7 @@ escm_prim_type_parse_p(escm *e, escm_atom *args)
         escm_input_ungetc(e->input, c);
 
     return escm_type_parsetest(e, (size_t) escm_number_ival(type),
-                               escm_char_val(character))
+                               e->input, escm_char_val(character))
         ? e->TRUE : e->FALSE;
 }
 
@@ -239,5 +240,5 @@ escm_prim_type_parse(escm *e, escm_atom *args)
     if (c != '\n')
         escm_input_ungetc(e->input, c);
 
-    return escm_type_parse(e, (size_t) escm_number_ival(type));
+    return escm_type_parse(e, (size_t) escm_number_ival(type), e->input);
 }

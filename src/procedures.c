@@ -283,9 +283,11 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
         escm_env_leave(e, prevenv);
 
         /* clean the gc gards */
-        for (li = e->gard; li && li->atom != lastgarded; li = lprev)
-            lprev = li->prev, free(li);
-        e->gard = li;
+        if (lastgarded != NULL) {
+            for (li = e->gard; li && li->atom != lastgarded; li = lprev)
+                lprev = li->prev, free(li);
+            e->gard = li;
+        }
     } else {
         escm_atom *atom;
 
@@ -306,7 +308,7 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
             }
         }
 
-        lastgarded = e->gard->atom;
+        lastgarded = (e->gard) ? e->gard->atom : NULL;
     }
 
     if (fun->d.closure.args == e->NIL) /* no arguments, no need to create a

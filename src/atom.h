@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -39,10 +39,10 @@ void escm_atom_mark(escm *, escm_atom *);
 escm_atom *escm_atom_eval(escm *, escm_atom *);
 escm_atom *escm_atom_exec(escm *, escm_atom *, escm_atom *);
 
-#define escm_atom_print(e, atom) \
-    escm_atom_print4(e, atom, e->output, 0)
-#define escm_atom_write(e, atom) escm_atom_print(e, atom)
+#define escm_atom_print escm_atom_write
 
+#define escm_atom_write(e, atom) \
+    escm_atom_print4(e, atom, e->output, 0)
 #define escm_atom_display(e, atom) \
     escm_atom_print4(e, atom, e->output, 1)
 #define escm_atom_printerr(e, atom) \

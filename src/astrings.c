@@ -26,8 +26,8 @@ static unsigned long astringtype = 0;
 static void astring_free(escm_astring *);
 static void astring_print(escm *, escm_astring *, escm_output *, int);
 static int astring_equal(escm *, escm_astring *, escm_astring *, int);
-static int astring_parsetest(escm *, int);
-static escm_atom *astring_parse(escm *);
+static int astring_parsetest(escm *, escm_input *, int);
+static escm_atom *astring_parse(escm *, escm_input *);
 
 void
 escm_astrings_init(escm *e)
@@ -532,22 +532,23 @@ astring_equal(escm *e, escm_astring *s1, escm_astring *s2, int lvl)
 }
 
 static int
-astring_parsetest(escm *e, int c)
+astring_parsetest(escm *e, escm_input *stream, int c)
 {
     (void) e;
+    (void) stream;
 
     return c == '"';
 }
 
 static escm_atom *
-astring_parse(escm *e)
+astring_parse(escm *e, escm_input *stream)
 {
     escm_atom *ret;
     char *str;
 
-    (void) escm_input_getc(e->input); /* skip '"' */
-    str = escm_input_gettext(e->input, "\"");
-    (void) escm_input_getc(e->input); /* skip '"' */
+    (void) escm_input_getc(stream); /* skip '"' */
+    str = escm_input_gettext(stream, "\"");
+    (void) escm_input_getc(stream); /* skip '"' */
 
     ret = escm_astring_make(e, str, strlen(str));
     free(str);
