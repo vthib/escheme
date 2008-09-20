@@ -124,7 +124,7 @@ escm_ustring_make2(escm *e, const char *str)
     mbstowcs(w, str, n);
 
     s = xmalloc(sizeof *s);
-    s->str = w, s->len = n;
+    s->str = w, s->len = n - 1;
 
     return escm_atom_new(e, ustringtype, s);
 }
