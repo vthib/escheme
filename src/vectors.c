@@ -82,13 +82,13 @@ escm_vector_make(escm *e, escm_atom **vec, size_t len)
 }
 
 escm_atom *
-escm_vector_p(escm *e, escm_atom *args)
+escm_vector_p(escm *e, escm_atom *args, void *nil)
 {
     return ESCM_ISVECTOR(escm_cons_car(args)) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
-escm_prim_vector(escm *e, escm_atom *args)
+escm_prim_vector(escm *e, escm_atom *args, void *nil)
 {
     escm_cons *c;
     escm_atom **vec;
@@ -108,7 +108,7 @@ escm_prim_vector(escm *e, escm_atom *args)
 
 #ifdef ESCM_USE_NUMBERS
 escm_atom *
-escm_make_vector(escm *e, escm_atom *args)
+escm_make_vector(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *k, *fill;
     escm_atom **vec;
@@ -134,7 +134,7 @@ escm_make_vector(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_vector_length(escm *e, escm_atom *args)
+escm_vector_length(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *v;
 
@@ -150,7 +150,7 @@ escm_vector_length(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_vector_ref(escm *e, escm_atom *args)
+escm_vector_ref(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *v, *k;
 
@@ -173,7 +173,7 @@ escm_vector_ref(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_vector_set_x(escm *e, escm_atom *args)
+escm_vector_set_x(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *v, *k;
 
@@ -203,7 +203,7 @@ escm_vector_set_x(escm *e, escm_atom *args)
 #endif
 
 escm_atom *
-escm_vector_fill_x(escm *e, escm_atom *args)
+escm_vector_fill_x(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *v, *fill;
     size_t i;
@@ -223,18 +223,18 @@ escm_vector_fill_x(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_list_to_vector(escm *e, escm_atom *args)
+escm_list_to_vector(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *list;
 
     list = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCONS(list), list, e);
 
-    return escm_prim_vector(e, list);
+    return escm_prim_vector(e, list, NULL);
 }
 
 escm_atom *
-escm_vector_to_list(escm *e, escm_atom *args)
+escm_vector_to_list(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *v;
     size_t i;

@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -53,13 +53,13 @@ escm_continuation_tget(void)
 }
 
 escm_atom *
-escm_continuation_p(escm *e, escm_atom *args)
+escm_continuation_p(escm *e, escm_atom *args, void *nil)
 {
     return (ESCM_ISCONTINUATION(escm_cons_val(args)->car)) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
-escm_call_with_cc(escm *e, escm_atom *args)
+escm_call_with_cc(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *proc, *cont, *a;
     escm_continuation *c;

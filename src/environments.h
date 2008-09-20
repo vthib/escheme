@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -39,19 +39,18 @@ void escm_env_set(escm *, escm_atom *, escm_atom *, escm_atom *);
 escm_atom *escm_env_enter(escm *, escm_atom *);
 void escm_env_leave(escm *, escm_atom *);
 
-escm_atom *escm_eval(escm *, escm_atom *);
+escm_atom *escm_prim_eval(escm *, escm_atom *, void *);
 
-escm_atom *escm_library(escm *, escm_atom *);
-escm_atom *escm_import(escm *, escm_atom *);
+escm_atom *escm_library(escm *, escm_atom *, void *);
+escm_atom *escm_import(escm *, escm_atom *, void *);
 
 escm_atom *escm_library_enter(escm *, char *, int);
 void escm_library_export(escm *, escm_atom *, char *);
 void escm_library_exit(escm *);
 
-escm_atom *escm_alpha(escm *, escm_atom *);
-escm_atom *escm_with(escm *, escm_atom *);
-escm_atom *escm_scheme_report_environment(escm *, escm_atom *);
-escm_atom *escm_null_environment(escm *, escm_atom *);
-escm_atom *escm_interaction_environment(escm *, escm_atom *);
+escm_atom *escm_alpha(escm *, escm_atom *, void *);
+escm_atom *escm_with(escm *, escm_atom *, void *);
+escm_atom *escm_scheme_report_environment(escm *, escm_atom *, void *);
+escm_atom *escm_interaction_environment(escm *, escm_atom *, void *);
 
 #endif /* ESCHEME_ENVIRONMENTS_H */

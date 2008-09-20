@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -43,7 +43,7 @@ escm_srfi_init(escm *e)
 #if defined ESCM_USE_STRINGS && defined ESCM_USE_PORTS
 /* srfi 6 */
 escm_atom *
-escm_open_input_string(escm *e, escm_atom *args)
+escm_open_input_string(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *str;
 
@@ -76,7 +76,7 @@ escm_open_input_string(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_open_output_string(escm *e, escm_atom *args)
+escm_open_output_string(escm *e, escm_atom *args, void *nil)
 {
     (void) args;
 
@@ -93,7 +93,7 @@ escm_open_output_string(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_get_output_string(escm *e, escm_atom *args)
+escm_get_output_string(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *port;
     escm_output *outp;
@@ -139,7 +139,7 @@ escm_get_output_string(escm *e, escm_atom *args)
 
 /* srfi 23 */
 escm_atom *
-escm_srfi_error(escm *e, escm_atom *args)
+escm_srfi_error(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *reason;
 

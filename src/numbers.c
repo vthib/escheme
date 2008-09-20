@@ -136,25 +136,25 @@ escm_real_make(escm *e, double r)
 }
 
 escm_atom *
-escm_number_p(escm *e, escm_atom *args)
+escm_number_p(escm *e, escm_atom *args, void *nil)
 {
     return (ESCM_ISNUMBER(escm_cons_val(args)->car)) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
-escm_integer_p(escm *e, escm_atom *args)
+escm_integer_p(escm *e, escm_atom *args, void *nil)
 {
     return ESCM_ISINT(escm_cons_car(args)) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
-escm_real_p(escm *e, escm_atom *args)
+escm_real_p(escm *e, escm_atom *args, void *nil)
 {
     return (ESCM_ISNUMBER(escm_cons_val(args)->car)) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
-escm_eq(escm *e, escm_atom *args)
+escm_eq(escm *e, escm_atom *args, void *nil)
 {
     escm_number *a, *b;
     escm_atom *c;
@@ -190,7 +190,7 @@ escm_eq(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_lt(escm *e, escm_atom *args)
+escm_lt(escm *e, escm_atom *args, void *nil)
 {
     escm_number *a, *b;
     escm_atom *c;
@@ -226,7 +226,7 @@ escm_lt(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_gt(escm *e, escm_atom *args)
+escm_gt(escm *e, escm_atom *args, void *nil)
 {
     escm_number *a, *b;
     escm_atom *c;
@@ -262,7 +262,7 @@ escm_gt(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_le(escm *e, escm_atom *args)
+escm_le(escm *e, escm_atom *args, void *nil)
 {
     escm_number *a, *b;
     escm_atom *c;
@@ -298,7 +298,7 @@ escm_le(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_ge(escm *e, escm_atom *args)
+escm_ge(escm *e, escm_atom *args, void *nil)
 {
     escm_number *a, *b;
     escm_atom *c;
@@ -334,7 +334,7 @@ escm_ge(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_add(escm *e, escm_atom *params)
+escm_add(escm *e, escm_atom *args, void *nil)
 {
     escm_number *a, *b;
     escm_atom *c;
@@ -342,7 +342,7 @@ escm_add(escm *e, escm_atom *params)
     a = xmalloc(sizeof *a);
     a->fixnum = 1, a->d.ival = 0;
 
-    c = escm_cons_pop(e, &params);
+    c = escm_cons_pop(e, &args);
     while (c) {
         escm_assert1(ESCM_ISNUMBER(c), c, e, free(a));
         b = ((escm_number *) c->ptr);
@@ -365,14 +365,14 @@ escm_add(escm *e, escm_atom *params)
                 a->d.rval += b->d.rval;
         }
 
-        c = escm_cons_pop(e, &params);
+        c = escm_cons_pop(e, &args);
     }
 
     return escm_atom_new(e, ESCM_TYPE_NUMBER, a);
 }
 
 escm_atom *
-escm_sub(escm *e, escm_atom *params)
+escm_sub(escm *e, escm_atom *args, void *nil)
 {
     escm_number *a, *b;
     escm_atom *c;
@@ -380,14 +380,14 @@ escm_sub(escm *e, escm_atom *params)
     a = xmalloc(sizeof *a);
     a->fixnum = 1, a->d.ival = 0;
 
-    c = escm_cons_pop(e, &params);
+    c = escm_cons_pop(e, &args);
 
-    if (params != e->NIL) {
+    if (args != e->NIL) {
         escm_assert1(ESCM_ISNUMBER(c), c, e, free(a));
 
         memcpy(a, c->ptr, sizeof *a);
 
-        c = escm_cons_pop(e, &params);
+        c = escm_cons_pop(e, &args);
     }
 
     do {
@@ -408,14 +408,14 @@ escm_sub(escm *e, escm_atom *params)
                 a->d.rval -= b->d.rval;
         }
 
-        c = escm_cons_pop(e, &params);
+        c = escm_cons_pop(e, &args);
     } while (c);
 
     return escm_atom_new(e, ESCM_TYPE_NUMBER, a);
 }
 
 escm_atom *
-escm_mul(escm *e, escm_atom *params)
+escm_mul(escm *e, escm_atom *args, void *nil)
 {
     escm_number *a, *b;
     escm_atom *c;
@@ -423,7 +423,7 @@ escm_mul(escm *e, escm_atom *params)
     a = xmalloc(sizeof *a);
     a->fixnum = 1, a->d.ival = 1;
 
-    c = escm_cons_pop(e, &params);
+    c = escm_cons_pop(e, &args);
     while (c) {
         escm_assert1(ESCM_ISNUMBER(c), c, e, free(a));
         b = ((escm_number *) c->ptr);
@@ -446,14 +446,14 @@ escm_mul(escm *e, escm_atom *params)
                 a->d.rval *= b->d.rval;
         }
 
-        c = escm_cons_pop(e, &params);
+        c = escm_cons_pop(e, &args);
     }
 
     return escm_atom_new(e, ESCM_TYPE_NUMBER, a);
 }
 
 escm_atom *
-escm_div(escm *e, escm_atom *params)
+escm_div(escm *e, escm_atom *args, void *nil)
 {
     escm_number *a, *b;
     escm_atom *c;
@@ -461,14 +461,14 @@ escm_div(escm *e, escm_atom *params)
     a = xmalloc(sizeof *a);
     a->fixnum = 1, a->d.ival = 1;
 
-    c = escm_cons_pop(e, &params);
+    c = escm_cons_pop(e, &args);
 
-    if (params != e->NIL) {
+    if (args != e->NIL) {
         escm_assert1(ESCM_ISNUMBER(c), c, e, free(a));
 
         memcpy(a, c->ptr, sizeof *a);
 
-        c = escm_cons_pop(e, &params);
+        c = escm_cons_pop(e, &args);
     }
 
     do {
@@ -501,14 +501,14 @@ escm_div(escm *e, escm_atom *params)
                 a->d.rval /= b->d.rval;
         }
 
-        c = escm_cons_pop(e, &params);
+        c = escm_cons_pop(e, &args);
     } while (c);
 
     return escm_atom_new(e, ESCM_TYPE_NUMBER, a);
 }
 
 escm_atom *
-escm_quotient(escm *e, escm_atom *args)
+escm_quotient(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *n, *m;
 
@@ -526,7 +526,7 @@ escm_quotient(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_remainder(escm *e, escm_atom *args)
+escm_remainder(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *n, *m;
 
@@ -544,7 +544,7 @@ escm_remainder(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_modulo(escm *e, escm_atom *args)
+escm_modulo(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *n, *m;
     long res;
@@ -566,7 +566,7 @@ escm_modulo(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_gcd(escm *e, escm_atom *args)
+escm_gcd(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *n1, *n2;
     long a, b;
@@ -601,7 +601,7 @@ escm_gcd(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_lcm(escm *e, escm_atom *args)
+escm_lcm(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *n1, *n2;
     long a, b, c;
@@ -639,7 +639,7 @@ escm_lcm(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_numerator(escm *e, escm_atom *args)
+escm_numerator(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *n;
     double a;
@@ -663,7 +663,7 @@ escm_numerator(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_denominator(escm *e, escm_atom *args)
+escm_denominator(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *n;
     double a;
@@ -690,19 +690,19 @@ escm_denominator(escm *e, escm_atom *args)
 
 #ifdef ESCM_USE_MATH
 escm_atom *
-escm_floor(escm *e, escm_atom *args)
+escm_floor(escm *e, escm_atom *args, void *nil)
 {
     return exeround(e, args, floor);
 }
 
 escm_atom *
-escm_ceiling(escm *e, escm_atom *args)
+escm_ceiling(escm *e, escm_atom *args, void *nil)
 {
     return exeround(e, args, ceil);
 }
 
 escm_atom *
-escm_truncate(escm *e, escm_atom *args)
+escm_truncate(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *a;
 
@@ -722,55 +722,55 @@ escm_truncate(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_round(escm *e, escm_atom *args)
+escm_round(escm *e, escm_atom *args, void *nil)
 {
     return exeround(e, args, xround);
 }
 
 escm_atom *
-escm_exp(escm *e, escm_atom *args)
+escm_exp(escm *e, escm_atom *args, void *nil)
 {
     return exemath(e, args, exp);
 }
 
 escm_atom *
-escm_log(escm *e, escm_atom *args)
+escm_log(escm *e, escm_atom *args, void *nil)
 {
     return exemath(e, args, log);
 }
 
 escm_atom *
-escm_sin(escm *e, escm_atom *args)
+escm_sin(escm *e, escm_atom *args, void *nil)
 {
     return exemath(e, args, sin);
 }
 
 escm_atom *
-escm_cos(escm *e, escm_atom *args)
+escm_cos(escm *e, escm_atom *args, void *nil)
 {
     return exemath(e, args, cos);
 }
 
 escm_atom *
-escm_tan(escm *e, escm_atom *args)
+escm_tan(escm *e, escm_atom *args, void *nil)
 {
     return exemath(e, args, tan);
 }
 
 escm_atom *
-escm_asin(escm *e, escm_atom *args)
+escm_asin(escm *e, escm_atom *args, void *nil)
 {
     return exemath(e, args, asin);
 }
 
 escm_atom *
-escm_acos(escm *e, escm_atom *args)
+escm_acos(escm *e, escm_atom *args, void *nil)
 {
     return exemath(e, args, acos);
 }
 
 escm_atom *
-escm_atan(escm *e, escm_atom *args)
+escm_atan(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *atom;
     double a, b;
@@ -792,7 +792,7 @@ escm_atan(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_sqrt(escm *e, escm_atom *args)
+escm_sqrt(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *n;
     double a;
@@ -810,7 +810,7 @@ escm_sqrt(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_expt(escm *e, escm_atom *args)
+escm_expt(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *n;
     double a, b;
@@ -834,7 +834,7 @@ escm_expt(escm *e, escm_atom *args)
 
 #ifdef ESCM_USE_STRINGS
 escm_atom *
-escm_number_to_string(escm *e, escm_atom *args)
+escm_number_to_string(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *a, *b;
     char *str;
@@ -904,7 +904,7 @@ escm_number_to_string(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_string_to_number(escm *e, escm_atom *args)
+escm_string_to_number(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *a, *b;
     escm_input *input;

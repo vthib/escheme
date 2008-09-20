@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -32,8 +32,8 @@ typedef struct escm_macro {
 void escm_macros_init(escm *);
 size_t escm_macro_tget(void);
 
-escm_atom *escm_expand(escm *, escm_atom *);
-escm_atom *escm_define_syntax(escm *, escm_atom *);
-escm_atom *escm_syntax_rules(escm *, escm_atom *);
+escm_atom *escm_expand(escm *, escm_atom *, void *);
+escm_atom *escm_define_syntax(escm *, escm_atom *, void *);
+escm_atom *escm_syntax_rules(escm *, escm_atom *, void *);
 
 #endif /* ESCHEME_MACROS_H */

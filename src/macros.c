@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -78,7 +78,7 @@ escm_macro_tget(void)
 }
 
 escm_atom *
-escm_expand(escm *e, escm_atom *args)
+escm_expand(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *arg;
     escm_atom *atom, *macro;
@@ -104,7 +104,7 @@ escm_expand(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_define_syntax(escm *e, escm_atom *args)
+escm_define_syntax(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *name, *val;
 
@@ -127,7 +127,7 @@ escm_define_syntax(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_syntax_rules(escm *e, escm_atom *args)
+escm_syntax_rules(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *a;
     escm_cons *c;
@@ -223,7 +223,7 @@ bind(escm *e, escm_macro *m, escm_atom *rule, escm_atom *arg,
                     match = bind(e, m, r, a, match);
             }
             match = bind(e, m, r, a, match);
-                
+
             (void) escm_cons_pop(e, &rule);
         } else  {
             a = escm_cons_pop(e, &arg);

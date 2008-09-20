@@ -90,6 +90,6 @@ typedef void (*Escm_Fun_Exit)(escm *, void *);
 
 typedef void (*Escm_Fun_Foreach)(void *, void *);
 typedef int (*Escm_Fun_Match)(void *, void *);
-typedef escm_atom *(*Escm_Fun_Prim)(escm *, escm_atom *);
+typedef escm_atom *(*Escm_Fun_Prim)(escm *, escm_atom *, void *);
 
 #endif /* ESCHEME_TYPES_H */

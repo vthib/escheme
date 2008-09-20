@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -36,16 +36,16 @@ size_t escm_vector_tget(void);
 
 escm_atom *escm_vector_make(escm *, escm_atom **, size_t);
 
-escm_atom *escm_vector_p(escm *, escm_atom *);
+escm_atom *escm_vector_p(escm *, escm_atom *, void *);
 
-escm_atom *escm_prim_vector(escm *, escm_atom *);
-escm_atom *escm_make_vector(escm *, escm_atom *);
-escm_atom *escm_vector_length(escm *, escm_atom *);
-escm_atom *escm_vector_ref(escm *, escm_atom *);
-escm_atom *escm_vector_set_x(escm *, escm_atom *);
-escm_atom *escm_vector_fill_x(escm *, escm_atom *);
+escm_atom *escm_prim_vector(escm *, escm_atom *, void *);
+escm_atom *escm_make_vector(escm *, escm_atom *, void *);
+escm_atom *escm_vector_length(escm *, escm_atom *, void *);
+escm_atom *escm_vector_ref(escm *, escm_atom *, void *);
+escm_atom *escm_vector_set_x(escm *, escm_atom *, void *);
+escm_atom *escm_vector_fill_x(escm *, escm_atom *, void *);
 
-escm_atom *escm_vector_to_list(escm *, escm_atom *);
-escm_atom *escm_list_to_vector(escm *, escm_atom *);
+escm_atom *escm_vector_to_list(escm *, escm_atom *, void *);
+escm_atom *escm_list_to_vector(escm *, escm_atom *, void *);
 
 #endif /* ESCHEME_VECTORS_H */

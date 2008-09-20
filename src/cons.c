@@ -141,7 +141,7 @@ escm_cons_isin(escm *e, escm_atom *cons, escm_atom *elem, int lvl)
 }
 
 escm_atom *
-escm_prim_cons(escm *e, escm_atom *args)
+escm_prim_cons(escm *e, escm_atom *args, void *nil)
 {
     (void) e;
 
@@ -151,7 +151,7 @@ escm_prim_cons(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_list(escm *e, escm_atom *args)
+escm_list(escm *e, escm_atom *args, void *nil)
 {
     (void) e;
 
@@ -159,7 +159,7 @@ escm_list(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_car(escm *e, escm_atom *args)
+escm_car(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *o;
 
@@ -170,7 +170,7 @@ escm_car(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_set_car_x(escm *e, escm_atom *args)
+escm_set_car_x(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *o;
 
@@ -187,7 +187,7 @@ escm_set_car_x(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_cdr(escm *e, escm_atom *args)
+escm_cdr(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *o;
 
@@ -198,7 +198,7 @@ escm_cdr(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_set_cdr_x(escm *e, escm_atom *args)
+escm_set_cdr_x(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *o;
 
@@ -215,20 +215,20 @@ escm_set_cdr_x(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_null_p(escm *e, escm_atom *args)
+escm_null_p(escm *e, escm_atom *args, void *nil)
 {
     return (escm_cons_car(args) == e->NIL) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
-escm_pair_p(escm *e, escm_atom *args)
+escm_pair_p(escm *e, escm_atom *args, void *nil)
 {
     return (ESCM_ISCONS(escm_cons_car(args)) &&
             escm_cons_car(args) != e->NIL) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
-escm_list_p(escm *e, escm_atom *args)
+escm_list_p(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *arg;
     escm_cons *c, *end;
@@ -270,7 +270,7 @@ escm_list_p(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_append(escm *e, escm_atom *args)
+escm_append(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *flist;
 
@@ -306,7 +306,7 @@ escm_append(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_reverse(escm *e, escm_atom *args)
+escm_reverse(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *new, *arg;
     escm_cons *c;
@@ -329,7 +329,7 @@ escm_reverse(escm *e, escm_atom *args)
 
 #ifdef ESCM_USE_NUMBERS
 escm_atom *
-escm_length(escm *e, escm_atom *args)
+escm_length(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *arg;
     escm_cons *c, *end;
@@ -383,7 +383,7 @@ escm_length(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_list_tail(escm *e, escm_atom *args)
+escm_list_tail(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *list, *ka, *atom;
     long k;
@@ -420,7 +420,7 @@ escm_list_tail(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_list_ref(escm *e, escm_atom *args)
+escm_list_ref(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *sublist;
 
@@ -429,7 +429,7 @@ escm_list_ref(escm *e, escm_atom *args)
         escm_abort(e);
     }
 
-    sublist = escm_list_tail(e, args);
+    sublist = escm_list_tail(e, args, NULL);
     if (!sublist)
         return NULL;
     if (!ESCM_ISCONS(sublist) || sublist == e->NIL) {
@@ -442,37 +442,37 @@ escm_list_ref(escm *e, escm_atom *args)
 #endif
 
 escm_atom *
-escm_memq(escm *e, escm_atom *args)
+escm_memq(escm *e, escm_atom *args, void *nil)
 {
     return member(e, args, 0);
 }
 
 escm_atom *
-escm_memv(escm *e, escm_atom *args)
+escm_memv(escm *e, escm_atom *args, void *nil)
 {
     return member(e, args, 1);
 }
 
 escm_atom *
-escm_member(escm *e, escm_atom *args)
+escm_member(escm *e, escm_atom *args, void *nil)
 {
     return member(e, args, 2);
 }
 
 escm_atom *
-escm_assq(escm *e, escm_atom *args)
+escm_assq(escm *e, escm_atom *args, void *nil)
 {
     return assoc(e, args, 0);
 }
 
 escm_atom *
-escm_assv(escm *e, escm_atom *args)
+escm_assv(escm *e, escm_atom *args, void *nil)
 {
     return assoc(e, args, 1);
 }
 
 escm_atom *
-escm_assoc(escm *e, escm_atom *args)
+escm_assoc(escm *e, escm_atom *args, void *nil)
 {
     return assoc(e, args, 2);
 }

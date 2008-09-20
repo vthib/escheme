@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -35,31 +35,31 @@ void escm_astrings_init(escm *);
 size_t escm_astring_tget(void);
 escm_atom *escm_astring_make(escm *, const char *, size_t);
 
-escm_atom *escm_astring_p(escm *, escm_atom *);
-escm_atom *escm_make_astring(escm *, escm_atom *);
-escm_atom *escm_prim_astring(escm *, escm_atom *);
-escm_atom *escm_astring_length(escm *, escm_atom *);
-escm_atom *escm_astring_ref(escm *, escm_atom *);
-escm_atom *escm_astring_set_x(escm *, escm_atom *);
+escm_atom *escm_astring_p(escm *, escm_atom *, void *);
+escm_atom *escm_make_astring(escm *, escm_atom *, void *);
+escm_atom *escm_prim_astring(escm *, escm_atom *, void *);
+escm_atom *escm_astring_length(escm *, escm_atom *, void *);
+escm_atom *escm_astring_ref(escm *, escm_atom *, void *);
+escm_atom *escm_astring_set_x(escm *, escm_atom *, void *);
 
-escm_atom *escm_astring_eq_p(escm *, escm_atom *);
-escm_atom *escm_astring_lt_p(escm *, escm_atom *);
-escm_atom *escm_astring_gt_p(escm *, escm_atom *);
-escm_atom *escm_astring_le_p(escm *, escm_atom *);
-escm_atom *escm_astring_ge_p(escm *, escm_atom *);
+escm_atom *escm_astring_eq_p(escm *, escm_atom *, void *);
+escm_atom *escm_astring_lt_p(escm *, escm_atom *, void *);
+escm_atom *escm_astring_gt_p(escm *, escm_atom *, void *);
+escm_atom *escm_astring_le_p(escm *, escm_atom *, void *);
+escm_atom *escm_astring_ge_p(escm *, escm_atom *, void *);
 
-escm_atom *escm_astring_ci_eq_p(escm *, escm_atom *);
-escm_atom *escm_astring_ci_lt_p(escm *, escm_atom *);
-escm_atom *escm_astring_ci_gt_p(escm *, escm_atom *);
-escm_atom *escm_astring_ci_le_p(escm *, escm_atom *);
-escm_atom *escm_astring_ci_ge_p(escm *, escm_atom *);
+escm_atom *escm_astring_ci_eq_p(escm *, escm_atom *, void *);
+escm_atom *escm_astring_ci_lt_p(escm *, escm_atom *, void *);
+escm_atom *escm_astring_ci_gt_p(escm *, escm_atom *, void *);
+escm_atom *escm_astring_ci_le_p(escm *, escm_atom *, void *);
+escm_atom *escm_astring_ci_ge_p(escm *, escm_atom *, void *);
 
-escm_atom *escm_subastring(escm *, escm_atom *);
-escm_atom *escm_astring_append(escm *, escm_atom *);
-escm_atom *escm_astring_copy(escm *, escm_atom *);
-escm_atom *escm_astring_fill_x(escm *, escm_atom *);
+escm_atom *escm_subastring(escm *, escm_atom *, void *);
+escm_atom *escm_astring_append(escm *, escm_atom *, void *);
+escm_atom *escm_astring_copy(escm *, escm_atom *, void *);
+escm_atom *escm_astring_fill_x(escm *, escm_atom *, void *);
 
-escm_atom *escm_astring_to_list(escm *, escm_atom *);
-escm_atom *escm_list_to_astring(escm *, escm_atom *);
+escm_atom *escm_astring_to_list(escm *, escm_atom *, void *);
+escm_atom *escm_list_to_astring(escm *, escm_atom *, void *);
 
 #endif /* ESCHEME_ASTRINGS_H */

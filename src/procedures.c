@@ -92,13 +92,13 @@ escm_procedure_exec(escm *e, escm_atom *atomfun, escm_atom *args, int eval)
 }
 
 escm_atom *
-escm_procedure_p(escm *e, escm_atom *args)
+escm_procedure_p(escm *e, escm_atom *args, void *nil)
 {
     return ESCM_ISPROC(escm_cons_pop(e, &args)) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
-escm_apply(escm *e, escm_atom *args)
+escm_apply(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *fun;
     escm_cons *c, *tail;
@@ -122,13 +122,13 @@ escm_apply(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_map(escm *e, escm_atom *args)
+escm_map(escm *e, escm_atom *args, void *nil)
 {
     return foreach(e, args, 1);
 }
 
 escm_atom *
-escm_for_each(escm *e, escm_atom *args)
+escm_for_each(escm *e, escm_atom *args, void *nil)
 {
     return foreach(e, args, 0);
 }
@@ -234,14 +234,7 @@ runprimitive(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
 
     e->ctx->last = e->env; /* just a hack to indicate to the backtrace printer
                               that the primitive is running */
-
-    if (fun->d.c.data) {
-        escm_atom *(*f)(escm *, escm_atom *, void *);
-
-        f = (escm_atom *(*)(escm *, escm_atom *, void *)) fun->d.c.fun;
-        atom = f(e, escm_ctx_first(e), fun->d.c.data);
-    } else
-        atom = fun->d.c.fun(e, escm_ctx_first(e));
+    atom = fun->d.c.fun(e, escm_ctx_first(e), fun->d.c.data);
 
     escm_ctx_discard(e);
 

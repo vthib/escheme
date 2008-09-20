@@ -40,21 +40,21 @@ void escm_ports_init(escm *);
 size_t escm_port_tget(void);
 escm_atom *escm_port_make(escm *, void *, int);
 
-escm_atom *escm_port_p(escm *, escm_atom *);
-escm_atom *escm_input_port_p(escm *, escm_atom *);
-escm_atom *escm_output_port_p(escm *, escm_atom *);
+escm_atom *escm_port_p(escm *, escm_atom *, void *);
+escm_atom *escm_input_port_p(escm *, escm_atom *, void *);
+escm_atom *escm_output_port_p(escm *, escm_atom *, void *);
 
-escm_atom *escm_current_input_port(escm *, escm_atom *);
-escm_atom *escm_current_output_port(escm *, escm_atom *);
-escm_atom *escm_current_error_port(escm *, escm_atom *);
+escm_atom *escm_current_input_port(escm *, escm_atom *, void *);
+escm_atom *escm_current_output_port(escm *, escm_atom *, void *);
+escm_atom *escm_current_error_port(escm *, escm_atom *, void *);
 
-escm_atom *escm_with_input_from_file(escm *, escm_atom *);
-escm_atom *escm_with_output_to_file(escm *, escm_atom *);
-escm_atom *escm_with_error_to_file(escm *, escm_atom *);
+escm_atom *escm_with_input_from_file(escm *, escm_atom *, void *);
+escm_atom *escm_with_output_to_file(escm *, escm_atom *, void *);
+escm_atom *escm_with_error_to_file(escm *, escm_atom *, void *);
 
-escm_atom *escm_open_input_file(escm *, escm_atom *);
-escm_atom *escm_open_output_file(escm *, escm_atom *);
+escm_atom *escm_open_input_file(escm *, escm_atom *, void *);
+escm_atom *escm_open_output_file(escm *, escm_atom *, void *);
 
-escm_atom *escm_close_port(escm *, escm_atom *);
+escm_atom *escm_close_port(escm *, escm_atom *, void *);
 
 #endif /* ESCHEME_PORTS_H */

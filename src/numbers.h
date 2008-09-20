@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -44,53 +44,53 @@ size_t escm_number_tget(void);
 escm_atom *escm_int_make(escm *, long);
 escm_atom *escm_real_make(escm *, double);
 
-escm_atom *escm_number_p(escm *, escm_atom *);
-escm_atom *escm_integer_p(escm *, escm_atom *);
-escm_atom *escm_real_p(escm *, escm_atom *);
+escm_atom *escm_number_p(escm *, escm_atom *, void *);
+escm_atom *escm_integer_p(escm *, escm_atom *, void *);
+escm_atom *escm_real_p(escm *, escm_atom *, void *);
 
-escm_atom *escm_eq(escm *, escm_atom *);
-escm_atom *escm_lt(escm *, escm_atom *);
-escm_atom *escm_gt(escm *, escm_atom *);
-escm_atom *escm_le(escm *, escm_atom *);
-escm_atom *escm_ge(escm *, escm_atom *);
+escm_atom *escm_eq(escm *, escm_atom *, void *);
+escm_atom *escm_lt(escm *, escm_atom *, void *);
+escm_atom *escm_gt(escm *, escm_atom *, void *);
+escm_atom *escm_le(escm *, escm_atom *, void *);
+escm_atom *escm_ge(escm *, escm_atom *, void *);
 
-escm_atom *escm_add(escm *, escm_atom *);
-escm_atom *escm_sub(escm *, escm_atom *);
-escm_atom *escm_mul(escm *, escm_atom *);
-escm_atom *escm_div(escm *, escm_atom *);
+escm_atom *escm_add(escm *, escm_atom *, void *);
+escm_atom *escm_sub(escm *, escm_atom *, void *);
+escm_atom *escm_mul(escm *, escm_atom *, void *);
+escm_atom *escm_div(escm *, escm_atom *, void *);
 
-escm_atom *escm_quotient(escm *, escm_atom *);
-escm_atom *escm_remainder(escm *, escm_atom *);
-escm_atom *escm_modulo(escm *, escm_atom *);
+escm_atom *escm_quotient(escm *, escm_atom *, void *);
+escm_atom *escm_remainder(escm *, escm_atom *, void *);
+escm_atom *escm_modulo(escm *, escm_atom *, void *);
 
-escm_atom *escm_gcd(escm *, escm_atom *);
-escm_atom *escm_lcm(escm *, escm_atom *);
+escm_atom *escm_gcd(escm *, escm_atom *, void *);
+escm_atom *escm_lcm(escm *, escm_atom *, void *);
 
-escm_atom *escm_numerator(escm *, escm_atom *);
-escm_atom *escm_denominator(escm *, escm_atom *);
+escm_atom *escm_numerator(escm *, escm_atom *, void *);
+escm_atom *escm_denominator(escm *, escm_atom *, void *);
 
 #ifdef ESCM_USE_MATH
-escm_atom *escm_floor(escm *, escm_atom *);
-escm_atom *escm_ceiling(escm *, escm_atom *);
-escm_atom *escm_truncate(escm *, escm_atom *);
-escm_atom *escm_round(escm *, escm_atom *);
+escm_atom *escm_floor(escm *, escm_atom *, void *);
+escm_atom *escm_ceiling(escm *, escm_atom *, void *);
+escm_atom *escm_truncate(escm *, escm_atom *, void *);
+escm_atom *escm_round(escm *, escm_atom *, void *);
 
-escm_atom *escm_exp(escm *, escm_atom *);
-escm_atom *escm_log(escm *, escm_atom *);
-escm_atom *escm_sin(escm *, escm_atom *);
-escm_atom *escm_cos(escm *, escm_atom *);
-escm_atom *escm_tan(escm *, escm_atom *);
-escm_atom *escm_asin(escm *, escm_atom *);
-escm_atom *escm_acos(escm *, escm_atom *);
-escm_atom *escm_atan(escm *, escm_atom *);
+escm_atom *escm_exp(escm *, escm_atom *, void *);
+escm_atom *escm_log(escm *, escm_atom *, void *);
+escm_atom *escm_sin(escm *, escm_atom *, void *);
+escm_atom *escm_cos(escm *, escm_atom *, void *);
+escm_atom *escm_tan(escm *, escm_atom *, void *);
+escm_atom *escm_asin(escm *, escm_atom *, void *);
+escm_atom *escm_acos(escm *, escm_atom *, void *);
+escm_atom *escm_atan(escm *, escm_atom *, void *);
 
-escm_atom *escm_sqrt(escm *, escm_atom *);
-escm_atom *escm_expt(escm *, escm_atom *);
+escm_atom *escm_sqrt(escm *, escm_atom *, void *);
+escm_atom *escm_expt(escm *, escm_atom *, void *);
 #endif
 
 #ifdef ESCM_USE_STRINGS
-escm_atom *escm_number_to_string(escm *, escm_atom *);
-escm_atom *escm_string_to_number(escm *, escm_atom *);
+escm_atom *escm_number_to_string(escm *, escm_atom *, void *);
+escm_atom *escm_string_to_number(escm *, escm_atom *, void *);
 #endif
 
 #endif /* ESCHEME_NUMBERS_H */

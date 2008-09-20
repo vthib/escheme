@@ -94,7 +94,7 @@ escm_symbol_set(escm_atom *sym, escm_atom *atom)
 }
 
 escm_atom *
-escm_symbol_p(escm *e, escm_atom *args)
+escm_symbol_p(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *a;
 
@@ -104,7 +104,7 @@ escm_symbol_p(escm *e, escm_atom *args)
 
 #ifdef ESCM_USE_STRINGS
 escm_atom *
-escm_symbol_to_string(escm *e, escm_atom *args)
+escm_symbol_to_string(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *sym;
 
@@ -120,7 +120,7 @@ escm_symbol_to_string(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_string_to_symbol(escm *e, escm_atom *args)
+escm_string_to_symbol(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *str;
 
@@ -150,7 +150,7 @@ escm_string_to_symbol(escm *e, escm_atom *args)
 #endif /* ESCM_USE_STRINGS */
 
 escm_atom *
-escm_lookup(escm *e, escm_atom *args)
+escm_lookup(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *sym;
 

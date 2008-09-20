@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -35,11 +35,11 @@ escm_atom *escm_symbol_make(escm *, const char *);
 escm_atom *escm_symbol_make2(escm *, escm_tst *);
 void escm_symbol_set(escm_atom *, escm_atom *);
 
-escm_atom *escm_symbol_p(escm *, escm_atom *);
-escm_atom *escm_symbol_to_string(escm *, escm_atom *);
-escm_atom *escm_string_to_symbol(escm *, escm_atom *);
+escm_atom *escm_symbol_p(escm *, escm_atom *, void *);
+escm_atom *escm_symbol_to_string(escm *, escm_atom *, void *);
+escm_atom *escm_string_to_symbol(escm *, escm_atom *, void *);
 
-escm_atom *escm_lookup(escm *, escm_atom *);
+escm_atom *escm_lookup(escm *, escm_atom *, void *);
 
 int escm_symbol_eq_colorless(escm_atom *, escm_atom *);
 

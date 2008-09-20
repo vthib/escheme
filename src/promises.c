@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -48,7 +48,7 @@ escm_promise_tget(void)
 }
 
 escm_atom *
-escm_delay(escm *e, escm_atom *args)
+escm_delay(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *a;
     escm_promise *p;
@@ -61,7 +61,7 @@ escm_delay(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_force(escm *e, escm_atom *args)
+escm_force(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *promise, *penv;
     escm_promise *p;

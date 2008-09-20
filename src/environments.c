@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -56,7 +56,7 @@ escm_env_addprimitives(escm *e)
 
     assert(e != NULL);
 
-    (void) escm_procedure_new(e, "eval", 1, 2, escm_eval, NULL);
+    (void) escm_procedure_new(e, "eval", 1, 2, escm_prim_eval, NULL);
 
     (void) escm_procedure_new(e, "scheme-report-environment", 0, 1,
                               escm_scheme_report_environment, NULL);
@@ -162,7 +162,7 @@ escm_env_leave(escm *e, escm_atom *prevenv)
 }
 
 escm_atom *
-escm_eval(escm *e, escm_atom *args)
+escm_prim_eval(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *expr, *env, *prev;
 
@@ -181,7 +181,7 @@ escm_eval(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_library(escm *e, escm_atom *args)
+escm_library(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *a, *export, *name, *env, *prevenv;
 
@@ -206,11 +206,11 @@ escm_library(escm *e, escm_atom *args)
     if (ESCM_ISCONS(a) && a != e->NIL && ESCM_ISSYM(escm_cons_car(a)) &&
         strcmp(escm_sym_name(escm_cons_car(a)), "import") == 0) {
         (void) escm_cons_pop(e, &a);
-        escm_import(e, a);
+        escm_import(e, a, NULL);
     }
 
     (void) escm_env_enter(e, escm_env_new(e, e->env));
-    escm_begin(e, args);
+    escm_begin(e, args, NULL);
 
     if (escm_env_val(e->env)->list == NULL)
         e->env = escm_env_val(e->env)->prev;
@@ -229,7 +229,7 @@ escm_library(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_import(escm *e, escm_atom *args)
+escm_import(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *env, *cons;
 
@@ -283,14 +283,14 @@ escm_library_exit(escm *e)
 }
 
 escm_atom *
-escm_alpha(escm *e, escm_atom *args)
+escm_alpha(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *env, *prev;
 
     env = escm_env_new(e, e->env);
     prev = escm_env_enter(e, env);
 
-    (void) escm_begin(e, args);
+    (void) escm_begin(e, args, NULL);
     if (e->err == 1) {
         escm_env_leave(e, prev);
         return NULL;
@@ -301,7 +301,7 @@ escm_alpha(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_with(escm *e, escm_atom *args)
+escm_with(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *env, *prev, *ret;
 
@@ -311,7 +311,7 @@ escm_with(escm *e, escm_atom *args)
     escm_env_val(env)->prev = e->env;
     prev = escm_env_enter(e, env);
 
-    ret = escm_begin(e, args);
+    ret = escm_begin(e, args, NULL);
 
     escm_env_leave(e, prev);
     return ret;
@@ -319,7 +319,7 @@ escm_with(escm *e, escm_atom *args)
 
 /* XXX: Write this function correctly */
 escm_atom *
-escm_scheme_report_environment(escm *e, escm_atom *args)
+escm_scheme_report_environment(escm *e, escm_atom *args, void *nil)
 {
     (void) args;
 
@@ -327,7 +327,7 @@ escm_scheme_report_environment(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_interaction_environment(escm *e, escm_atom *args)
+escm_interaction_environment(escm *e, escm_atom *args, void *nil)
 {
     (void) args;
 

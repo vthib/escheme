@@ -92,13 +92,13 @@ escm_port_make(escm *e, void *ptr, int input)
 }
 
 escm_atom *
-escm_port_p(escm *e, escm_atom *args)
+escm_port_p(escm *e, escm_atom *args, void *nil)
 {
     return (ESCM_ISPORT(escm_cons_val(args)->car)) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
-escm_input_port_p(escm *e, escm_atom *args)
+escm_input_port_p(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *a;
 
@@ -109,7 +109,7 @@ escm_input_port_p(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_output_port_p(escm *e, escm_atom *args)
+escm_output_port_p(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *a;
 
@@ -120,7 +120,7 @@ escm_output_port_p(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_current_input_port(escm *e, escm_atom *args)
+escm_current_input_port(escm *e, escm_atom *args, void *nil)
 {
     (void) e;
     (void) args;
@@ -129,7 +129,7 @@ escm_current_input_port(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_current_output_port(escm *e, escm_atom *args)
+escm_current_output_port(escm *e, escm_atom *args, void *nil)
 {
     (void) e;
     (void) args;
@@ -138,7 +138,7 @@ escm_current_output_port(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_current_error_port(escm *e, escm_atom *args)
+escm_current_error_port(escm *e, escm_atom *args, void *nil)
 {
     (void) e;
     (void) args;
@@ -147,7 +147,7 @@ escm_current_error_port(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_with_input_from_file(escm *e, escm_atom *args)
+escm_with_input_from_file(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *str, *thunk;
     escm_input *input, *save;
@@ -184,7 +184,7 @@ escm_with_input_from_file(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_with_output_to_file(escm *e, escm_atom *args)
+escm_with_output_to_file(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *str, *thunk;
     escm_output *save, *o;
@@ -221,7 +221,7 @@ escm_with_output_to_file(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_with_error_to_file(escm *e, escm_atom *args)
+escm_with_error_to_file(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *str, *thunk;
     escm_output *save, *o;
@@ -258,7 +258,7 @@ escm_with_error_to_file(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_open_input_file(escm *e, escm_atom *args)
+escm_open_input_file(escm *e, escm_atom *args, void *nil)
 {
     escm_input *inp;
     escm_atom *name;
@@ -284,7 +284,7 @@ escm_open_input_file(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_open_output_file(escm *e, escm_atom *args)
+escm_open_output_file(escm *e, escm_atom *args, void *nil)
 {
     escm_output *outp;
     escm_atom *name;
@@ -310,7 +310,7 @@ escm_open_output_file(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_close_port(escm *e, escm_atom *args)
+escm_close_port(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *port;
 

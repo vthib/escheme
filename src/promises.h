@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -31,7 +31,7 @@ typedef struct escm_promise {
 void escm_promises_init(escm *);
 size_t escm_promise_tget(void);
 
-escm_atom *escm_delay(escm *, escm_atom *);
-escm_atom *escm_force(escm *, escm_atom *);
+escm_atom *escm_delay(escm *, escm_atom *, void *);
+escm_atom *escm_force(escm *, escm_atom *, void *);
 
 #endif /* ESCHEME_PROMISES_H */

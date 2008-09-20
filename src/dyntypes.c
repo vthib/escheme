@@ -37,13 +37,13 @@ escm_dyntypes_init(escm *e)
 }
 
 escm_atom *
-escm_prim_type(escm *e, escm_atom *args)
+escm_prim_type(escm *e, escm_atom *args, void *nil)
 {
     return escm_int_make(e, escm_cons_car(args)->type);
 }
 
 escm_atom *
-escm_create_type(escm *e, escm_atom *args)
+escm_create_type(escm *e, escm_atom *args, void *nil)
 {
     escm_type *t;
     escm_atom *accessor, *constructor, *pred, *basetype;
@@ -97,7 +97,7 @@ escm_rep_to_data(escm *e, escm_atom *args, escm_type **type)
 }
 
 escm_atom *
-escm_data_to_rep(escm *e, escm_atom *args)
+escm_data_to_rep(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *atom;
 
@@ -123,7 +123,7 @@ escm_of_type_p(escm *e, escm_atom *args, escm_type **type)
 }
 
 escm_atom *
-escm_set_print(escm *e, escm_atom *args)
+escm_set_print(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *type, *proc;
 
@@ -137,7 +137,7 @@ escm_set_print(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_set_equal(escm *e, escm_atom *args)
+escm_set_equal(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *type, *proc;
 
@@ -151,7 +151,7 @@ escm_set_equal(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_set_parse_p(escm *e, escm_atom *args)
+escm_set_parse_p(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *type, *proc;
 
@@ -165,7 +165,7 @@ escm_set_parse_p(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_set_parse(escm *e, escm_atom *args)
+escm_set_parse(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *type, *proc;
 
@@ -179,7 +179,7 @@ escm_set_parse(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_set_eval(escm *e, escm_atom *args)
+escm_set_eval(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *type, *proc;
 
@@ -193,7 +193,7 @@ escm_set_eval(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_set_exec(escm *e, escm_atom *args)
+escm_set_exec(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *type, *proc;
 
@@ -207,7 +207,7 @@ escm_set_exec(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_prim_type_parse_p(escm *e, escm_atom *args)
+escm_prim_type_parse_p(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *type, *character;
     int c;
@@ -228,7 +228,7 @@ escm_prim_type_parse_p(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_prim_type_parse(escm *e, escm_atom *args)
+escm_prim_type_parse(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *type;
     int c;

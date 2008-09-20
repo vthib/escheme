@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -29,30 +29,30 @@ void escm_achars_init(escm *);
 size_t escm_achar_tget(void);
 escm_atom *escm_achar_make(escm *, int);
 
-escm_atom *escm_achar_p(escm *, escm_atom *);
+escm_atom *escm_achar_p(escm *, escm_atom *, void *);
 
-escm_atom *escm_achar_eq_p(escm *, escm_atom *);
-escm_atom *escm_achar_lt_p(escm *, escm_atom *);
-escm_atom *escm_achar_gt_p(escm *, escm_atom *);
-escm_atom *escm_achar_le_p(escm *, escm_atom *);
-escm_atom *escm_achar_ge_p(escm *, escm_atom *);
+escm_atom *escm_achar_eq_p(escm *, escm_atom *, void *);
+escm_atom *escm_achar_lt_p(escm *, escm_atom *, void *);
+escm_atom *escm_achar_gt_p(escm *, escm_atom *, void *);
+escm_atom *escm_achar_le_p(escm *, escm_atom *, void *);
+escm_atom *escm_achar_ge_p(escm *, escm_atom *, void *);
 
-escm_atom *escm_achar_ci_eq_p(escm *, escm_atom *);
-escm_atom *escm_achar_ci_lt_p(escm *, escm_atom *);
-escm_atom *escm_achar_ci_gt_p(escm *, escm_atom *);
-escm_atom *escm_achar_ci_le_p(escm *, escm_atom *);
-escm_atom *escm_achar_ci_ge_p(escm *, escm_atom *);
+escm_atom *escm_achar_ci_eq_p(escm *, escm_atom *, void *);
+escm_atom *escm_achar_ci_lt_p(escm *, escm_atom *, void *);
+escm_atom *escm_achar_ci_gt_p(escm *, escm_atom *, void *);
+escm_atom *escm_achar_ci_le_p(escm *, escm_atom *, void *);
+escm_atom *escm_achar_ci_ge_p(escm *, escm_atom *, void *);
 
-escm_atom *escm_achar_alphabetic_p(escm *, escm_atom *);
-escm_atom *escm_achar_numeric_p(escm *, escm_atom *);
-escm_atom *escm_achar_whitespace_p(escm *, escm_atom *);
-escm_atom *escm_achar_upper_case_p(escm *, escm_atom *);
-escm_atom *escm_achar_lower_case_p(escm *, escm_atom *);
+escm_atom *escm_achar_alphabetic_p(escm *, escm_atom *, void *);
+escm_atom *escm_achar_numeric_p(escm *, escm_atom *, void *);
+escm_atom *escm_achar_whitespace_p(escm *, escm_atom *, void *);
+escm_atom *escm_achar_upper_case_p(escm *, escm_atom *, void *);
+escm_atom *escm_achar_lower_case_p(escm *, escm_atom *, void *);
 
-escm_atom *escm_achar_to_integer(escm *, escm_atom *);
-escm_atom *escm_integer_to_achar(escm *, escm_atom *);
+escm_atom *escm_achar_to_integer(escm *, escm_atom *, void *);
+escm_atom *escm_integer_to_achar(escm *, escm_atom *, void *);
 
-escm_atom *escm_achar_upcase(escm *, escm_atom *);
-escm_atom *escm_achar_downcase(escm *, escm_atom *);
+escm_atom *escm_achar_upcase(escm *, escm_atom *, void *);
+escm_atom *escm_achar_downcase(escm *, escm_atom *, void *);
 
 #endif /* ESCHEME_ACHARS_H */

@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -25,8 +25,8 @@
 
 void escm_booleans_init(escm *);
 
-escm_atom *escm_not(escm *, escm_atom *);
-escm_atom *escm_boolean_p(escm *, escm_atom *);
+escm_atom *escm_not(escm *, escm_atom *, void *);
+escm_atom *escm_boolean_p(escm *, escm_atom *, void *);
 
 size_t escm_boolean_tget(void);
 

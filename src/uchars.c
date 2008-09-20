@@ -119,7 +119,7 @@ escm_uchar_make(escm *e, wchar_t c)
 }
 
 escm_atom *
-escm_uchar_p(escm *e, escm_atom *args)
+escm_uchar_p(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *a;
 
@@ -142,98 +142,98 @@ escm_uchar_p(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_uchar_eq_p(escm *e, escm_atom *args)
+escm_uchar_eq_p(escm *e, escm_atom *args, void *nil)
 {
     charcmp(e, args, ==, ID);
 }
 
 escm_atom *
-escm_uchar_lt_p(escm *e, escm_atom *args)
+escm_uchar_lt_p(escm *e, escm_atom *args, void *nil)
 {
     charcmp(e, args, <, ID);
 }
 
 escm_atom *
-escm_uchar_gt_p(escm *e, escm_atom *args)
+escm_uchar_gt_p(escm *e, escm_atom *args, void *nil)
 {
     charcmp(e, args, >, ID);
 }
 
 escm_atom *
-escm_uchar_le_p(escm *e, escm_atom *args)
+escm_uchar_le_p(escm *e, escm_atom *args, void *nil)
 {
     charcmp(e, args, <=, ID);
 }
 
 escm_atom *
-escm_uchar_ge_p(escm *e, escm_atom *args)
+escm_uchar_ge_p(escm *e, escm_atom *args, void *nil)
 {
     charcmp(e, args, >=, ID);
 }
 
 escm_atom *
-escm_uchar_ci_eq_p(escm *e, escm_atom *args)
+escm_uchar_ci_eq_p(escm *e, escm_atom *args, void *nil)
 {
     charcmp(e, args, ==, towlower);
 }
 
 escm_atom *
-escm_uchar_ci_lt_p(escm *e, escm_atom *args)
+escm_uchar_ci_lt_p(escm *e, escm_atom *args, void *nil)
 {
     charcmp(e, args, <, towlower);
 }
 
 escm_atom *
-escm_uchar_ci_gt_p(escm *e, escm_atom *args)
+escm_uchar_ci_gt_p(escm *e, escm_atom *args, void *nil)
 {
     charcmp(e, args, >, towlower);
 }
 
 escm_atom *
-escm_uchar_ci_le_p(escm *e, escm_atom *args)
+escm_uchar_ci_le_p(escm *e, escm_atom *args, void *nil)
 {
     charcmp(e, args, <=, towlower);
 }
 
 escm_atom *
-escm_uchar_ci_ge_p(escm *e, escm_atom *args)
+escm_uchar_ci_ge_p(escm *e, escm_atom *args, void *nil)
 {
     charcmp(e, args, >=, towlower);
 }
 
 escm_atom *
-escm_uchar_alphabetic_p(escm *e, escm_atom *args)
+escm_uchar_alphabetic_p(escm *e, escm_atom *args, void *nil)
 {
     return testchar(e, args, iswalpha);
 }
 
 escm_atom *
-escm_uchar_numeric_p(escm *e, escm_atom *args)
+escm_uchar_numeric_p(escm *e, escm_atom *args, void *nil)
 {
     return testchar(e, args, iswdigit);
 }
 
 escm_atom *
-escm_uchar_whitespace_p(escm *e, escm_atom *args)
+escm_uchar_whitespace_p(escm *e, escm_atom *args, void *nil)
 {
     return testchar(e, args, iswspace);
 }
 
 escm_atom *
-escm_uchar_upper_case_p(escm *e, escm_atom *args)
+escm_uchar_upper_case_p(escm *e, escm_atom *args, void *nil)
 {
     return testchar(e, args, iswupper);
 }
 
 escm_atom *
-escm_uchar_lower_case_p(escm *e, escm_atom *args)
+escm_uchar_lower_case_p(escm *e, escm_atom *args, void *nil)
 {
     return testchar(e, args, iswlower);
 }
 
 #ifdef ESCM_USE_NUMBERS
 escm_atom *
-escm_uchar_to_integer(escm *e, escm_atom *args)
+escm_uchar_to_integer(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *c;
 
@@ -249,7 +249,7 @@ escm_uchar_to_integer(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_integer_to_uchar(escm *e, escm_atom *args)
+escm_integer_to_uchar(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *n;
 
@@ -271,7 +271,7 @@ escm_integer_to_uchar(escm *e, escm_atom *args)
 #endif
 
 escm_atom *
-escm_uchar_upcase(escm *e, escm_atom *args)
+escm_uchar_upcase(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *c;
 
@@ -282,7 +282,7 @@ escm_uchar_upcase(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_uchar_downcase(escm *e, escm_atom *args)
+escm_uchar_downcase(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *c;
 

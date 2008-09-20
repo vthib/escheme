@@ -110,7 +110,7 @@ escm_astring_make(escm *e, const char *str, size_t len)
 }
 
 escm_atom *
-escm_astring_p(escm *e, escm_atom *args)
+escm_astring_p(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *a;
 
@@ -120,7 +120,7 @@ escm_astring_p(escm *e, escm_atom *args)
 
 #if defined ESCM_USE_CHARACTERS && defined ESCM_USE_NUMBERS
 escm_atom *
-escm_make_astring(escm *e, escm_atom *args)
+escm_make_astring(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *length, *c;
     char *str;
@@ -156,7 +156,7 @@ escm_make_astring(escm *e, escm_atom *args)
 
 #ifdef ESCM_USE_CHARACTERS
 escm_atom *
-escm_prim_astring(escm *e, escm_atom *args)
+escm_prim_astring(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *c;
     escm_cons *cons;
@@ -189,7 +189,7 @@ escm_prim_astring(escm *e, escm_atom *args)
 
 #ifdef ESCM_USE_NUMBERS
 escm_atom *
-escm_astring_length(escm *e, escm_atom *args)
+escm_astring_length(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *str;
 
@@ -207,7 +207,7 @@ escm_astring_length(escm *e, escm_atom *args)
 
 #if defined ESCM_USE_CHARACTERS && defined ESCM_USE_NUMBERS
 escm_atom *
-escm_astring_ref(escm *e, escm_atom *args)
+escm_astring_ref(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *str, *k;
     long i;
@@ -238,7 +238,7 @@ escm_astring_ref(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_astring_set_x(escm *e, escm_atom *args)
+escm_astring_set_x(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *str, *k, *c;
     long i;
@@ -293,68 +293,68 @@ escm_astring_set_x(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_astring_eq_p(escm *e, escm_atom *args)
+escm_astring_eq_p(escm *e, escm_atom *args, void *nil)
 {
     cmpstr(e, args, ==, strcmp);
 }
 
 escm_atom *
-escm_astring_lt_p(escm *e, escm_atom *args)
+escm_astring_lt_p(escm *e, escm_atom *args, void *nil)
 {
     cmpstr(e, args, <, strcmp);
 }
 
 escm_atom *
-escm_astring_gt_p(escm *e, escm_atom *args)
+escm_astring_gt_p(escm *e, escm_atom *args, void *nil)
 {
     cmpstr(e, args, >, strcmp);
 }
 
 escm_atom *
-escm_astring_le_p(escm *e, escm_atom *args)
+escm_astring_le_p(escm *e, escm_atom *args, void *nil)
 {
     cmpstr(e, args, <=, strcmp);
 }
 
 escm_atom *
-escm_astring_ge_p(escm *e, escm_atom *args)
+escm_astring_ge_p(escm *e, escm_atom *args, void *nil)
 {
     cmpstr(e, args, >=, strcmp);
 }
 
 escm_atom *
-escm_astring_ci_eq_p(escm *e, escm_atom *args)
+escm_astring_ci_eq_p(escm *e, escm_atom *args, void *nil)
 {
     cmpstr(e, args, ==, xstrcasecmp);
 }
 
 escm_atom *
-escm_astring_ci_lt_p(escm *e, escm_atom *args)
+escm_astring_ci_lt_p(escm *e, escm_atom *args, void *nil)
 {
     cmpstr(e, args, <, xstrcasecmp);
 }
 
 escm_atom *
-escm_astring_ci_gt_p(escm *e, escm_atom *args)
+escm_astring_ci_gt_p(escm *e, escm_atom *args, void *nil)
 {
     cmpstr(e, args, >, xstrcasecmp);
 }
 
 escm_atom *
-escm_astring_ci_le_p(escm *e, escm_atom *args)
+escm_astring_ci_le_p(escm *e, escm_atom *args, void *nil)
 {
     cmpstr(e, args, <=, xstrcasecmp);
 }
 
 escm_atom *
-escm_astring_ci_ge_p(escm *e, escm_atom *args)
+escm_astring_ci_ge_p(escm *e, escm_atom *args, void *nil)
 {
     cmpstr(e, args, >=, xstrcasecmp);
 }
 
 #ifdef ESCM_USE_NUMBERS
 escm_atom *
-escm_subastring(escm *e, escm_atom *args)
+escm_subastring(escm *e, escm_atom *args, void *nil)
 {
     long start, end;
     escm_atom *str, *a;
@@ -398,7 +398,7 @@ escm_subastring(escm *e, escm_atom *args)
 #endif
 
 escm_atom *
-escm_astring_append(escm *e, escm_atom *args)
+escm_astring_append(escm *e, escm_atom *args, void *nil)
 {
     size_t len;
     escm_cons *c;
@@ -425,7 +425,7 @@ escm_astring_append(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_astring_copy(escm *e, escm_atom *args)
+escm_astring_copy(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *str;
 
@@ -437,7 +437,7 @@ escm_astring_copy(escm *e, escm_atom *args)
 
 #ifdef ESCM_USE_CHARACTERS
 escm_atom *
-escm_astring_fill_x(escm *e, escm_atom *args)
+escm_astring_fill_x(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *str, *c;
 
@@ -462,7 +462,7 @@ escm_astring_fill_x(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_astring_to_list(escm *e, escm_atom *args)
+escm_astring_to_list(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *str;
     char *p;
@@ -483,14 +483,14 @@ escm_astring_to_list(escm *e, escm_atom *args)
 }
 
 escm_atom *
-escm_list_to_astring(escm *e, escm_atom *args)
+escm_list_to_astring(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *list;
 
     list = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCONS(list), list, e);
 
-    return escm_prim_astring(e, list);
+    return escm_prim_astring(e, list, NULL);
 }
 #endif
 

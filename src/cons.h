@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -45,31 +45,31 @@ escm_atom *escm_cons_pop(escm *, escm_atom **);
 int escm_cons_isin(escm *, escm_atom *, escm_atom *, int);
 
 /* primitives */
-escm_atom *escm_prim_cons(escm *, escm_atom *);
-escm_atom *escm_list(escm *, escm_atom *);
+escm_atom *escm_prim_cons(escm *, escm_atom *, void *);
+escm_atom *escm_list(escm *, escm_atom *, void *);
 
-escm_atom *escm_car(escm *, escm_atom *);
-escm_atom *escm_cdr(escm *, escm_atom *);
-escm_atom *escm_set_car_x(escm *, escm_atom *);
-escm_atom *escm_set_cdr_x(escm *, escm_atom *);
+escm_atom *escm_car(escm *, escm_atom *, void *);
+escm_atom *escm_cdr(escm *, escm_atom *, void *);
+escm_atom *escm_set_car_x(escm *, escm_atom *, void *);
+escm_atom *escm_set_cdr_x(escm *, escm_atom *, void *);
 
-escm_atom *escm_null_p(escm *, escm_atom *);
-escm_atom *escm_pair_p(escm *, escm_atom *);
-escm_atom *escm_list_p(escm *, escm_atom *);
+escm_atom *escm_null_p(escm *, escm_atom *, void *);
+escm_atom *escm_pair_p(escm *, escm_atom *, void *);
+escm_atom *escm_list_p(escm *, escm_atom *, void *);
 
-escm_atom *escm_length(escm *, escm_atom *);
-escm_atom *escm_append(escm *, escm_atom *);
-escm_atom *escm_reverse(escm *, escm_atom *);
+escm_atom *escm_length(escm *, escm_atom *, void *);
+escm_atom *escm_append(escm *, escm_atom *, void *);
+escm_atom *escm_reverse(escm *, escm_atom *, void *);
 
-escm_atom *escm_list_tail(escm *, escm_atom *);
-escm_atom *escm_list_ref(escm *, escm_atom *);
+escm_atom *escm_list_tail(escm *, escm_atom *, void *);
+escm_atom *escm_list_ref(escm *, escm_atom *, void *);
 
-escm_atom *escm_memq(escm *, escm_atom *);
-escm_atom *escm_memv(escm *, escm_atom *);
-escm_atom *escm_member(escm *, escm_atom *);
+escm_atom *escm_memq(escm *, escm_atom *, void *);
+escm_atom *escm_memv(escm *, escm_atom *, void *);
+escm_atom *escm_member(escm *, escm_atom *, void *);
 
-escm_atom *escm_assq(escm *, escm_atom *);
-escm_atom *escm_assv(escm *, escm_atom *);
-escm_atom *escm_assoc(escm *, escm_atom *);
+escm_atom *escm_assq(escm *, escm_atom *, void *);
+escm_atom *escm_assv(escm *, escm_atom *, void *);
+escm_atom *escm_assoc(escm *, escm_atom *, void *);
 
 #endif /* ESCHEME_CONS_H */

@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -54,9 +54,9 @@ size_t escm_continuation_tget(void);
 
 void escm_continuation_exec(escm *, escm_atom *, escm_atom *);
 
-escm_atom *escm_continuation_p(escm *, escm_atom *);
-escm_atom *escm_call_with_cc(escm *, escm_atom *);
-escm_atom *escm_call_with_values(escm *, escm_atom *);
-escm_atom *escm_values(escm *, escm_atom *);
+escm_atom *escm_continuation_p(escm *, escm_atom *, void *);
+escm_atom *escm_call_with_cc(escm *, escm_atom *, void *);
+escm_atom *escm_call_with_values(escm *, escm_atom *, void *);
+escm_atom *escm_values(escm *, escm_atom *, void *);
 
 #endif /* ESCHEME_CONTINUATIONS_H */
