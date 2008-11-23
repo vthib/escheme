@@ -21,29 +21,12 @@
 #include <assert.h>
 #include <ctype.h>
 
-#ifdef ESCM_USE_UNICODE
-# include <wchar.h>
-# include <wctype.h>
-#endif
-
 #include "escheme.h"
 
 #define MAX_BUFFSIZE 2048
 
 static char strbuf[MAX_BUFFSIZE];
-#ifdef ESCM_USE_UNICODE
-static wchar_t wcsbuf[MAX_BUFFSIZE];
-#endif
 
-#ifdef ESCM_USE_UNICODE
-# define ESCM_GETC fgetwc
-# define ESCM_EOF WEOF
-# define C(char) L ## char
-#else
-# define ESCM_GETC fgetc
-# define ESCM_EOF EOF
-#define C(char) char
-#endif
 
 /**
  * @brief open `name' with the read rights
@@ -98,7 +81,7 @@ escm_input_fmng(FILE *fp, const char *name)
  * @brief set the string as input
  */
 escm_input *
-escm_input_str(const escm_char *str)
+escm_input_str(const char *str)
 {
     escm_input *f;
 
@@ -107,11 +90,7 @@ escm_input_str(const escm_char *str)
     f = xcalloc(1, sizeof *f);
     f->type = INPUT_STR;
 
-#ifdef ESCM_USE_UNICODE
-    f->d.str.str = xwcsdup(str);
-#else
     f->d.str.str = xstrdup(str);
-#endif
     f->d.str.cur = f->d.str.str;
 
     return f;
@@ -255,10 +234,10 @@ escm_input_print(escm_input *f, escm_output *outp)
 /**
  * @brief return the next char in the stream
  */
-escm_int
+int
 escm_input_getc(escm_input *f)
 {
-    escm_int c;
+    int c;
 
     assert(f != NULL);
 
@@ -269,11 +248,11 @@ escm_input_getc(escm_input *f)
         if (f->d.file.un > 0)
             c = f->d.file.ub[--f->d.file.un];
         else
-            c = ESCM_GETC(f->d.file.fp);
+            c = fgetc(f->d.file.fp);
 
-        if (c == ESCM_EOF)
+        if (c == EOF)
             f->end = 1;
-        else if (c == C('\n')) {
+        else if (c == '\n') {
             if (f->d.file.line != -1)
                 f->d.file.line++;
             f->d.file.car = 0;
@@ -282,8 +261,8 @@ escm_input_getc(escm_input *f)
                 f->d.file.car++;
         }
     } else {
-        if (*f->d.str.cur == C('\0'))
-            f->end = 1, c = ESCM_EOF;
+        if (*f->d.str.cur == '\0')
+            f->end = 1, c = EOF;
         else
             c = *f->d.str.cur++;
     }
@@ -291,7 +270,7 @@ escm_input_getc(escm_input *f)
     return c;
 }
 
-escm_int
+int
 escm_input_peek(escm_input *f)
 {
     int c;
@@ -299,13 +278,13 @@ escm_input_peek(escm_input *f)
     assert(f != NULL);
 
     if (f->end)
-        return ESCM_EOF;
+        return EOF;
 
     if (f->type == INPUT_FILE) {
         if (f->d.file.un > 0)
             return f->d.file.ub[f->d.file.un - 1];
 
-        c = ESCM_GETC(f->d.file.fp);
+        c = fgetc(f->d.file.fp);
 
         if (f->d.file.usize <= f->d.file.un) {
             f->d.file.usize += 2;
@@ -323,7 +302,7 @@ escm_input_peek(escm_input *f)
  * @brief put a character back in the input
  */
 void
-escm_input_ungetc(escm_input *f, escm_int c)
+escm_input_ungetc(escm_input *f, int c)
 {
     assert(f != NULL);
 
@@ -348,70 +327,3 @@ escm_input_ungetc(escm_input *f, escm_int c)
 
     f->end = 0;
 }
-
-#ifdef ESCM_USE_UNICODE
-wchar_t *
-escm_input_getwtext(escm_input *f, const wchar_t *end)
-{
-    size_t len = 0;
-    wint_t c;
-
-    assert(f != NULL);
-    assert(end != NULL);
-
-    c = escm_input_getc(f);
-    while (c != ESCM_EOF && !wcschr(end, c)) {
-        if (c == L'\\') {
-            c = escm_input_getc(f);
-            switch (c) {
-            case L'a': c = L'\a'; break;
-            case L'b': c = L'\b'; break;
-            case L'f': c = L'\f'; break;
-            case L'n': c = L'\n'; break;
-            case L'r': c = L'\r'; break;
-            case L't': c = L'\t'; break;
-            case L'v': c = L'\v'; break;
-            case L'\\': case '\"': break;
-            default:
-                wcsbuf[len++] = '\\';
-                break; /* keep the new character */
-            }
-            wcsbuf[len++] = c;
-        } else
-            wcsbuf[len++] = c;
-        c = escm_input_getc(f);
-    }
-
-    if (!f->end)
-        escm_input_ungetc(f, c);
-    wcsbuf[len] = L'\0';
-
-    return xwcsdup(wcsbuf);
-}
-
-/**
- * @brief get a wide string. Each character is passed to "fun" which must
- * return 1 if the character is valid, 0 else (cf ctype.h)
- */
-wchar_t *
-escm_input_getwstr_fun(escm_input *f, int (*fun)(wint_t), int casesens)
-{
-    size_t len = 0;
-    wint_t c;
-
-    assert(f != NULL);
-
-    do {
-        c = escm_input_getc(f);
-        if (!casesens)
-            c = towlower(c);
-        wcsbuf[len++] = (wchar_t) c;
-    } while (c != WEOF && fun(c));
-
-    if (!f->end)
-        escm_input_ungetc(f, c);
-    wcsbuf[len - 1] = L'\0';
-
-    return xwcsdup(wcsbuf);
-}
-#endif

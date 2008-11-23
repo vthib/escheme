@@ -536,13 +536,15 @@ ustring_print(escm *e, escm_ustring *ustring, escm_output *stream, int lvl)
     (void) e;
 
     if (lvl == 0) {
-        escm_putc(stream, '"');
-        escm_print_wslashify(stream, ustring->str);
-        escm_putc(stream, '"');
-        return;
-    }
+        char *s;
 
-    escm_printf(stream, "%ls", ustring->str);
+        s = wcstostr(ustring->str);
+        escm_putc(stream, '"');
+        escm_print_slashify(stream, s);
+        escm_putc(stream, '"');
+        free(s);
+    } else
+        escm_printf(stream, "%ls", ustring->str);
 }
 
 static int
@@ -571,13 +573,13 @@ static escm_atom *
 ustring_parse(escm *e, escm_input *stream)
 {
     escm_atom *ret;
-    wchar_t *str;
+    char *str;
 
     (void) escm_input_getc(stream); /* skip '"' */
-    str = escm_input_getwtext(stream, L"\"");
+    str = escm_input_gettext(stream, "\"");
     (void) escm_input_getc(stream); /* skip '"' */
 
-    ret = escm_ustring_make(e, str, wcslen(str));
+    ret = escm_ustring_make2(e, str);
     free(str);
     ret->ro = 1;
     return ret;

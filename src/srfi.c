@@ -60,19 +60,17 @@ escm_open_input_string(escm *e, escm_atom *args, void *nil)
     escm_assert(ESCM_ISSTR(str), str, e);
 
 #ifdef ESCM_USE_UNICODE
-    if (escm_type_ison(ESCM_TYPE_ASTRING)) {
-        wchar_t *w;
+    if (escm_type_ison(ESCM_TYPE_USTRING)) {
+        char *s;
         escm_atom *atom;
 
-        w = strtowcs(escm_astr_val(str));
-        atom = escm_port_make(e, escm_input_str(w), 1);
-        free(w);
+        s = wcstostr(escm_ustr_val(str));
+        atom = escm_port_make(e, escm_input_str(s), 1);
+        free(s);
         return atom;
     } else
-        return escm_port_make(e, escm_input_str(escm_ustr_val(str)), 1);
-#else
-    return escm_port_make(e, escm_input_str(escm_str_val(str)), 1);
 #endif
+     return escm_port_make(e, escm_input_str(escm_astr_val(str)), 1);
 }
 
 escm_atom *
@@ -119,21 +117,11 @@ escm_get_output_string(escm *e, escm_atom *args, void *nil)
 
 # ifdef ESCM_USE_UNICODE
     if (escm_type_ison(ESCM_TYPE_USTRING))
-        return escm_ustring_make(e, escm_output_getstr(outp),
-                                 outp->d.str.cur - outp->d.str.str);
-    else {
-        char *p;
-        escm_atom *a;
-
-        p = wcstostr(escm_output_getstr(outp));
-        a = escm_astring_make(e, p, outp->d.str.cur - outp->d.str.str);
-        free(p);
-        return a;
-    }
-# else
+        return escm_ustring_make2(e, escm_output_getstr(outp));
+    else
+# endif
     return escm_astring_make(e, escm_output_getstr(outp),
                              outp->d.str.cur - outp->d.str.str);
-# endif /* ESCM_USE_UNICODE */
 }
 #endif
 

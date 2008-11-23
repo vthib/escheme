@@ -814,7 +814,7 @@ escm_atom *
 escm_read_char(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *a;
-    escm_int c;
+    int c;
 
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
         escm_error(e, "~s: character type is off.~%", escm_fun(e));
@@ -830,7 +830,7 @@ escm_read_char(escm *e, escm_atom *args, void *nil)
 #endif
         c = escm_input_getc(e->input);
 
-    if (c == ESCM_EOF)
+    if (c == EOF)
         return e->EOF_OBJ;
 
     return escm_char_make(e, c);
@@ -840,7 +840,7 @@ escm_atom *
 escm_peek_char(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *a;
-    escm_int c;
+    int c;
 
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
         escm_error(e, "~s: character type is off.~%", escm_fun(e));
@@ -856,7 +856,7 @@ escm_peek_char(escm *e, escm_atom *args, void *nil)
 #endif
         c = escm_input_peek(e->input);
 
-    if (c == ESCM_EOF)
+    if (c == EOF)
         return e->EOF_OBJ;
 
     return escm_char_make(e, c);
@@ -1166,15 +1166,9 @@ escm_format(escm *e, escm_atom *args, void *nil)
         escm_scmpf2(e, out, escm_astr_val(atom), args);
 
 #ifdef ESCM_USE_UNICODE
-    if (!escm_type_ison(ESCM_TYPE_USTRING)) {
-        char *s;
-
-        s = wcstostr(escm_output_getstr(out));
-        atom = escm_astring_make(e, s, strlen(s));
-        free(s);
-    } else
-        atom = escm_ustring_make(e, escm_output_getstr(out),
-                                 out->d.str.cur - out->d.str.str);
+    if (escm_type_ison(ESCM_TYPE_USTRING))
+        atom = escm_ustring_make2(e, escm_output_getstr(out));
+    else
 #else
     atom = escm_astring_make(e, escm_output_getstr(out),
                             out->d.str.cur - out->d.str.str);

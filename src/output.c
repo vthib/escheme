@@ -23,15 +23,6 @@
 #include "escheme.h"
 #include "config.h"
 
-#ifdef ESCM_USE_UNICODE
-# include <wchar.h>
-# define C(char) L ## char
-# define ESCM_PUTC fputwc
-#else
-# define C(char) char
-# define ESCM_PUTC fputc
-#endif
-
 #define vscmpf(e, stream, format, next)                                 \
     {                                                                   \
         char *p;                                                        \
@@ -64,48 +55,6 @@
                 escm_putc((stream), *p);                                \
         }                                                               \
     }
-
-#define slashify(stream, str)                                   \
-{                                                               \
-    size_t i;                                                   \
-                                                                \
-    if (!stream)                                                \
-        return;                                                 \
-                                                                \
-    for (i = 0; str[i] != '\0'; i++) {                          \
-        switch (str[i]) {                                       \
-        case '"':                                               \
-        case '\\':                                              \
-            escm_putc(stream, '\\');                            \
-            escm_putc(stream, str[i]);                          \
-            break;                                              \
-        case '\a':                                              \
-            escm_putc(stream, '\\'); escm_putc(stream, 'a');    \
-            break;                                              \
-        case '\b':                                              \
-            escm_putc(stream, '\\'); escm_putc(stream, 'b');    \
-            break;                                              \
-        case '\f':                                              \
-            escm_putc(stream, '\\'); escm_putc(stream, 'f');    \
-            break;                                              \
-        case '\n':                                              \
-            escm_putc(stream, '\\'); escm_putc(stream, 'n');    \
-            break;                                              \
-        case '\r':                                              \
-            escm_putc(stream, '\\'); escm_putc(stream, 'r');    \
-            break;                                              \
-        case '\t':                                              \
-            escm_putc(stream, '\\'); escm_putc(stream, 't');    \
-            break;                                              \
-        case '\v':                                              \
-            escm_putc(stream, '\\'); escm_putc(stream, 'v');    \
-            break;                                              \
-        default:                                                \
-            escm_putc(stream, str[i]);                          \
-            break;                                              \
-        }                                                       \
-    }                                                           \
-}
 
 /**
  * @brief open `name' with the read rights
@@ -168,7 +117,7 @@ escm_output_str(void)
     return f;
 }
 
-escm_char *
+char *
 escm_output_getstr(escm_output *o)
 {
     assert(o != NULL);
@@ -176,7 +125,7 @@ escm_output_getstr(escm_output *o)
     if (o->type == OUTPUT_FILE)
         return NULL;
 
-    *o->d.str.cur = C('\0');
+    *o->d.str.cur = '\0';
     return o->d.str.str;
 }
 
@@ -211,11 +160,6 @@ escm_vprintf(escm_output *f, const char *format, va_list args)
     else {
         size_t offset;
         int write;
-#ifdef ESCM_USE_UNICODE
-        wchar_t *fmt;
-
-        fmt = strtowcs(format);
-#endif
 
         offset = f->d.str.cur - f->d.str.str;
 
@@ -232,21 +176,11 @@ escm_vprintf(escm_output *f, const char *format, va_list args)
             f->d.str.str = xrealloc(f->d.str.str, f->d.str.maxlen);
             f->d.str.cur = f->d.str.str + offset;
 
-#ifdef ESCM_USE_UNICODE
-# ifdef HAVE_VSNWPRINTF
-            write = _vsnwprintf(f->d.str.cur, f->d.str.maxlen - offset, fmt, va);
-# else
-            write = vswprintf(f->d.str.cur, f->d.str.maxlen - offset, fmt, va);
-# endif
-#else
             write = vsnprintf(f->d.str.cur, f->d.str.maxlen - offset, format,
                               va);
-#endif
+
             if ((size_t) write < f->d.str.maxlen - offset) {
                 f->d.str.cur += write;
-#ifdef ESCM_USE_UNICODE
-                free(fmt);
-#endif
                 return;
             } else {
                 va_end(args);
@@ -342,25 +276,54 @@ escm_error(escm *e, const char *format, ...)
 void
 escm_print_slashify(escm_output *stream, const char *str)
 {
-   slashify(stream, str);
+    size_t i;
+
+    if (!stream)
+        return;
+
+    for (i = 0; str[i] != '\0'; i++) {
+        switch (str[i]) {
+        case '"':
+        case '\\':
+            escm_putc(stream, '\\');
+            escm_putc(stream, str[i]);
+            break;
+        case '\a':
+            escm_putc(stream, '\\'); escm_putc(stream, 'a');
+            break;
+        case '\b':
+            escm_putc(stream, '\\'); escm_putc(stream, 'b');
+            break;
+        case '\f':
+            escm_putc(stream, '\\'); escm_putc(stream, 'f');
+            break;
+        case '\n':
+            escm_putc(stream, '\\'); escm_putc(stream, 'n');
+            break;
+        case '\r':
+            escm_putc(stream, '\\'); escm_putc(stream, 'r');
+            break;
+        case '\t':
+            escm_putc(stream, '\\'); escm_putc(stream, 't');
+            break;
+        case '\v':
+            escm_putc(stream, '\\'); escm_putc(stream, 'v');
+            break;
+        default:
+            escm_putc(stream, str[i]);
+            break;
+        }
+    }
 }
 
-#ifdef ESCM_USE_UNICODE
 void
-escm_print_wslashify(escm_output *stream, const wchar_t *str)
-{
-    slashify(stream, str);
-}
-#endif
-
-void
-escm_putc(escm_output *f, escm_int c)
+escm_putc(escm_output *f, int c)
 {
     if (!f)
         return;
 
     if (f->type == OUTPUT_FILE) {
-        if (ESCM_EOF == ESCM_PUTC(c, f->d.file.fp))
+        if (EOF == fputc(c, f->d.file.fp))
             fprintf(stderr, "fputc('%c') failed.\n", c);
     } else {
         size_t offset;

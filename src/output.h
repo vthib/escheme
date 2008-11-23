@@ -31,14 +31,9 @@ struct escm_output {
             FILE *fp;
         } file;
         struct {
-#ifdef ESCM_USE_UNICODE
-            wchar_t *str;
-            wchar_t *cur;
-#else
-            char *str;
-            char *cur;
-#endif
-            size_t maxlen;
+           char *str;
+           char *cur;
+           size_t maxlen;
         } str;
     } d;
 
@@ -49,7 +44,7 @@ escm_output *escm_output_fopen(const char *);
 escm_output *escm_output_fmng(FILE *, const char *);
 
 escm_output *escm_output_str(void);
-escm_char *escm_output_getstr(escm_output *);
+char *escm_output_getstr(escm_output *);
 
 void escm_output_close(escm_output *);
 
@@ -65,10 +60,6 @@ void escm_error(escm *, const char *, ...);
 
 void escm_print_slashify(escm_output *, const char *);
 
-void escm_putc(escm_output *, escm_int);
-
-#ifdef ESCM_USE_UNICODE
-void escm_print_wslashify(escm_output *, const wchar_t *);
-#endif /* ESCM_USE_UNICODE */
+void escm_putc(escm_output *, int);
 
 #endif /* ESCHEME_OUTPUT_H */

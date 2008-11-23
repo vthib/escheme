@@ -933,17 +933,15 @@ escm_string_to_number(escm *e, escm_atom *args, void *nil)
     }
 
 #ifdef ESCM_USE_UNICODE
-    if (escm_type_ison(ESCM_TYPE_ASTRING)) {
-        wchar_t *w;
+    if (escm_type_ison(ESCM_TYPE_USTRING)) {
+        char *s;
 
-        w = strtowcs(escm_astr_val(a));
-        input = escm_input_str(w);
-        free(w);
+        s = wcstostr(escm_ustr_val(a));
+        input = escm_input_str(s);
+        free(s);
     } else
-        input = escm_input_str(escm_ustr_val(a));
-#else
-    input = escm_input_str(escm_str_val(a));
 #endif
+    input = escm_input_str(escm_astr_val(a));
 
     number = inputtonumber(e, input, radix);
     if (!number)

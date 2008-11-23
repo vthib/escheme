@@ -34,23 +34,23 @@ static wchar_t input_getuchar(escm *, escm_input *);
 static inline escm_atom *testchar(escm *, escm_atom *, int (*)(wint_t));
 
 struct charcode {
-    wchar_t *name;
-    wchar_t c;
+    char *name;
+    int c;
 };
 
 #define CHCODELEN 11
 static struct charcode chcode[CHCODELEN] = {
-    { L"newline", L'\n' },
-    { L"space", L' ' },
-    { L"nul", L'\0' },
-    { L"alarm", L'\a' },
-    { L"backspace", L'\b' },
-    { L"tab", L'\t' },
-    { L"vtab", L'\v' },
-    { L"page", L'\f' },
-    { L"return", L'\r' },
-    { L"esc", L'\x1B' },
-    { L"delete", L'\x7F' }
+    { "newline", '\n' },
+    { "space", ' ' },
+    { "nul", '\0' },
+    { "alarm", '\a' },
+    { "backspace", '\b' },
+    { "tab", '\t' },
+    { "vtab", '\v' },
+    { "page", '\f' },
+    { "return", '\r' },
+    { "esc", '\x1B' },
+    { "delete", '\x7F' }
 };
 
 void
@@ -361,52 +361,53 @@ uchar_parse(escm *e, escm_input *stream)
 static wchar_t
 input_getuchar(escm *e, escm_input *input)
 {
-    wchar_t *str;
-    wchar_t c;
+    char *str;
+    char c;
     size_t len;
 
-    str = escm_input_getwstr_fun(input, iswalnum, e->casesensitive);
-    len = wcslen(str);
+    str = escm_input_getstr_fun(input, isalnum, e->casesensitive);
+    len = strlen(str);
 
-    c = L'\0';
+    c = '\0';
     if (len < 1) {
         free(str);
         return escm_input_getc(input);
     } else if (len == 1)
         c = *str;
     else {
-        wchar_t *p;
+        char *p;
 
-        if (*str == L'x') {
-            for (p = str + 1; *p != L'\0'; p++) {
-                if (*p < L'0' || towlower(*p) > L'f') {
+        if (*str == 'x') {
+            for (p = str + 1; *p != '\0'; p++) {
+                if (*p < '0' || tolower(*p) > 'f') {
                     escm_parse_print(input, e->errp, "invalid character: "
-                                     "#\\%ls.\n", str);
+                                     "#\\%s.\n", str);
                     goto err;
                 }
-                if (*p <= L'9')
-                    c <<= 4, c |= (*p - L'0');
+                if (*p <= '9')
+                    c <<= 4, c |= (*p - '0');
                 else
-                    c <<= 4, c |= ((towlower(*p) - L'a') + 10);
+                    c <<= 4, c |= ((tolower(*p) - 'a') + 10);
             }
         } else {
             int i;
 
             for (i = 0; i < CHCODELEN; i++) {
-                if (0 == wcscmp(chcode[i].name, str)) {
+                if (0 == strcmp(chcode[i].name, str)) {
                     c = chcode[i].c;
                     break;
                 }
             }
             if (i == CHCODELEN) {
-                escm_parse_print(input, e->errp, "unknown character #\\%ls.", str);
+                escm_parse_print(input, e->errp, "unknown character #\\%s.",
+                                 str);
                 goto err;
             }
         }
     }
 
     free(str);
-    return c;
+    return (wchar_t) c;
 
 err:
     free(str);

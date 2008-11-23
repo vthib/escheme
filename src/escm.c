@@ -158,17 +158,7 @@ escm_sparse(escm *e, const char *str)
 
     assert(e != NULL);
 
-#ifdef ESCM_USE_UNICODE
-    {
-        wchar_t *w;
-
-        w = strtowcs(str);
-        in = escm_input_str(w);
-        free(w);
-    }
-#else
     in = escm_input_str(str);
-#endif
 
     if (!in)
         return 0;

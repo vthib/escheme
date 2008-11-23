@@ -58,14 +58,6 @@ typedef long escm_intptr;
 typedef int escm_intptr;
 #endif
 
-#ifdef ESCM_USE_UNICODE
-typedef wchar_t escm_char;
-typedef wint_t escm_int;
-#else
-typedef char escm_char;
-typedef int escm_int;
-#endif
-
 typedef struct escm escm;
 typedef struct escm_context escm_context;
 typedef struct escm_atom escm_atom;

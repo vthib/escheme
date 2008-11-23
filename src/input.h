@@ -19,12 +19,6 @@
 
 #include "types.h"
 
-#ifdef ESCM_USE_UNICODE
-# define ESCM_EOF WEOF
-#else
-# define ESCM_EOF EOF
-#endif
-
 enum { INPUT_FILE, INPUT_STR };
 
 struct escm_input {
@@ -37,23 +31,14 @@ struct escm_input {
             FILE *fp;
             char *name;
 
-            /* used to allow multiples calls to ungetc */
-#ifdef ESCM_USE_UNICODE
-            wint_t *ub;
-#else
             int *ub;
-#endif
+
             size_t usize;
             size_t un;
         } file;
         struct {
-#ifdef ESCM_USE_UNICODE
-            wchar_t *str;
-            wchar_t *cur;
-#else
             char *str;
             char *cur;
-#endif
         } str;
     } d;
 
@@ -64,7 +49,7 @@ struct escm_input {
 
 escm_input *escm_input_fopen(const char *);
 escm_input *escm_input_fmng(FILE *, const char *);
-escm_input *escm_input_str(const escm_char *);
+escm_input *escm_input_str(const char *);
 
 char *escm_input_gettext(escm_input *, const char *);
 char *escm_input_getstr_fun(escm_input *, int (*)(int), int);
@@ -75,13 +60,8 @@ void escm_input_rewind(escm_input *);
 
 void escm_input_print(escm_input *, escm_output *);
 
-escm_int escm_input_getc(escm_input *);
-escm_int escm_input_peek(escm_input *);
-void escm_input_ungetc(escm_input *, escm_int);
-
-#ifdef ESCM_USE_UNICODE
-wchar_t *escm_input_getwtext(escm_input *, const wchar_t *);
-wchar_t *escm_input_getwstr_fun(escm_input *, int (*)(wint_t), int);
-#endif
+int escm_input_getc(escm_input *);
+int escm_input_peek(escm_input *);
+void escm_input_ungetc(escm_input *, int);
 
 #endif /* ESCHEME_INPUT_H */
