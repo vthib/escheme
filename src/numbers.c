@@ -80,6 +80,8 @@ escm_numbers_init(escm *e)
     (void) escm_procedure_new(e, "numerator", 1, 1, escm_numerator, NULL);
     (void) escm_procedure_new(e, "denominator", 1, 1, escm_denominator, NULL);
 
+    (void) escm_procedure_new(e, "rand", 2, 2, escm_rand, NULL);
+
 #ifdef ESCM_USE_MATH
     (void) escm_procedure_new(e, "floor", 1, 1, escm_floor, NULL);
     (void) escm_procedure_new(e, "ceiling", 1, 1, escm_ceiling, NULL);
@@ -686,6 +688,20 @@ escm_denominator(escm *e, escm_atom *args, void *nil)
     }
 
     return escm_int_make(e, b);
+}
+
+escm_atom *
+escm_rand(escm *e, escm_atom *args, void *nil)
+{
+    escm_atom *start, *end;
+
+    start = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISINT(start), start, e);
+    end = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISINT(end), end, e);
+
+    return escm_int_make(e,
+            escm_number_ival(start) + (rand() % escm_number_ival(end)));
 }
 
 #ifdef ESCM_USE_MATH

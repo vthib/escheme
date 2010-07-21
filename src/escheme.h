@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2007 Vincent "drexil" Thiberville <mahnmut@gmail.com>
  *
  * This file is part of Escheme. Escheme is free software; you can redistribute
@@ -69,6 +69,10 @@
 
 #ifdef ESCM_USE_CONTINUATIONS
 # include "continuations.h"
+#endif
+
+#ifdef ESCM_USE_RECORDS
+# include "records.h"
 #endif
 
 #endif /* ESCHEME_ESCHEME_H */

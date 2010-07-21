@@ -69,6 +69,8 @@ escm_atom *escm_lcm(escm *, escm_atom *, void *);
 escm_atom *escm_numerator(escm *, escm_atom *, void *);
 escm_atom *escm_denominator(escm *, escm_atom *, void *);
 
+escm_atom *escm_rand(escm *, escm_atom *, void *);
+
 #ifdef ESCM_USE_MATH
 escm_atom *escm_floor(escm *, escm_atom *, void *);
 escm_atom *escm_ceiling(escm *, escm_atom *, void *);

@@ -798,7 +798,7 @@ escm_load(escm *e, escm_atom *args, void *nil)
         }                                                               \
         escm_assert(ESCM_ISPORT(a), a, e);                              \
                                                                         \
-        if (inputp == escm_port_val(a)->input) {                        \
+        if (inputp != escm_port_val(a)->input) {                        \
             escm_error(e, "~s: given port is not an correct port.~%",   \
                        escm_fun(e));                                    \
             escm_abort(e);                                              \

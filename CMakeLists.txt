@@ -10,10 +10,10 @@ add_test(test_lists escheme test/test_lists.scm)
 
 set (FILES src/atom.c src/cons.c src/environments.c src/escm.c src/input.c
   src/output.c src/primitives.c src/procedures.c src/srfi.c src/symbols.c
-  src/tst.c src/utils.c)
+  src/tst.c src/utils.c src/records.c)
 set (HEADER src/types.h src/escheme.h src/atom.h src/cons.h src/environments.h
   src/escm.h src/input.h src/output.h src/primitives.h src/procedures.h
-  src/srfi.h src/symbols.h src/tst.h src/utils.h)
+  src/srfi.h src/symbols.h src/tst.h src/utils.h src/records.h)
 set (DEFINES -Dinline="__inline__" -I.. -I. -Wall -W -Wmissing-prototypes
   -pedantic-errors)
 #set (DEFINES -I.. -I. -Wall -fast)
@@ -50,6 +50,7 @@ option(vectors "build the vector implementation" 1)
 option(macros "build the macro implementation" 1)
 option(promises "build the promise implementation" 1)
 option(dyntypes "build support for dynamic types" 1)
+option(records "build support for record types" 1)
 
 if (unicode)
   if (NOT c99)
@@ -124,6 +125,13 @@ if (macros)
   append_header(src/macros.h)
   add_test(test_macros escheme test/test_macros.scm)
 endif(macros)
+
+if (records)
+  append_define(-DESCM_USE_RECORDS)
+  append_dep(src/records.c)
+  append_header(src/records.h)
+#  add_test(test_records escheme test/test_records.scm)
+endif(records)
 
 if (promises)
   append_define(-DESCM_USE_PROMISES)

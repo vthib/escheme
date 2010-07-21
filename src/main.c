@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <locale.h>
+#include <time.h>
 
 #include "escheme.h"
 
@@ -47,6 +48,9 @@ enum {
 #endif
 #ifdef ESCM_USE_CONTINUATIONS
     CONT,
+#endif
+#ifdef ESCM_USE_RECORDS
+    RECORD,
 #endif
 #ifdef ESCM_USE_DYNTYPES
     DYNTYPE,
@@ -97,10 +101,14 @@ static struct types desc[MAXTYPE] = {
     { "continuations", "continuations: the continuation implementation.",
       escm_continuations_init, 1 },
 #endif
+#ifdef ESCM_USE_RECORDS
+    { "records", "records: the record implementation.",
+      escm_records_init, 1 },
+#endif
 #ifdef ESCM_USE_DYNTYPES
     { "dyntypes", "dyntypes: the dynamic types implementation (escheme "
       "system to create or \n\t\tmodify types impl at runtime).",
-      escm_dyntypes_init, 1 },
+      escm_dyntypes_init, 1 }
 #endif
 };
 
@@ -123,6 +131,8 @@ main(int argc, char **argv)
         fprintf(stderr, "can't set the locale.\n");
 
     evalstr = NULL;
+
+    srand(time(NULL));
 
     for (i = 1; i < argc; i++) {
         if (*argv[i] == '-') {
