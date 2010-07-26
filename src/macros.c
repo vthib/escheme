@@ -30,6 +30,8 @@ struct match {
     struct node *cur;
 
     struct match *prev;
+
+    unsigned int ellipsed : 1;
 };
 
 static unsigned long macrotype = 0;
@@ -91,8 +93,8 @@ escm_expand(escm *e, escm_atom *args, void *nil)
     if (e->err == 1)
         return NULL;
     if (!macro) {
-        escm_error(e, "~s: ~s do not yield an applicable value.~%", escm_fun(e),
-                   atom);
+        escm_error(e, "~s: ~s do not yield an applicable value.~%",
+                   escm_fun(e), atom);
         escm_abort(e);
     }
     if (!ESCM_ISMACRO(macro)) {
@@ -222,7 +224,6 @@ bind(escm *e, escm_macro *m, escm_atom *rule, escm_atom *arg,
                 while ((a = escm_cons_pop(e, &arg)) != NULL)
                     match = bind(e, m, r, a, match);
             }
-            match = bind(e, m, r, a, match);
 
             (void) escm_cons_pop(e, &rule);
         } else  {
@@ -247,11 +248,17 @@ expand(escm *e, escm_macro *m, escm_atom *rule, struct match *match,
         mid = checkup(e, match, rule);
         if (mid) {
             if (ellipsis) {
-                if (!mid->cur->a) {
-                    mid->cur = (mid->cur->next) ? mid->cur->next : mid->fst;
-                    return NULL;
-                }
+                if (mid->ellipsed) {
+                    if (!mid->cur)
+                        return NULL;
+                    if (!mid->cur->a) {
+                        mid->cur = (mid->cur->next) ? mid->cur->next :
+                            mid->fst;
+                        return NULL;
+                    }
                 ret = mid->cur->a, mid->cur = mid->cur->next;
+                } else
+                    ret = mid->fst->a;
             } else
                 ret = mid->fst->a;
         } else {
@@ -315,8 +322,10 @@ add(struct match *match, escm_atom *id, escm_atom *bounded, struct match *m)
     n->a = bounded, n->next = NULL;
     if (!m->fst)
         m->fst = n, m->cur = n;
-    else
+    else {
         m->cur->next = n, m->cur = n;
+        m->ellipsed = 1;
+    }
 
     return match;
 }

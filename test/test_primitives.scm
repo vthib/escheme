@@ -82,8 +82,6 @@
 		     (cons (car numbers) neg)))))
       '((6 1 3) (-5 -2)))
 
-;> number
-
 (if (lookup test-macros)
 	(exit))
 
@@ -111,3 +109,5 @@
 		(name2 'y))
 	`(a `(b ,,name1 ,',name2 d) e))
 	'(a `(b ,x ,'y d) e))
+
+;> number

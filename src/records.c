@@ -159,9 +159,9 @@ record_p(escm *e, escm_atom *args, size_t type)
     escm_atom *a;
 
     a = escm_cons_pop(e, &args);
-    escm_assert(e->types[a->type]->dtype == TYPE_REC, a, e);
 
-    return record_typecheck(e, a, type) ? e->TRUE : e->FALSE;
+    return e->types[a->type]->dtype == TYPE_REC &&
+        record_typecheck(e, a, type) ? e->TRUE : e->FALSE;
 }
 
 static escm_atom *

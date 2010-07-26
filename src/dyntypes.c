@@ -60,7 +60,7 @@ escm_create_type(escm *e, escm_atom *args, void *nil)
 
     t = xcalloc(1, sizeof *t);
     t->dtype = TYPE_DYN;
-    t->d.dyn.basetype = i;
+    t->d.dyn.basetype = escm_number_ival(basetype);
     t->fmark = (Escm_Fun_Mark) escm_atom_mark;
 
     i = (long) escm_type_add(e, t);

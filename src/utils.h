@@ -53,10 +53,10 @@ char *xstrdup(const char *);
 int xstrcasecmp(const char *, const char *);
 double xround(double);
 
+#ifdef ESCM_USE_UNICODE
 char *wcstostr(const wchar_t *);
 wchar_t *strtowcs(const char *);
 
-#ifdef ESCM_USE_UNICODE
 wchar_t *xwcsdup(const wchar_t *);
 int xwcscasecmp(const wchar_t *, const wchar_t *);
 #endif

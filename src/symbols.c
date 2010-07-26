@@ -186,7 +186,7 @@ symbol_parsetest(escm *e, escm_input *stream, int c)
             ret = !isdigit(escm_input_peek(stream));
             escm_input_ungetc(stream, c);
             return ret;
-        } else if (c == ESCM_EOF)
+        } else if (c == EOF)
             return 1;
 
         escm_input_ungetc(stream, c);
