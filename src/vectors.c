@@ -84,6 +84,7 @@ escm_vector_make(escm *e, escm_atom **vec, size_t len)
 escm_atom *
 escm_vector_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return ESCM_ISVECTOR(escm_cons_car(args)) ? e->TRUE : e->FALSE;
 }
 
@@ -94,6 +95,7 @@ escm_prim_vector(escm *e, escm_atom *args, void *nil)
     escm_atom **vec;
     size_t len;
 
+    (void) nil;
     len = 0;
     for (c = escm_cons_val(args); c; c = escm_cons_next(c))
         len++;
@@ -113,6 +115,7 @@ escm_make_vector(escm *e, escm_atom *args, void *nil)
     escm_atom *k, *fill;
     escm_atom **vec;
 
+    (void) nil;
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
         escm_error(e, "~s: number type is off.~%", escm_fun(e));
         escm_abort(e);
@@ -138,6 +141,7 @@ escm_vector_length(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *v;
 
+    (void) nil;
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
         escm_error(e, "~s: number type is off.~%", escm_fun(e));
         escm_abort(e);
@@ -154,6 +158,7 @@ escm_vector_ref(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *v, *k;
 
+    (void) nil;
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
         escm_error(e, "~s: number type is off.~%", escm_fun(e));
         escm_abort(e);
@@ -177,6 +182,7 @@ escm_vector_set_x(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *v, *k;
 
+    (void) nil;
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
         escm_error(e, "~s: number type is off.~%", escm_fun(e));
         escm_abort(e);
@@ -208,6 +214,7 @@ escm_vector_fill_x(escm *e, escm_atom *args, void *nil)
     escm_atom *v, *fill;
     size_t i;
 
+    (void) nil;
     v = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISVECTOR(v), v, e);
     fill = escm_cons_pop(e, &args);
@@ -227,6 +234,7 @@ escm_list_to_vector(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *list;
 
+    (void) nil;
     list = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCONS(list), list, e);
 
@@ -241,6 +249,7 @@ escm_vector_to_list(escm *e, escm_atom *args, void *nil)
     v = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISVECTOR(v), v, e);
 
+    (void) nil;
     escm_ctx_enter(e);
     for (i = 0; i < escm_vector_len(v); i++)
         escm_ctx_put(e, escm_vector_val(v)->vec[i]);

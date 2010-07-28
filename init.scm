@@ -75,3 +75,36 @@
      (define name (lambda args (apply begin body))))))
 ;>
 
+;?records
+(define-syntax define-record-field
+  (syntax-rules ()
+    ((define-record-field type field-tag accessor)
+     (define accessor (eval (string->symbol
+                             (string-append (symbol->string 'type) ":"
+                                            (symbol->string 'field-tag))))))
+    ((define-record-field type field-tag accessor modifier)
+     (begin
+       (define accessor (eval (string->symbol
+                               (string-append (symbol->string 'type) ":"
+                                              (symbol->string 'field-tag)))))
+       (define modifier
+         (eval (string->symbol
+                (string-append "set-" (symbol->string 'type) ":"
+                               (symbol->string 'field-tag) "!"))))))))
+
+(define-syntax define-record-type
+  (syntax-rules ()
+    ((define-record-type type
+       (constructor constructor-tag ...)
+       predicate
+       (field-tag accessor . more) ...)
+     (begin
+       (define-record type #f constructor-tag ...)
+       (define constructor (eval (string->symbol
+                                  (string-append "make-"
+                                                 (symbol->string 'type)))))
+       (define predicate (eval (string->symbol
+                                (string-append (symbol->string 'type) "?"))))
+       (define-record-field type field-tag accessor . more)
+       ...))))
+;>

@@ -53,12 +53,14 @@ escm_booleans_init(escm *e)
 escm_atom *
 escm_not(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return !ESCM_ISTRUE(e, escm_cons_car(args)) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
 escm_boolean_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return ESCM_ISBOOL(escm_cons_car(args)) ? e->TRUE : e->FALSE;
 }
 

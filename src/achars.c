@@ -120,6 +120,7 @@ escm_achar_p(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *a;
 
+    (void) nil;
     a = escm_cons_pop(e, &args);
     return ESCM_ISACHAR(a) ? e->TRUE : e->FALSE;
 }
@@ -141,90 +142,105 @@ escm_achar_p(escm *e, escm_atom *args, void *nil)
 escm_atom *
 escm_achar_eq_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     charcmp(e, args, ==, ID);
 }
 
 escm_atom *
 escm_achar_lt_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     charcmp(e, args,<, ID);
 }
 
 escm_atom *
 escm_achar_gt_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     charcmp(e, args, >, ID);
 }
 
 escm_atom *
 escm_achar_le_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     charcmp(e, args, <=, ID);
 }
 
 escm_atom *
 escm_achar_ge_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     charcmp(e, args, >=, ID);
 }
 
 escm_atom *
 escm_achar_ci_eq_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     charcmp(e, args, ==, tolower);
 }
 
 escm_atom *
 escm_achar_ci_lt_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     charcmp(e, args, <, tolower);
 }
 
 escm_atom *
 escm_achar_ci_gt_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     charcmp(e, args, >, tolower);
 }
 
 escm_atom *
 escm_achar_ci_le_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     charcmp(e, args, <=, tolower);
 }
 
 escm_atom *
 escm_achar_ci_ge_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     charcmp(e, args, >=, tolower);
 }
 
 escm_atom *
 escm_achar_alphabetic_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return testchar(e, args, isalpha);
 }
 
 escm_atom *
 escm_achar_numeric_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return testchar(e, args, isdigit);
 }
 
 escm_atom *
 escm_achar_whitespace_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return testchar(e, args, isspace);
 }
 
 escm_atom *
 escm_achar_upper_case_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return testchar(e, args, isupper);
 }
 
 escm_atom *
 escm_achar_lower_case_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return testchar(e, args, islower);
 }
 
@@ -234,6 +250,7 @@ escm_achar_to_integer(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *c;
 
+    (void) nil;
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
         escm_error(e, "~s: number type is off.~%", escm_fun(e));
         escm_abort(e);
@@ -250,6 +267,7 @@ escm_integer_to_achar(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *n;
 
+    (void) nil;
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
         escm_error(e, "~s: number type is off.~%", escm_fun(e));
         escm_abort(e);
@@ -272,6 +290,7 @@ escm_achar_upcase(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *c;
 
+    (void) nil;
     c = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISACHAR(c), c, e);
 
@@ -283,6 +302,7 @@ escm_achar_downcase(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *c;
 
+    (void) nil;
     c = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISACHAR(c), c, e);
 

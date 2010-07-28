@@ -27,8 +27,8 @@ escm_dyntypes_init(escm *e)
     (void) escm_procedure_new(e, "set-equal", 2, 2, escm_set_equal, NULL);
     (void) escm_procedure_new(e, "set-parse?", 2, 2, escm_set_parse_p, NULL);
     (void) escm_procedure_new(e, "set-parse", 2, 2, escm_set_parse, NULL);
-	(void) escm_procedure_new(e, "set-eval", 2, 2, escm_set_eval, NULL);
-	(void) escm_procedure_new(e, "set-exec", 2, 2, escm_set_exec, NULL);
+    (void) escm_procedure_new(e, "set-eval", 2, 2, escm_set_eval, NULL);
+    (void) escm_procedure_new(e, "set-exec", 2, 2, escm_set_exec, NULL);
 
     (void) escm_procedure_new(e, "type-parse?", 2, 2, escm_prim_type_parse_p,
                               NULL);
@@ -39,6 +39,7 @@ escm_dyntypes_init(escm *e)
 escm_atom *
 escm_prim_type(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return escm_int_make(e, escm_cons_car(args)->type);
 }
 
@@ -49,6 +50,7 @@ escm_create_type(escm *e, escm_atom *args, void *nil)
     escm_atom *accessor, *constructor, *pred, *basetype;
     long i;
 
+    (void) nil;
     constructor = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSYM(constructor), constructor, e);
     accessor = escm_cons_pop(e, &args);
@@ -101,6 +103,7 @@ escm_data_to_rep(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *atom;
 
+    (void) nil;
     atom = escm_cons_pop(e, &args);
     if (e->types[atom->type]->dtype != TYPE_DYN) {
         escm_error(e, "~s: expect an argument of dynamic type, not ~s.~%",
@@ -127,6 +130,7 @@ escm_set_print(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *type, *proc;
 
+    (void) nil;
     type = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISTYPE(e, type), type, e);
 
@@ -141,6 +145,7 @@ escm_set_equal(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *type, *proc;
 
+    (void) nil;
     type = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISTYPE(e, type), type, e);
 
@@ -155,6 +160,7 @@ escm_set_parse_p(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *type, *proc;
 
+    (void) nil;
     type = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISTYPE(e, type), type, e);
 
@@ -169,6 +175,7 @@ escm_set_parse(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *type, *proc;
 
+    (void) nil;
     type = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISTYPE(e, type), type, e);
 
@@ -183,6 +190,7 @@ escm_set_eval(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *type, *proc;
 
+    (void) nil;
     type = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISTYPE(e, type), type, e);
 
@@ -197,6 +205,7 @@ escm_set_exec(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *type, *proc;
 
+    (void) nil;
     type = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISTYPE(e, type), type, e);
 
@@ -212,6 +221,7 @@ escm_prim_type_parse_p(escm *e, escm_atom *args, void *nil)
     escm_atom *type, *character;
     int c;
 
+    (void) nil;
     type = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISTYPE(e, type), type, e);
 
@@ -233,6 +243,7 @@ escm_prim_type_parse(escm *e, escm_atom *args, void *nil)
     escm_atom *type;
     int c;
 
+    (void) nil;
     type = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISTYPE(e, type), type, e);
 

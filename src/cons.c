@@ -143,7 +143,7 @@ escm_cons_isin(escm *e, escm_atom *cons, escm_atom *elem, int lvl)
 escm_atom *
 escm_prim_cons(escm *e, escm_atom *args, void *nil)
 {
-    (void) e;
+    (void) e; (void) nil;
 
     escm_cons_cdr(args) = escm_cons_car(escm_cons_cdr(args));
 
@@ -153,7 +153,7 @@ escm_prim_cons(escm *e, escm_atom *args, void *nil)
 escm_atom *
 escm_list(escm *e, escm_atom *args, void *nil)
 {
-    (void) e;
+    (void) e; (void) nil;
 
     return args;
 }
@@ -162,6 +162,8 @@ escm_atom *
 escm_car(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *o;
+
+    (void) nil;
 
     o = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCONS(o) && escm_cons_val(o) != NULL, o, e);
@@ -174,11 +176,14 @@ escm_set_car_x(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *o;
 
+    (void) nil;
+
     o = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCONS(o) && escm_cons_val(o) != NULL, o, e);
 
     if (o->ro == 1) {
-        escm_error(e, "~s: Can't modify ~s: immutable cons.~%", escm_fun(e), o);
+        escm_error(e, "~s: Can't modify ~s: immutable cons.~%", escm_fun(e),
+                   o);
         escm_abort(e);
     }
 
@@ -191,6 +196,8 @@ escm_cdr(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *o;
 
+    (void) nil;
+
     o = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCONS(o) && escm_cons_val(o) != NULL, o, e);
 
@@ -202,11 +209,14 @@ escm_set_cdr_x(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *o;
 
+    (void) nil;
+
     o = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCONS(o) && escm_cons_val(o) != NULL, o, e);
 
     if (o->ro == 1) {
-        escm_error(e, "~s: Can't modify ~s: immutable cons.~%", escm_fun(e), o);
+        escm_error(e, "~s: Can't modify ~s: immutable cons.~%", escm_fun(e),
+                   o);
         escm_abort(e);
     }
 
@@ -217,12 +227,16 @@ escm_set_cdr_x(escm *e, escm_atom *args, void *nil)
 escm_atom *
 escm_null_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
+
     return (escm_cons_car(args) == e->NIL) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
 escm_pair_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
+
     return (ESCM_ISCONS(escm_cons_car(args)) &&
             escm_cons_car(args) != e->NIL) ? e->TRUE : e->FALSE;
 }
@@ -233,6 +247,8 @@ escm_list_p(escm *e, escm_atom *args, void *nil)
     escm_atom *arg;
     escm_cons *c, *end;
     unsigned int res;
+
+    (void) nil;
 
     arg = escm_cons_pop(e, &args);
 
@@ -274,6 +290,8 @@ escm_append(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *flist;
 
+    (void) nil;
+
     escm_ctx_enter(e);
     while (args != e->NIL) {
         flist = escm_cons_pop(e, &args);
@@ -311,6 +329,8 @@ escm_reverse(escm *e, escm_atom *args, void *nil)
     escm_atom *new, *arg;
     escm_cons *c;
 
+    (void) nil;
+
     arg = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCONS(arg), arg, e);
 
@@ -334,6 +354,8 @@ escm_length(escm *e, escm_atom *args, void *nil)
     escm_atom *arg;
     escm_cons *c, *end;
     long n;
+
+    (void) nil;
 
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
         escm_error(e, "~s: number type is off.~%", escm_fun(e));
@@ -388,6 +410,8 @@ escm_list_tail(escm *e, escm_atom *args, void *nil)
     escm_atom *list, *ka, *atom;
     long k;
 
+    (void) nil;
+
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
         escm_error(e, "~s: number type is off.~%", escm_fun(e));
         escm_abort(e);
@@ -424,6 +448,8 @@ escm_list_ref(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *sublist;
 
+    (void) nil;
+
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
         escm_error(e, "~s: number type is off.~%", escm_fun(e));
         escm_abort(e);
@@ -444,36 +470,42 @@ escm_list_ref(escm *e, escm_atom *args, void *nil)
 escm_atom *
 escm_memq(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return member(e, args, 0);
 }
 
 escm_atom *
 escm_memv(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return member(e, args, 1);
 }
 
 escm_atom *
 escm_member(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return member(e, args, 2);
 }
 
 escm_atom *
 escm_assq(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return assoc(e, args, 0);
 }
 
 escm_atom *
 escm_assv(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return assoc(e, args, 1);
 }
 
 escm_atom *
 escm_assoc(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return assoc(e, args, 2);
 }
 

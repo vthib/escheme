@@ -98,6 +98,7 @@ escm_symbol_p(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *a;
 
+    (void) nil;
     a = escm_cons_pop(e, &args);
     return ESCM_ISSYM(a) ? e->TRUE : e->FALSE;
 }
@@ -108,6 +109,7 @@ escm_symbol_to_string(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *sym;
 
+    (void) nil;
     if (!escm_type_ison(ESCM_TYPE_STRING)) {
         escm_error(e, "~s: string type is off.~%", escm_fun(e));
         escm_abort(e);
@@ -124,6 +126,7 @@ escm_string_to_symbol(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *str;
 
+    (void) nil;
     if (!escm_type_ison(ESCM_TYPE_STRING)) {
         escm_error(e, "~s: string type is off.~%", escm_fun(e));
         escm_abort(e);
@@ -154,6 +157,7 @@ escm_lookup(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *sym;
 
+    (void) nil;
     sym = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSYM(sym), sym, e);
 

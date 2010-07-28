@@ -47,6 +47,7 @@ escm_open_input_string(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *str;
 
+    (void) nil;
     if (!escm_type_ison(ESCM_TYPE_STRING)) {
         escm_error(e, "~s: string type is off.~%", escm_fun(e));
         escm_abort(e);
@@ -78,6 +79,7 @@ escm_open_output_string(escm *e, escm_atom *args, void *nil)
 {
     (void) args;
 
+    (void) nil;
     if (!escm_type_ison(ESCM_TYPE_STRING)) {
         escm_error(e, "~s: string type is off.~%", escm_fun(e));
         escm_abort(e);
@@ -96,6 +98,7 @@ escm_get_output_string(escm *e, escm_atom *args, void *nil)
     escm_atom *port;
     escm_output *outp;
 
+    (void) nil;
     if (!escm_type_ison(ESCM_TYPE_STRING)) {
         escm_error(e, "~s: string type is off.~%", escm_fun(e));
         escm_abort(e);
@@ -131,6 +134,7 @@ escm_srfi_error(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *reason;
 
+    (void) nil;
     reason = escm_cons_pop(e, &args);
 
     escm_printf(e->errp, "error: ");

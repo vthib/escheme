@@ -132,6 +132,7 @@ xround(double a)
 #endif
 }
 
+#ifdef ESCM_USE_UNICODE
 char *
 wcstostr(const wchar_t *w)
 {
@@ -158,7 +159,6 @@ strtowcs(const char *str)
     return w;
 }
 
-#ifdef ESCM_USE_UNICODE
 /**
  * @brief duplicate a wide string and return it
  */

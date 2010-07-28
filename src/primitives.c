@@ -129,7 +129,7 @@ escm_primitives_load(escm *e)
 escm_atom *
 escm_quote(escm *e, escm_atom *args, void *nil)
 {
-    assert(e != NULL);
+    (void) e; (void) nil;
 
     escm_cons_val(args)->car->ro = 1;
 
@@ -141,6 +141,7 @@ escm_quasiquote(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *arg;
 
+    (void) nil;
     arg = escm_cons_pop(e, &args);
     if (!ESCM_ISCONS(arg)
 #ifdef ESCM_USE_VECTORS
@@ -160,6 +161,7 @@ escm_lambda(escm *e, escm_atom *args, void *nil)
     escm_atom *params;
     escm_procedure *lambda;
 
+    (void) nil;
     params = escm_cons_pop(e, &args);
 
     escm_assert(ESCM_ISCONS(params) || ESCM_ISSYM(params), params, e);
@@ -188,6 +190,7 @@ escm_define(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *c;
 
+    (void) nil;
     c = escm_cons_pop(e, &args);
 
     escm_assert(ESCM_ISSYM(c) || ESCM_ISCONS(c), c, e);
@@ -236,6 +239,7 @@ escm_set_x(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *c;
 
+    (void) nil;
     c = escm_cons_pop(e, &args);
 
     escm_assert(ESCM_ISSYM(c), c, e);
@@ -256,6 +260,7 @@ escm_let(escm *e, escm_atom *args, void *nil)
     escm_atom *env, *prevenv, *arg, *varname, *varval, *ret;
     escm_cons *c, *varcons;
 
+    (void) nil;
     arg = escm_cons_pop(e, &args);
     if (ESCM_ISSYM(arg))
         return named_let(e, arg, args);
@@ -308,6 +313,7 @@ escm_let_star(escm *e, escm_atom *args, void *nil)
     escm_atom *prevenv, *arg, *varname, *varval, *ret;
     escm_cons *c, *varcons;
 
+    (void) nil;
     arg = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCONS(arg), arg, e);
 
@@ -357,6 +363,7 @@ escm_letrec(escm *e, escm_atom *args, void *nil)
     escm_cons *c, *varcons;
     struct list *first, *last;
 
+    (void) nil;
     arg = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCONS(arg), arg, e);
 
@@ -435,6 +442,7 @@ escm_if(escm *e, escm_atom *args, void *nil)
     escm_atom *test;
     escm_atom *a;
 
+    (void) nil;
     a = escm_cons_pop(e, &args);
 
     test = escm_atom_eval(e, a);
@@ -468,6 +476,7 @@ escm_cond(escm *e, escm_atom *args, void *nil)
     escm_atom *ret, *test;
     escm_atom *clause;
 
+    (void) nil;
     for (c = escm_cons_val(args); c; c = escm_cons_next(c)) {
         clause = c->car;
         escm_assert(ESCM_ISCONS(clause) && clause != e->NIL, clause, e);
@@ -516,6 +525,7 @@ escm_case(escm *e, escm_atom *args, void *nil)
     escm_cons *list;
     escm_atom *expr, *d, *clause;
 
+    (void) nil;
     d = escm_cons_pop(e, &args);
     expr = escm_atom_eval(e, d);
     if (!expr) {
@@ -549,6 +559,7 @@ escm_and(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *c, *ret;
 
+    (void) nil;
     c = escm_cons_pop(e, &args);
     if (!c)
         return e->TRUE;
@@ -577,6 +588,7 @@ escm_or(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *c, *ret;
 
+    (void) nil;
     c = escm_cons_pop(e, &args);
     if (!c)
         return e->FALSE;
@@ -603,6 +615,7 @@ escm_or(escm *e, escm_atom *args, void *nil)
 escm_atom *
 escm_begin(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return begin(e, args, 1);
 }
 
@@ -613,6 +626,7 @@ escm_do(escm *e, escm_atom *args, void *nil)
     escm_atom *env, *prevenv, *test, *ret;
     escm_atom *clauses, *atom, *var, *varval;
 
+    (void) nil;
     clauses = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCONS(clauses), clauses, e);
 
@@ -713,6 +727,7 @@ escm_eq_p(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *a1, *a2;
 
+    (void) nil;
     a1 = escm_cons_pop(e, &args);
     a2 = escm_cons_pop(e, &args);
 
@@ -724,6 +739,7 @@ escm_eqv_p(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *a1, *a2;
 
+    (void) nil;
     a1 = escm_cons_pop(e, &args);
     a2 = escm_cons_pop(e, &args);
 
@@ -735,6 +751,7 @@ escm_equal_p(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *a1, *a2;
 
+    (void) nil;
     a1 = escm_cons_pop(e, &args);
     a2 = escm_cons_pop(e, &args);
 
@@ -746,6 +763,7 @@ escm_eof_object_p(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *a;
 
+    (void) nil;
     a = escm_cons_pop(e, &args);
     return (a == e->EOF_OBJ) ? e->TRUE : e->FALSE;
 }
@@ -757,6 +775,7 @@ escm_load(escm *e, escm_atom *args, void *nil)
     escm_atom *str;
     escm_context *ctx;
 
+    (void) nil;
     if (!escm_type_ison(ESCM_TYPE_STRING)) {
         escm_error(e, "~s: string type is off.~%", escm_fun(e));
         escm_abort(e);
@@ -816,6 +835,7 @@ escm_read_char(escm *e, escm_atom *args, void *nil)
     escm_atom *a;
     int c;
 
+    (void) nil;
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
         escm_error(e, "~s: character type is off.~%", escm_fun(e));
         escm_abort(e);
@@ -842,6 +862,7 @@ escm_peek_char(escm *e, escm_atom *args, void *nil)
     escm_atom *a;
     int c;
 
+    (void) nil;
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
         escm_error(e, "~s: character type is off.~%", escm_fun(e));
         escm_abort(e);
@@ -867,6 +888,7 @@ escm_write_char(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *c, *a;
 
+    (void) nil;
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
         escm_error(e, "~s: character type is off.~%", escm_fun(e));
         escm_abort(e);
@@ -892,6 +914,7 @@ escm_unread_char(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *c, *a;
 
+    (void) nil;
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
         escm_error(e, "~s: character type is off.~%", escm_fun(e));
         escm_abort(e);
@@ -919,6 +942,7 @@ escm_read(escm *e, escm_atom *args, void *nil)
 #ifdef ESCM_USE_PORTS
     escm_atom *a;
 
+    (void) nil;
     a = escm_cons_pop(e, &args);
     if (a) {
         CHECK_PORT(e, a, 1);
@@ -933,6 +957,7 @@ escm_write(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *atom, *p;
 
+    (void) nil;
     atom = escm_cons_pop(e, &args);
 
 #ifdef ESCM_USE_PORTS
@@ -952,6 +977,7 @@ escm_display(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *atom, *p;
 
+    (void) nil;
     atom = escm_cons_pop(e, &args);
 
 #ifdef ESCM_USE_PORTS
@@ -972,6 +998,7 @@ escm_newline(escm *e, escm_atom *args, void *nil)
 #ifdef ESCM_USE_PORTS
     escm_atom *p;
 
+    (void) nil;
     p = escm_cons_pop(e, &args);
     if (p) {
         CHECK_PORT(e, p, 0);
@@ -986,7 +1013,7 @@ escm_newline(escm *e, escm_atom *args, void *nil)
 escm_atom *
 escm_gc(escm *e, escm_atom *args, void *nil)
 {
-    (void) args;
+    (void) args; (void) nil;
 
     escm_gc_collect(e);
 
@@ -996,7 +1023,7 @@ escm_gc(escm *e, escm_atom *args, void *nil)
 escm_atom *
 escm_backtrace(escm *e, escm_atom *args, void *nil)
 {
-    (void) args;
+    (void) args; (void) nil;
 
     escm_print_backtrace(e, e->output);
 
@@ -1006,7 +1033,7 @@ escm_backtrace(escm *e, escm_atom *args, void *nil)
 escm_atom *
 escm_read_only_x(escm *e, escm_atom *args, void *nil)
 {
-    (void) e;
+    (void) e; (void) nil;
 
     escm_cons_car(args)->ro = 1;
 
@@ -1016,7 +1043,7 @@ escm_read_only_x(escm *e, escm_atom *args, void *nil)
 escm_atom *
 escm_read_only_p(escm *e, escm_atom *args, void *nil)
 {
-    (void) e;
+    (void) e; (void) nil;
 
     return escm_cons_car(args)->ro ? e->TRUE : e->FALSE;
 }
@@ -1026,6 +1053,7 @@ escm_prim_assert(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *test, *ret;
 
+    (void) nil;
     test = escm_cons_pop(e, &args);
     ret = escm_atom_eval(e, test);
     if (e->err == 1)
@@ -1039,34 +1067,32 @@ escm_prim_assert(escm *e, escm_atom *args, void *nil)
 escm_atom *
 escm_set_case_sensitive_x(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     e->casesensitive = ESCM_ISTRUE(e, escm_cons_car(args));
-
     return NULL;
 }
 
 escm_atom *
 escm_set_brackets_parens_x(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     e->brackets = ESCM_ISTRUE(e, escm_cons_car(args));
-
     return NULL;
 }
 
 escm_atom *
 escm_set_print_backtrace_x(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     e->backtrace = ESCM_ISTRUE(e, escm_cons_car(args));
-
     return NULL;
 }
 
 escm_atom *
 escm_exit(escm *e, escm_atom *args, void *nil)
 {
-    (void) args;
-
+    (void) args; (void) nil;
     e->quit = 1;
-
     return NULL;
 }
 
@@ -1075,6 +1101,7 @@ escm_test(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *name, *get;
 
+    (void) nil;
     name = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSYM(name), name, e);
     get = escm_cons_pop(e, &args);
@@ -1099,6 +1126,7 @@ escm_test_error(escm *e, escm_atom *args, void *nil)
     escm_atom *name, *test, *ret;
     escm_output *save;
 
+    (void) nil;
     name = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSYM(name), name, e);
     test = escm_cons_pop(e, &args);
@@ -1126,6 +1154,7 @@ escm_prim_printf(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *format;
 
+    (void) nil;
     format = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(format), format, e);
 
@@ -1149,6 +1178,7 @@ escm_format(escm *e, escm_atom *args, void *nil)
     escm_atom *atom;
     escm_output *out;
 
+    (void) nil;
     atom = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(atom), atom, e);
 

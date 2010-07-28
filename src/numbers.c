@@ -140,18 +140,21 @@ escm_real_make(escm *e, double r)
 escm_atom *
 escm_number_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return (ESCM_ISNUMBER(escm_cons_val(args)->car)) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
 escm_integer_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return ESCM_ISINT(escm_cons_car(args)) ? e->TRUE : e->FALSE;
 }
 
 escm_atom *
 escm_real_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return (ESCM_ISNUMBER(escm_cons_val(args)->car)) ? e->TRUE : e->FALSE;
 }
 
@@ -161,6 +164,7 @@ escm_eq(escm *e, escm_atom *args, void *nil)
     escm_number *a, *b;
     escm_atom *c;
 
+    (void) nil;
     c = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISNUMBER(c), c, e);
     a = (escm_number *) c->ptr;
@@ -197,6 +201,7 @@ escm_lt(escm *e, escm_atom *args, void *nil)
     escm_number *a, *b;
     escm_atom *c;
 
+    (void) nil;
     c = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISNUMBER(c), c, e);
     a = (escm_number *) c->ptr;
@@ -233,6 +238,7 @@ escm_gt(escm *e, escm_atom *args, void *nil)
     escm_number *a, *b;
     escm_atom *c;
 
+    (void) nil;
     c = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISNUMBER(c), c, e);
     a = (escm_number *) c->ptr;
@@ -269,6 +275,7 @@ escm_le(escm *e, escm_atom *args, void *nil)
     escm_number *a, *b;
     escm_atom *c;
 
+    (void) nil;
     c = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISNUMBER(c), c, e);
     a = (escm_number *) c->ptr;
@@ -305,6 +312,7 @@ escm_ge(escm *e, escm_atom *args, void *nil)
     escm_number *a, *b;
     escm_atom *c;
 
+    (void) nil;
     c = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISNUMBER(c), c, e);
     a = (escm_number *) c->ptr;
@@ -341,6 +349,7 @@ escm_add(escm *e, escm_atom *args, void *nil)
     escm_number *a, *b;
     escm_atom *c;
 
+    (void) nil;
     a = xmalloc(sizeof *a);
     a->fixnum = 1, a->d.ival = 0;
 
@@ -379,6 +388,7 @@ escm_sub(escm *e, escm_atom *args, void *nil)
     escm_number *a, *b;
     escm_atom *c;
 
+    (void) nil;
     a = xmalloc(sizeof *a);
     a->fixnum = 1, a->d.ival = 0;
 
@@ -422,6 +432,7 @@ escm_mul(escm *e, escm_atom *args, void *nil)
     escm_number *a, *b;
     escm_atom *c;
 
+    (void) nil;
     a = xmalloc(sizeof *a);
     a->fixnum = 1, a->d.ival = 1;
 
@@ -460,6 +471,7 @@ escm_div(escm *e, escm_atom *args, void *nil)
     escm_number *a, *b;
     escm_atom *c;
 
+    (void) nil;
     a = xmalloc(sizeof *a);
     a->fixnum = 1, a->d.ival = 1;
 
@@ -514,6 +526,7 @@ escm_quotient(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *n, *m;
 
+    (void) nil;
     n = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISINT(n), n, e);
 
@@ -532,6 +545,7 @@ escm_remainder(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *n, *m;
 
+    (void) nil;
     n = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISINT(n), n, e);
 
@@ -551,6 +565,7 @@ escm_modulo(escm *e, escm_atom *args, void *nil)
     escm_atom *n, *m;
     long res;
 
+    (void) nil;
     n = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISINT(n), n, e);
 
@@ -573,6 +588,7 @@ escm_gcd(escm *e, escm_atom *args, void *nil)
     escm_atom *n1, *n2;
     long a, b;
 
+    (void) nil;
     n1 = escm_cons_pop(e, &args);
     if (!n1)
         return escm_int_make(e, 0);
@@ -608,6 +624,7 @@ escm_lcm(escm *e, escm_atom *args, void *nil)
     escm_atom *n1, *n2;
     long a, b, c;
 
+    (void) nil;
     n1 = escm_cons_pop(e, &args);
     if (!n1)
         return escm_int_make(e, 1);
@@ -646,6 +663,7 @@ escm_numerator(escm *e, escm_atom *args, void *nil)
     escm_atom *n;
     double a;
 
+    (void) nil;
     n = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISNUMBER(n), n, e);
 
@@ -671,6 +689,7 @@ escm_denominator(escm *e, escm_atom *args, void *nil)
     double a;
     long b;
 
+    (void) nil;
     n = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISNUMBER(n), n, e);
 
@@ -695,6 +714,7 @@ escm_rand(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *start, *end;
 
+    (void) nil;
     start = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISINT(start), start, e);
     end = escm_cons_pop(e, &args);
@@ -708,12 +728,14 @@ escm_rand(escm *e, escm_atom *args, void *nil)
 escm_atom *
 escm_floor(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return exeround(e, args, floor);
 }
 
 escm_atom *
 escm_ceiling(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return exeround(e, args, ceil);
 }
 
@@ -722,6 +744,7 @@ escm_truncate(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *a;
 
+    (void) nil;
     a = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISNUMBER(a), a, e);
     if (ESCM_ISINT(a))
@@ -740,48 +763,56 @@ escm_truncate(escm *e, escm_atom *args, void *nil)
 escm_atom *
 escm_round(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return exeround(e, args, xround);
 }
 
 escm_atom *
 escm_exp(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return exemath(e, args, exp);
 }
 
 escm_atom *
 escm_log(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return exemath(e, args, log);
 }
 
 escm_atom *
 escm_sin(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return exemath(e, args, sin);
 }
 
 escm_atom *
 escm_cos(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return exemath(e, args, cos);
 }
 
 escm_atom *
 escm_tan(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return exemath(e, args, tan);
 }
 
 escm_atom *
 escm_asin(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return exemath(e, args, asin);
 }
 
 escm_atom *
 escm_acos(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return exemath(e, args, acos);
 }
 
@@ -791,6 +822,7 @@ escm_atan(escm *e, escm_atom *args, void *nil)
     escm_atom *atom;
     double a, b;
 
+    (void) nil;
     atom = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISNUMBER(atom), atom, e);
     a = (ESCM_ISINT(atom)) ? (double) escm_number_ival(atom) :
@@ -813,6 +845,7 @@ escm_sqrt(escm *e, escm_atom *args, void *nil)
     escm_atom *n;
     double a;
 
+    (void) nil;
     n = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISNUMBER(n), n, e);
     a = (ESCM_ISINT(n)) ? (double) escm_number_ival(n) : escm_number_rval(n);
@@ -831,6 +864,7 @@ escm_expt(escm *e, escm_atom *args, void *nil)
     escm_atom *n;
     double a, b;
 
+    (void) nil;
     n = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISNUMBER(n), n, e);
     a = (ESCM_ISINT(n)) ? (double) escm_number_ival(n) : escm_number_rval(n);
@@ -857,6 +891,7 @@ escm_number_to_string(escm *e, escm_atom *args, void *nil)
     int radix;
     int len, maxlen;
 
+    (void) nil;
     if (!escm_type_ison(ESCM_TYPE_STRING)) {
         escm_error(e, "~s: string type is off.~%", escm_fun(e));
         escm_abort(e);
@@ -927,6 +962,7 @@ escm_string_to_number(escm *e, escm_atom *args, void *nil)
     escm_number *number;
     int radix;
 
+    (void) nil;
     if (!escm_type_ison(ESCM_TYPE_STRING)) {
         escm_error(e, "~s: string type is off.~%", escm_fun(e));
         escm_abort(e);

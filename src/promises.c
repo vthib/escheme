@@ -53,6 +53,7 @@ escm_delay(escm *e, escm_atom *args, void *nil)
     escm_atom *a;
     escm_promise *p;
 
+    (void) nil;
     a = escm_cons_pop(e, &args);
     p = xmalloc(sizeof *p);
     p->atom = a, p->env = e->env;
@@ -66,6 +67,7 @@ escm_force(escm *e, escm_atom *args, void *nil)
     escm_atom *promise, *penv;
     escm_promise *p;
 
+    (void) nil;
     promise = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISPROMISE(promise), promise, e);
     p = promise->ptr;

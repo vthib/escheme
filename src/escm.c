@@ -104,6 +104,8 @@ escm_free(escm *e)
     for (i = 0; i < e->ntypes; i++) {
         if (e->types[i]->dtype == TYPE_BUILT && e->types[i]->d.c.fexit)
             e->types[i]->d.c.fexit(e, e->types[i]->d.c.dexit);
+        if (e->types[i]->dtype == TYPE_REC)
+            free(e->types[i]->d.rec.name);
 
         free(e->types[i]);
     }

@@ -166,6 +166,7 @@ escm_prim_eval(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *expr, *env, *prev;
 
+    (void) nil;
     expr = escm_cons_pop(e, &args);
     env = escm_cons_pop(e, &args);
     if (env) {
@@ -185,6 +186,7 @@ escm_library(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *a, *export, *name, *env, *prevenv;
 
+    (void) nil;
     export = e->NIL;
 
     a = escm_cons_pop(e, &args);
@@ -233,6 +235,7 @@ escm_import(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *env, *cons;
 
+    (void) nil;
     while ((cons = escm_cons_pop(e, &args)) != NULL) {
         escm_assert(ESCM_ISCONS(cons), cons, e);
         env = escm_atom_eval(e, escm_cons_car(cons));
@@ -287,6 +290,7 @@ escm_alpha(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *env, *prev;
 
+    (void) nil;
     env = escm_env_new(e, e->env);
     prev = escm_env_enter(e, env);
 
@@ -305,6 +309,7 @@ escm_with(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *env, *prev, *ret;
 
+    (void) nil;
     env = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISENV(env), env, e);
 
@@ -321,7 +326,7 @@ escm_with(escm *e, escm_atom *args, void *nil)
 escm_atom *
 escm_scheme_report_environment(escm *e, escm_atom *args, void *nil)
 {
-    (void) args;
+    (void) args; (void) nil;
 
     return e->env;
 }
@@ -329,7 +334,7 @@ escm_scheme_report_environment(escm *e, escm_atom *args, void *nil)
 escm_atom *
 escm_interaction_environment(escm *e, escm_atom *args, void *nil)
 {
-    (void) args;
+    (void) args; (void) nil;
 
     return e->env;
 }

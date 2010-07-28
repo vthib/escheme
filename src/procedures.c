@@ -94,6 +94,7 @@ escm_procedure_exec(escm *e, escm_atom *atomfun, escm_atom *args, int eval)
 escm_atom *
 escm_procedure_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return ESCM_ISPROC(escm_cons_pop(e, &args)) ? e->TRUE : e->FALSE;
 }
 
@@ -103,6 +104,7 @@ escm_apply(escm *e, escm_atom *args, void *nil)
     escm_atom *fun;
     escm_cons *c, *tail;
 
+    (void) nil;
     fun = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISPROC(fun), fun, e);
 
@@ -124,12 +126,14 @@ escm_apply(escm *e, escm_atom *args, void *nil)
 escm_atom *
 escm_map(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return foreach(e, args, 1);
 }
 
 escm_atom *
 escm_for_each(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return foreach(e, args, 0);
 }
 
@@ -217,8 +221,8 @@ runprimitive(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
                 if (e->err == 1)
                     goto err;
                 if (!atom) {
-                    escm_error(e, "~s: ~s must return a real value.~%", atomfun,
-                               args->car);
+                    escm_error(e, "~s: ~s must return a real value.~%",
+                               atomfun, args->car);
                     goto err;
                 }
             }
@@ -291,8 +295,8 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
             else {
                 atom = escm_atom_eval(e, ret);
                 if (!atom) {
-                    escm_error(e, "~s: ~s must return a real value.~%", atomfun,
-                               ret);
+                    escm_error(e, "~s: ~s must return a real value.~%",
+                               atomfun, ret);
                     e->err = 1;
                 }
                 if (e->err == 1)
@@ -317,7 +321,8 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
             escm_cons *funargs, *args;
 
             for (funargs = escm_cons_val(fun->d.closure.args),
-                     args = e->ctx->first ? escm_cons_val(e->ctx->first) : NULL;
+                     args = e->ctx->first ? escm_cons_val(e->ctx->first) :
+                     NULL;
                  args; funargs = escm_cons_next(funargs),
                      args = escm_cons_next(args)) {
                 if (!funargs) {

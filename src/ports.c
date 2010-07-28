@@ -94,6 +94,7 @@ escm_port_make(escm *e, void *ptr, int input)
 escm_atom *
 escm_port_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return (ESCM_ISPORT(escm_cons_val(args)->car)) ? e->TRUE : e->FALSE;
 }
 
@@ -102,6 +103,7 @@ escm_input_port_p(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *a;
 
+    (void) nil;
     a = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISPORT(a), a, e);
 
@@ -113,6 +115,7 @@ escm_output_port_p(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *a;
 
+    (void) nil;
     a = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISPORT(a), a, e);
 
@@ -122,27 +125,21 @@ escm_output_port_p(escm *e, escm_atom *args, void *nil)
 escm_atom *
 escm_current_input_port(escm *e, escm_atom *args, void *nil)
 {
-    (void) e;
-    (void) args;
-
+    (void) e; (void) args; (void) nil;
     return escm_port_make(e, e->input, 1);
 }
 
 escm_atom *
 escm_current_output_port(escm *e, escm_atom *args, void *nil)
 {
-    (void) e;
-    (void) args;
-
+    (void) e; (void) args; (void) nil;
     return escm_port_make(e, e->output, 0);
 }
 
 escm_atom *
 escm_current_error_port(escm *e, escm_atom *args, void *nil)
 {
-    (void) e;
-    (void) args;
-
+    (void) e; (void) args; (void) nil;
     return escm_port_make(e, e->errp, 0);
 }
 
@@ -152,6 +149,7 @@ escm_with_input_from_file(escm *e, escm_atom *args, void *nil)
     escm_atom *str, *thunk;
     escm_input *input, *save;
 
+    (void) nil;
     str = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(str), str, e);
 
@@ -189,6 +187,7 @@ escm_with_output_to_file(escm *e, escm_atom *args, void *nil)
     escm_atom *str, *thunk;
     escm_output *save, *o;
 
+    (void) nil;
     str = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(str), str, e);
 
@@ -226,6 +225,7 @@ escm_with_error_to_file(escm *e, escm_atom *args, void *nil)
     escm_atom *str, *thunk;
     escm_output *save, *o;
 
+    (void) nil;
     str = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(str), str, e);
 
@@ -263,6 +263,7 @@ escm_open_input_file(escm *e, escm_atom *args, void *nil)
     escm_input *inp;
     escm_atom *name;
 
+    (void) nil;
     name = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(name), name, e);
 
@@ -289,6 +290,7 @@ escm_open_output_file(escm *e, escm_atom *args, void *nil)
     escm_output *outp;
     escm_atom *name;
 
+    (void) nil;
     name = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(name), name, e);
 
@@ -314,6 +316,7 @@ escm_close_port(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *port;
 
+    (void) nil;
     port = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISPORT(port), port, e);
 

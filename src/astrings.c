@@ -114,6 +114,7 @@ escm_astring_p(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *a;
 
+    (void) nil;
     a = escm_cons_pop(e, &args);
     return ESCM_ISASTR(a) ? e->TRUE : e->FALSE;
 }
@@ -126,6 +127,7 @@ escm_make_astring(escm *e, escm_atom *args, void *nil)
     char *str;
     size_t k;
 
+    (void) nil;
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
         escm_error(e, "~s: character type is off.~%", escm_fun(e));
         escm_abort(e);
@@ -163,6 +165,7 @@ escm_prim_astring(escm *e, escm_atom *args, void *nil)
     char *str;
     size_t len;
 
+    (void) nil;
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
         escm_error(e, "~s: character type is off.~%", escm_fun(e));
         escm_abort(e);
@@ -193,6 +196,7 @@ escm_astring_length(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *str;
 
+    (void) nil;
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
         escm_error(e, "~s: number type is off.~%", escm_fun(e));
         escm_abort(e);
@@ -212,6 +216,7 @@ escm_astring_ref(escm *e, escm_atom *args, void *nil)
     escm_atom *str, *k;
     long i;
 
+    (void) nil;
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
         escm_error(e, "~s: character type is off.~%", escm_fun(e));
         escm_abort(e);
@@ -243,6 +248,7 @@ escm_astring_set_x(escm *e, escm_atom *args, void *nil)
     escm_atom *str, *k, *c;
     long i;
 
+    (void) nil;
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
         escm_error(e, "~s: character type is off.~%", escm_fun(e));
         escm_abort(e);
@@ -295,60 +301,70 @@ escm_astring_set_x(escm *e, escm_atom *args, void *nil)
 escm_atom *
 escm_astring_eq_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     cmpstr(e, args, ==, strcmp);
 }
 
 escm_atom *
 escm_astring_lt_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     cmpstr(e, args, <, strcmp);
 }
 
 escm_atom *
 escm_astring_gt_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     cmpstr(e, args, >, strcmp);
 }
 
 escm_atom *
 escm_astring_le_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     cmpstr(e, args, <=, strcmp);
 }
 
 escm_atom *
 escm_astring_ge_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     cmpstr(e, args, >=, strcmp);
 }
 
 escm_atom *
 escm_astring_ci_eq_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     cmpstr(e, args, ==, xstrcasecmp);
 }
 
 escm_atom *
 escm_astring_ci_lt_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     cmpstr(e, args, <, xstrcasecmp);
 }
 
 escm_atom *
 escm_astring_ci_gt_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     cmpstr(e, args, >, xstrcasecmp);
 }
 
 escm_atom *
 escm_astring_ci_le_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     cmpstr(e, args, <=, xstrcasecmp);
 }
 
 escm_atom *
 escm_astring_ci_ge_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     cmpstr(e, args, >=, xstrcasecmp);
 }
 
@@ -360,6 +376,7 @@ escm_subastring(escm *e, escm_atom *args, void *nil)
     escm_atom *str, *a;
     char *s;
 
+    (void) nil;
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
         escm_error(e, "~s: number type is off.~%", escm_fun(e));
         escm_abort(e);
@@ -405,6 +422,7 @@ escm_astring_append(escm *e, escm_atom *args, void *nil)
     escm_atom *ret;
     char *s;
 
+    (void) nil;
     len = 0;
     for (c = escm_cons_val(args); c; c = escm_cons_next(c)) {
         escm_assert(ESCM_ISASTR(c->car), c->car, e);
@@ -429,6 +447,7 @@ escm_astring_copy(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *str;
 
+    (void) nil;
     str = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISASTR(str), str, e);
 
@@ -441,6 +460,7 @@ escm_astring_fill_x(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *str, *c;
 
+    (void) nil;
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
         escm_error(e, "~s: character type is off.~%", escm_fun(e));
         escm_abort(e);
@@ -467,6 +487,7 @@ escm_astring_to_list(escm *e, escm_atom *args, void *nil)
     escm_atom *str;
     char *p;
 
+    (void) nil;
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
         escm_error(e, "~s: character type is off.~%", escm_fun(e));
         escm_abort(e);
@@ -487,6 +508,7 @@ escm_list_to_astring(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *list;
 
+    (void) nil;
     list = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCONS(list), list, e);
 

@@ -206,7 +206,7 @@ set_record(escm *e, escm_atom **rec, escm_atom **args, size_t type)
     if (e->types[type]->d.rec.parenttype != 0)
         offset = set_record(e, rec, args, e->types[type]->d.rec.parenttype);
 
-    for (i = 0; i < e->types[type]->d.rec.len; i++)
+    for (i = offset; i < e->types[type]->d.rec.len; i++)
         rec[offset++] = escm_cons_pop(e, args);
 
     return offset;

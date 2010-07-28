@@ -19,6 +19,16 @@
 
 #include "escheme.h"
 
+/* Macro implementation :
+ *
+ * the macro implementation is pretty straightforward, except regarding
+ * ellipsis.
+ * Variable values are stored in the "match" linked list, and if the symbol
+ * is "ellipsed", subsequent values are stored in the "node" linked list, each
+ * group of values are ended with a NULL value, needed to separate the
+ * differents groups (i.e. ((name sym ...) ...))
+ */
+
 struct node {
     escm_atom *a;
     struct node *next;
@@ -38,12 +48,12 @@ static unsigned long macrotype = 0;
 
 static int match(escm *, escm_macro *, escm_atom *, escm_atom *);
 static struct match *bind(escm *, escm_macro *, escm_atom *, escm_atom *,
-                          struct match *);
+                          struct match *, int);
 static escm_atom *expand(escm *, escm_macro *, escm_atom *, struct match *,
                          int);
 
 static struct match *add(struct match *, escm_atom *, escm_atom *,
-                         struct match *);
+                         struct match *, int);
 static struct match *checkup(escm *, struct match *, escm_atom *);
 
 static void macro_mark(escm *, escm_macro *);
@@ -85,6 +95,7 @@ escm_expand(escm *e, escm_atom *args, void *nil)
     escm_atom *arg;
     escm_atom *atom, *macro;
 
+    (void) nil;
     arg = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISCONS(arg), arg, e);
 
@@ -110,6 +121,7 @@ escm_define_syntax(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *name, *val;
 
+    (void) nil;
     name = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSYM(name), name, e);
 
@@ -135,6 +147,7 @@ escm_syntax_rules(escm *e, escm_atom *args, void *nil)
     escm_cons *c;
     escm_macro *m;
 
+    (void) nil;
     m = xmalloc(sizeof *m);
     m->literals = escm_cons_pop(e, &args);
     escm_assert1(ESCM_ISCONS(m->literals), m->literals, e, free(m));
@@ -193,7 +206,7 @@ match(escm *e, escm_macro *m, escm_atom *rule, escm_atom *arg)
 
 static struct match *
 bind(escm *e, escm_macro *m, escm_atom *rule, escm_atom *arg,
-     struct match *match)
+     struct match *match, int ellipsis)
 {
     struct match *mid;
 
@@ -202,13 +215,13 @@ bind(escm *e, escm_macro *m, escm_atom *rule, escm_atom *arg,
 
     if (ESCM_ISSYM(rule)) {
         if (!escm_cons_isin(e, m->literals, rule, 1))
-            return add(match, rule, arg, checkup(e, match, rule));
+            return add(match, rule, arg, checkup(e, match, rule), ellipsis);
     } else if (ESCM_ISCONS(rule)) {
         escm_atom *r, *a;
 
         if (!ESCM_ISCONS(escm_cons_cdr(rule)))
             match = bind(e, m, escm_cons_cdr(rule),
-                         arg ? escm_cons_cdr(arg) : NULL, match);
+                         arg ? escm_cons_cdr(arg) : NULL, match, ellipsis);
 
         r = escm_cons_pop(e, &rule);
         if (rule != e->NIL && ESCM_ISSYM(escm_cons_car(rule)) &&
@@ -216,22 +229,23 @@ bind(escm *e, escm_macro *m, escm_atom *rule, escm_atom *arg,
             if (ESCM_ISSYM(r)) {
                 mid = checkup(e, match, r);
                 while ((a = escm_cons_pop(e, &arg)) != NULL) {
-                    match = add(match, r, a, mid);
+                    match = add(match, r, a, mid, 1);
                     if (!mid)
                         mid = checkup(e, match, r);
                 }
             } else {
                 while ((a = escm_cons_pop(e, &arg)) != NULL)
-                    match = bind(e, m, r, a, match);
+                    match = bind(e, m, r, a, match, 1);
             }
+            match = bind(e, m, r, a, match, 1);
 
             (void) escm_cons_pop(e, &rule);
         } else  {
             a = escm_cons_pop(e, &arg);
-            match = bind(e, m, r, a, match);
+            match = bind(e, m, r, a, match, ellipsis);
         }
 
-        return bind(e, m, rule, arg, match);
+        return bind(e, m, rule, arg, match, ellipsis);
     }
     return match;
 }
@@ -308,7 +322,8 @@ retnull:
 }
 
 static struct match *
-add(struct match *match, escm_atom *id, escm_atom *bounded, struct match *m)
+add(struct match *match, escm_atom *id, escm_atom *bounded, struct match *m,
+    int ellipsis)
 {
     struct node *n;
 
@@ -322,10 +337,9 @@ add(struct match *match, escm_atom *id, escm_atom *bounded, struct match *m)
     n->a = bounded, n->next = NULL;
     if (!m->fst)
         m->fst = n, m->cur = n;
-    else {
+    else
         m->cur->next = n, m->cur = n;
-        m->ellipsed = 1;
-    }
+    m->ellipsed = ellipsis;
 
     return match;
 }
@@ -378,7 +392,7 @@ macro_expand(escm *e, escm_macro *m, escm_atom *args)
     rules = m->rules;
     for (a = escm_cons_pop(e, &rules); a; a = escm_cons_pop(e, &rules)) {
         if (match(e, m, escm_cons_cdr(escm_cons_car(a)), args)) {
-            b = bind(e, m, escm_cons_cdr(escm_cons_car(a)), args, NULL);
+            b = bind(e, m, escm_cons_cdr(escm_cons_car(a)), args, NULL, 0);
             for (ma = b; ma; ma = ma->prev)
                 ma->cur = ma->fst;
 
