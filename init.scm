@@ -108,3 +108,10 @@
        (define-record-field type field-tag accessor . more)
        ...))))
 ;>
+
+(define-syntax check-arg
+  (syntax-rules ()
+    ((check-arg pred val caller)
+     (if (not (pred val))
+         (error 'caller val ": wrong argument.")))))
+

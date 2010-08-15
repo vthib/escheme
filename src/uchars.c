@@ -26,7 +26,7 @@
 
 static unsigned long uchartype = 0;
 
-static void uchar_print(escm *, int, escm_output *, int);
+static void uchar_print(escm *, wint_t, escm_output *, int);
 static int uchar_equal(escm *, escm_intptr, escm_intptr, int);
 static int uchar_parsetest(escm *, escm_input *, int);
 static escm_atom *uchar_parse(escm *, escm_input *);
@@ -34,23 +34,23 @@ static wchar_t input_getuchar(escm *, escm_input *);
 static inline escm_atom *testchar(escm *, escm_atom *, int (*)(wint_t));
 
 struct charcode {
-    char *name;
-    int c;
+    wchar_t *name;
+    wint_t c;
 };
 
 #define CHCODELEN 11
 static struct charcode chcode[CHCODELEN] = {
-    { "newline", '\n' },
-    { "space", ' ' },
-    { "nul", '\0' },
-    { "alarm", '\a' },
-    { "backspace", '\b' },
-    { "tab", '\t' },
-    { "vtab", '\v' },
-    { "page", '\f' },
-    { "return", '\r' },
-    { "esc", '\x1B' },
-    { "delete", '\x7F' }
+    { L"newline", L'\n' },
+    { L"space", L' ' },
+    { L"nul", L'\0' },
+    { L"alarm", L'\a' },
+    { L"backspace", L'\b' },
+    { L"tab", L'\t' },
+    { L"vtab", L'\v' },
+    { L"page", L'\f' },
+    { L"return", L'\r' },
+    { L"esc", L'\x1B' },
+    { L"delete", L'\x7F' }
 };
 
 void
@@ -123,6 +123,7 @@ escm_uchar_p(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *a;
 
+    (void) nil;
     a = escm_cons_pop(e, &args);
     return ESCM_ISUCHAR(a) ? e->TRUE : e->FALSE;
 }
@@ -144,90 +145,105 @@ escm_uchar_p(escm *e, escm_atom *args, void *nil)
 escm_atom *
 escm_uchar_eq_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     charcmp(e, args, ==, ID);
 }
 
 escm_atom *
 escm_uchar_lt_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     charcmp(e, args, <, ID);
 }
 
 escm_atom *
 escm_uchar_gt_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     charcmp(e, args, >, ID);
 }
 
 escm_atom *
 escm_uchar_le_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     charcmp(e, args, <=, ID);
 }
 
 escm_atom *
 escm_uchar_ge_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     charcmp(e, args, >=, ID);
 }
 
 escm_atom *
 escm_uchar_ci_eq_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     charcmp(e, args, ==, towlower);
 }
 
 escm_atom *
 escm_uchar_ci_lt_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     charcmp(e, args, <, towlower);
 }
 
 escm_atom *
 escm_uchar_ci_gt_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     charcmp(e, args, >, towlower);
 }
 
 escm_atom *
 escm_uchar_ci_le_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     charcmp(e, args, <=, towlower);
 }
 
 escm_atom *
 escm_uchar_ci_ge_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     charcmp(e, args, >=, towlower);
 }
 
 escm_atom *
 escm_uchar_alphabetic_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return testchar(e, args, iswalpha);
 }
 
 escm_atom *
 escm_uchar_numeric_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return testchar(e, args, iswdigit);
 }
 
 escm_atom *
 escm_uchar_whitespace_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return testchar(e, args, iswspace);
 }
 
 escm_atom *
 escm_uchar_upper_case_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return testchar(e, args, iswupper);
 }
 
 escm_atom *
 escm_uchar_lower_case_p(escm *e, escm_atom *args, void *nil)
 {
+    (void) nil;
     return testchar(e, args, iswlower);
 }
 
@@ -237,6 +253,7 @@ escm_uchar_to_integer(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *c;
 
+    (void) nil;
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
         escm_error(e, "~s: number type is off.~%", escm_fun(e));
         escm_abort(e);
@@ -253,6 +270,7 @@ escm_integer_to_uchar(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *n;
 
+    (void) nil;
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
         escm_error(e, "~s: number type is off.~%", escm_fun(e));
         escm_abort(e);
@@ -275,6 +293,7 @@ escm_uchar_upcase(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *c;
 
+    (void) nil;
     c = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISUCHAR(c), c, e);
 
@@ -286,6 +305,7 @@ escm_uchar_downcase(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *c;
 
+    (void) nil;
     c = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISUCHAR(c), c, e);
 
@@ -293,20 +313,20 @@ escm_uchar_downcase(escm *e, escm_atom *args, void *nil)
 }
 
 static void
-uchar_print(escm *e, int c, escm_output *stream, int lvl)
+uchar_print(escm *e, wint_t c, escm_output *stream, int lvl)
 {
     int i;
 
     (void) e;
 
     if (lvl == 1) {
-        if (c == EOF)
+        if (c == WEOF)
             escm_printf(stream, "#<eof-object>");
         escm_putc(stream, c);
         return;
     }
 
-    if (c == EOF) {
+    if (c == WEOF) {
         escm_printf(stream, "#<eof-object>");
         return;
     }

@@ -21,6 +21,11 @@
 void
 escm_srfi_init(escm *e)
 {
+    escm_atom *o;
+
+    o = escm_procedure_new(e, "and-let*", 1, -1, escm_and_let_star, NULL);
+    escm_proc_val(o)->d.c.quoted = 0x3;
+
 #if defined ESCM_USE_STRINGS && defined ESCM_USE_PORTS
 /*    (void) escm_library_enter(e, "srfi-6", 1);*/
 
@@ -38,6 +43,60 @@ escm_srfi_init(escm *e)
     (void) escm_procedure_new(e, "error", 1, -1, escm_srfi_error, NULL);
 
 /*    escm_library_exit(e); */
+}
+
+/* srfi 2 */
+
+escm_atom *
+escm_and_let_star(escm *e, escm_atom *args, void *data)
+{
+    escm_atom *claws, *arg, *prevenv, *val;
+    escm_cons *c;
+
+    (void) data;
+
+    claws = escm_cons_pop(e, &args);
+    escm_assert(ESCM_ISCONS(claws), claws, e);
+
+    /* we create the new environment and enter it */
+    prevenv = escm_env_enter(e, escm_env_new(e, e->env));
+
+    val = e->TRUE;
+    /* the we parse each claw and bind each variable */
+    while ((arg = escm_cons_pop(e, &claws))) {
+        if (ESCM_ISSYM(arg)) {
+            val = escm_atom_eval(e, arg);
+            if (!ESCM_ISTRUE(e, val))
+                goto falseret;
+        } else {
+            escm_assert1(ESCM_ISCONS(arg), arg, e,
+                         escm_env_leave(e, prevenv));
+            c = escm_cons_val(arg);
+            escm_assert1(c->cdr == e->NIL || escm_cons_val(c->cdr)->cdr ==
+                         e->NIL, arg, e, escm_env_leave(e, prevenv));
+            if (c->cdr == e->NIL) {
+                val = escm_atom_eval(e, c->car);
+                if (!ESCM_ISTRUE(e, val))
+                    goto falseret;
+            } else {
+                escm_assert1(ESCM_ISSYM(c->car), c->car, e,
+                             escm_env_leave(e, prevenv));
+                val = escm_atom_eval(e, escm_cons_val(c->cdr)->car);
+                if (ESCM_ISCLOSURE(val) && !escm_proc_val(val)->name)
+                    escm_proc_val(val)->name = xstrdup(escm_sym_name(c->car));
+                escm_env_set(e, e->env, c->car, val);
+            }
+        }
+    }
+
+    if (escm_cons_val(args) != NULL)
+        val = escm_and(e, args, NULL);
+    escm_env_leave(e, prevenv);
+    return val;
+
+falseret:
+    escm_env_leave(e, prevenv);
+    return e->FALSE;
 }
 
 #if defined ESCM_USE_STRINGS && defined ESCM_USE_PORTS

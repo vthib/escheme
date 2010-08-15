@@ -47,7 +47,7 @@
 #endif
 
 #ifndef ESCM_CIRCULAR_LIST
-# define ESCM_CIRCULAR_LIST 0 /* default */
+# define ESCM_CIRCULAR_LIST 2 /* default */
 #endif
 
 /* typedefs */

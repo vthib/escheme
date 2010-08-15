@@ -532,7 +532,7 @@ cons_print(escm *e, escm_cons *cons, escm_output *stream, int lvl)
     for (c = cons, end = c; c; c = escm_cons_next(c), end = c) {
         escm_atom_print4(e, c->car, stream, lvl);
         if (!ESCM_ISCONS(c->cdr)) {
-            fprintf(stream, " . ");
+            escm_printf(stream, " . ");
             escm_atom_print4(e, c->cdr, stream, lvl);
             break;
         } else if (c->cdr->marked == 1) {

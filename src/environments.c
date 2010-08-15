@@ -69,8 +69,8 @@ escm_env_addprimitives(escm *e)
     o = escm_procedure_new(e, "with", 2, -1, escm_with, NULL);
     escm_proc_val(o)->d.c.quoted = 0x6;
 
-    o = escm_procedure_new(e, "library", 1, -1, escm_library, NULL);
-    escm_proc_val(o)->d.c.quoted = 0x3;
+    o = escm_procedure_new(e, "library", 2, -1, escm_library, NULL);
+    escm_proc_val(o)->d.c.quoted = 0x7;
     o = escm_procedure_new(e, "import", 0, -1, escm_import, NULL);
     escm_proc_val(o)->d.c.quoted = 0x1;
 }

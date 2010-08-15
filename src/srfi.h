@@ -19,6 +19,9 @@
 
 void escm_srfi_init(escm *);
 
+/* srfi-2 */
+escm_atom *escm_and_let_star(escm *, escm_atom *, void *);
+
 /* srfi 6 */
 escm_atom *escm_open_input_string(escm *, escm_atom *, void *);
 escm_atom *escm_open_output_string(escm *, escm_atom *, void *);
