@@ -22,11 +22,6 @@
 #include <math.h>
 #include "types.h"
 
-#ifdef ESCM_USE_UNICODE
-# include <wchar.h>
-# include <wctype.h>
-#endif
-
 #include "utils.h"
 
 /**
@@ -39,7 +34,7 @@ xmalloc(size_t n)
 
     p = malloc(n);
     if (!p) {
-        fprintf(stderr, _("Memory is too low\n"));
+        ftprintf(stderr, _(T("Memory is too low\n")));
         exit(EXIT_FAILURE);
     }
 
@@ -56,7 +51,7 @@ xcalloc(size_t nelem, size_t n)
 
     p = calloc(nelem, n);
     if (!p) {
-        fprintf(stderr, _("Memory is too low\n"));
+        ftprintf(stderr, _(T("Memory is too low\n")));
         exit(EXIT_FAILURE);
     }
     return p;
@@ -72,7 +67,7 @@ xrealloc(void *ptr, size_t size)
 
     p = realloc(ptr, size);
     if (!p) {
-        fprintf(stderr, _("Memory is too low\n"));
+        ftprintf(stderr, _(T("Memory is too low\n")));
         exit(EXIT_FAILURE);
     }
 
@@ -82,6 +77,19 @@ xrealloc(void *ptr, size_t size)
 /**
  * @brief duplicate a string and return it
  */
+tchar *
+tcsdup(const tchar *s)
+{
+    size_t len;
+    tchar *copy;
+
+    len = tcslen(s) + 1;
+    copy = xmalloc(len * sizeof *copy);
+    tmemcpy(copy, s, len);
+
+    return copy;
+}
+
 char *
 xstrdup(const char *s)
 {
@@ -96,18 +104,18 @@ xstrdup(const char *s)
 }
 
 int
-xstrcasecmp(const char *s1, const char *s2)
+xtcscasecmp(const tchar *s1, const tchar *s2)
 {
-    char *c1, *c2;
+    tchar *c1, *c2;
 
-    for (c1 = (char *) s1, c2 = (char *) s2; *c1 != '\0'; c1++, c2++) {
-        if (*c2 == '\0')
+    for (c1 = (tchar *) s1, c2 = (tchar *) s2; *c1 != T('\0'); c1++, c2++) {
+        if (*c2 == T('\0'))
             return 1;
-        else if (tolower(*c1) != tolower(*c2))
-            return (tolower(*c1) > tolower(*c2)) ? 1 : -1;
+        else if (totlower(*c1) != totlower(*c2))
+            return (totlower(*c1) > totlower(*c2)) ? 1 : -1;
     }
 
-    return (*c2 != '\0') ? -1 : 0;
+    return (*c2 != T('\0')) ? -1 : 0;
 }
 
 double
@@ -132,63 +140,39 @@ xround(double a)
 #endif
 }
 
-#ifdef ESCM_USE_UNICODE
 char *
-wcstostr(const wchar_t *w)
+tcstostr(const tchar *w)
 {
+#ifdef ESCM_UNICODE
     char *str;
     size_t n;
 
     n = wcstombs(NULL, w, 0) + 1;
     str = xmalloc(sizeof *str * n);
     if (wcstombs(str, w, n) == (size_t) (-1))
-        fprintf(stderr, "wcstombs: conversion error.\n");
+        ftprintf(stderr, _(T("wcstombs: conversion error.\n")));
     return str;
+#else
+    return xstrdup(w);
+#endif
 }
 
-wchar_t *
-strtowcs(const char *str)
+tchar *
+strtotcs(const char *str)
 {
+#ifdef ESCM_UNICODE
     wchar_t *w;
     size_t n;
 
     n = mbstowcs(NULL, str, 0) + 1;
     w = xmalloc(sizeof *w * n);
     if (mbstowcs(w, str, n) == (size_t) (-1))
-        fprintf(stderr, "mbstowcs: conversion error.\n");
+        ftprintf(stderr, _(T("mbstowcs: conversion error.\n")));
     return w;
-}
-
-/**
- * @brief duplicate a wide string and return it
- */
-wchar_t *
-xwcsdup(const wchar_t *s)
-{
-    size_t len;
-    wchar_t *copy;
-
-    len = sizeof *s * (wcslen(s) + 1);
-    copy = xmalloc(len);
-    memcpy(copy, s, len);
-
-    return copy;
-}
-
-int
-xwcscasecmp(const wchar_t *s1, const wchar_t *s2)
-{
-    size_t i1, i2;
-
-    for (i1 = 0, i2 = 0; s1[i1] != L'\0'; i1++, i2++) {
-        if (s2[i2] == L'\0')
-            return 1;
-        else if (towlower(s1[i1]) != towlower(s2[i2]))
-            return (towlower(s1[i1]) > towlower(s2[i2])) ? 1 : -1;
-    }
-
-    return (s2[i2] != L'\0') ? -1 : 0;
-}
+#else
+    return xstrdup(str);
 #endif
+
+}
 
 /**@}*/

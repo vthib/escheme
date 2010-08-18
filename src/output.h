@@ -31,9 +31,9 @@ struct escm_output {
             FILE *fp;
         } file;
         struct {
-           char *str;
-           char *cur;
-           size_t maxlen;
+            tchar *str;
+            tchar *cur;
+            size_t maxlen;
         } str;
     } d;
 
@@ -44,22 +44,22 @@ escm_output *escm_output_fopen(const char *);
 escm_output *escm_output_fmng(FILE *, const char *);
 
 escm_output *escm_output_str(void);
-char *escm_output_getstr(escm_output *);
+tchar *escm_output_getstr(escm_output *);
 
 void escm_output_close(escm_output *);
 
-void escm_vprintf(escm_output *, const char *, va_list);
-void escm_printf(escm_output *, const char *, ...);
-void escm_parse_print(escm_input *, escm_output *, const char *, ...);
-void escm_scmpf(escm *, escm_output *, const char *, ...);
-void escm_scmpf2(escm *, escm_output *, const char *, escm_atom *);
+void escm_vprintf(escm_output *, const tchar *, va_list);
+void escm_printf(escm_output *, const tchar *, ...);
+void escm_parse_print(escm_input *, escm_output *, const tchar *, ...);
+void escm_scmpf(escm *, escm_output *, const tchar *, ...);
+void escm_scmpf2(escm *, escm_output *, const tchar *, escm_atom *);
 
-void escm_notice(escm *, const char *, ...);
-void escm_warning(escm *, const char *, ...);
-void escm_error(escm *, const char *, ...);
+void escm_notice(escm *, const tchar *, ...);
+void escm_warning(escm *, const tchar *, ...);
+void escm_error(escm *, const tchar *, ...);
 
-void escm_print_slashify(escm_output *, const char *);
+void escm_print_slashify(escm_output *, const tchar *);
 
-void escm_putc(escm_output *, int);
+void escm_putc(escm_output *, tint);
 
 #endif /* ESCHEME_OUTPUT_H */

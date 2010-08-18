@@ -25,7 +25,7 @@
 
 #define MAX_BUFFSIZE 2048
 
-static char strbuf[MAX_BUFFSIZE];
+static tchar strbuf[MAX_BUFFSIZE];
 
 
 /**
@@ -81,7 +81,7 @@ escm_input_fmng(FILE *fp, const char *name)
  * @brief set the string as input
  */
 escm_input *
-escm_input_str(const char *str)
+escm_input_str(const tchar *str)
 {
     escm_input *f;
 
@@ -90,7 +90,7 @@ escm_input_str(const char *str)
     f = xcalloc(1, sizeof *f);
     f->type = INPUT_STR;
 
-    f->d.str.str = xstrdup(str);
+    f->d.str.str = tcsdup(str);
     f->d.str.cur = f->d.str.str;
 
     return f;
@@ -121,30 +121,30 @@ escm_input_close(escm_input *f)
 /**
  * @brief return a text that end with one of the `end' chars
  */
-char *
-escm_input_gettext(escm_input *f, const char *end)
+tchar *
+escm_input_gettext(escm_input *f, const tchar *end)
 {
     size_t len = 0;
-    int c;
+    tint c;
 
     assert(f != NULL);
     assert(end != NULL);
 
     c = escm_input_getc(f);
-    while (c != EOF && !strchr(end, c)) {
-        if (c == '\\') {
+    while (c != TEOF && !tcschr(end, c)) {
+        if (c == T('\\')) {
             c = escm_input_getc(f);
             switch (c) {
-            case 'a': c = '\a'; break;
-            case 'b': c = '\b'; break;
-            case 'f': c = '\f'; break;
-            case 'n': c = '\n'; break;
-            case 'r': c = '\r'; break;
-            case 't': c = '\t'; break;
-            case 'v': c = '\v'; break;
-            case '\\': case '"': break;
+            case T('a'): c = T('\a'); break;
+            case T('b'): c = T('\b'); break;
+            case T('f'): c = T('\f'); break;
+            case T('n'): c = T('\n'); break;
+            case T('r'): c = T('\r'); break;
+            case T('t'): c = T('\t'); break;
+            case T('v'): c = T('\v'); break;
+            case T('\\'): case T('"'): break;
             default:
-                strbuf[len++] = '\\';
+                strbuf[len++] = T('\\');
                 break; /* keep the new character */
             }
             strbuf[len++] = c;
@@ -155,20 +155,20 @@ escm_input_gettext(escm_input *f, const char *end)
 
     if (!f->end)
         escm_input_ungetc(f, c);
-    strbuf[len] = '\0';
+    strbuf[len] = T('\0');
 
-    return xstrdup(strbuf);
+    return tcsdup(strbuf);
 }
 
 /**
  * @brief get a string. Each character is passed to "fun" which must return 1
  * if the character is valid, 0 else (cf ctype.h)
  */
-char *
-escm_input_getstr_fun(escm_input *f, int (*fun)(int), int casesens)
+tchar *
+escm_input_getstr_fun(escm_input *f, int (*fun)(tint), int casesens)
 {
     size_t len = 0;
-    int c;
+    tint c;
 
     assert(f != NULL);
 
@@ -177,13 +177,13 @@ escm_input_getstr_fun(escm_input *f, int (*fun)(int), int casesens)
         if (!casesens)
             c = tolower(c);
         strbuf[len++] = c;
-    } while (c != EOF && fun(c));
+    } while (c != TEOF && fun(c));
 
     if (!f->end)
         escm_input_ungetc(f, c);
-    strbuf[len - 1] = '\0';
+    strbuf[len - 1] = T('\0');
 
-    return xstrdup(strbuf);
+    return tcsdup(strbuf);
 }
 
 /**
@@ -211,48 +211,43 @@ escm_input_print(escm_input *f, escm_output *outp)
     assert(f != NULL);
 
     if (f->type == INPUT_FILE) {
-        escm_printf(outp, "%s:", f->d.file.name);
+        escm_printf(outp, T("%s:"), f->d.file.name);
         if (f->d.file.line == -1)
-            escm_putc(outp, ':');
+            escm_putc(outp, T(':'));
         else
-            escm_printf(outp, "%ld:", f->d.file.line);
+            escm_printf(outp, T("%ld:"), f->d.file.line);
         if (f->d.file.car == -1)
-            escm_printf(outp, ": ");
+            escm_printf(outp, T(": "));
         else
-            escm_printf(outp, "%ld: ", f->d.file.car);
+            escm_printf(outp, T("%ld: "), f->d.file.car);
     } else {
-#ifdef ESCM_USE_UNICODE
-        escm_printf(outp, "\"%ls\":%d: ", f->d.str.str,
+        escm_printf(outp, T("\"%ls\":%d: "), f->d.str.str,
                     f->d.str.cur - f->d.str.str);
-#else
-        escm_printf(outp, "\"%s\":%d: ", f->d.str.str,
-                    f->d.str.cur - f->d.str.str);
-#endif
     }
 }
 
 /**
  * @brief return the next char in the stream
  */
-int
+tint
 escm_input_getc(escm_input *f)
 {
-    int c;
+    tint c;
 
     assert(f != NULL);
 
     if (f->end)
-        return EOF;
+        return TEOF;
 
     if (f->type == INPUT_FILE) {
         if (f->d.file.un > 0)
             c = f->d.file.ub[--f->d.file.un];
         else
-            c = fgetc(f->d.file.fp);
+            c = fgettc(f->d.file.fp);
 
-        if (c == EOF)
+        if (c == TEOF)
             f->end = 1;
-        else if (c == '\n') {
+        else if (c == T('\n')) {
             if (f->d.file.line != -1)
                 f->d.file.line++;
             f->d.file.car = 0;
@@ -261,8 +256,8 @@ escm_input_getc(escm_input *f)
                 f->d.file.car++;
         }
     } else {
-        if (*f->d.str.cur == '\0')
-            f->end = 1, c = EOF;
+        if (*f->d.str.cur == T('\0'))
+            f->end = 1, c = TEOF;
         else
             c = *f->d.str.cur++;
     }
@@ -270,21 +265,21 @@ escm_input_getc(escm_input *f)
     return c;
 }
 
-int
+tint
 escm_input_peek(escm_input *f)
 {
-    int c;
+    tint c;
 
     assert(f != NULL);
 
     if (f->end)
-        return EOF;
+        return TEOF;
 
     if (f->type == INPUT_FILE) {
         if (f->d.file.un > 0)
             return f->d.file.ub[f->d.file.un - 1];
 
-        c = fgetc(f->d.file.fp);
+        c = fgettc(f->d.file.fp);
 
         if (f->d.file.usize <= f->d.file.un) {
             f->d.file.usize += 2;
@@ -302,7 +297,7 @@ escm_input_peek(escm_input *f)
  * @brief put a character back in the input
  */
 void
-escm_input_ungetc(escm_input *f, int c)
+escm_input_ungetc(escm_input *f, tint c)
 {
     assert(f != NULL);
 
@@ -310,7 +305,8 @@ escm_input_ungetc(escm_input *f, int c)
         if (f->d.file.car != -1) {
             if (f->d.file.car > 0)
                 f->d.file.car--;
-            else if (f->d.file.car == 0 && c == '\n' && f->d.file.line != -1)
+            else if (f->d.file.car == 0 && c == T('\n') &&
+                     f->d.file.line != -1)
                 f->d.file.line--;
         }
 

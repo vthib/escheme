@@ -19,20 +19,20 @@
 void
 escm_dyntypes_init(escm *e)
 {
-    (void) escm_procedure_new(e, "type", 1, 1, escm_prim_type, NULL);
-    (void) escm_procedure_new(e, "create-type", 4, 4, escm_create_type,
+    (void) escm_procedure_new(e, T("type"), 1, 1, escm_prim_type, NULL);
+    (void) escm_procedure_new(e, T("create-type"), 4, 4, escm_create_type,
                               NULL);
 
-    (void) escm_procedure_new(e, "set-print", 2, 2, escm_set_print, NULL);
-    (void) escm_procedure_new(e, "set-equal", 2, 2, escm_set_equal, NULL);
-    (void) escm_procedure_new(e, "set-parse?", 2, 2, escm_set_parse_p, NULL);
-    (void) escm_procedure_new(e, "set-parse", 2, 2, escm_set_parse, NULL);
-    (void) escm_procedure_new(e, "set-eval", 2, 2, escm_set_eval, NULL);
-    (void) escm_procedure_new(e, "set-exec", 2, 2, escm_set_exec, NULL);
+    (void) escm_procedure_new(e, T("set-print"), 2, 2, escm_set_print, NULL);
+    (void) escm_procedure_new(e, T("set-equal"), 2, 2, escm_set_equal, NULL);
+    (void) escm_procedure_new(e, T("set-parse?"), 2, 2, escm_set_parse_p, NULL);
+    (void) escm_procedure_new(e, T("set-parse"), 2, 2, escm_set_parse, NULL);
+    (void) escm_procedure_new(e, T("set-eval"), 2, 2, escm_set_eval, NULL);
+    (void) escm_procedure_new(e, T("set-exec"), 2, 2, escm_set_exec, NULL);
 
-    (void) escm_procedure_new(e, "type-parse?", 2, 2, escm_prim_type_parse_p,
+    (void) escm_procedure_new(e, T("type-parse?"), 2, 2, escm_prim_type_parse_p,
                               NULL);
-    (void) escm_procedure_new(e, "type-parse", 1, 1, escm_prim_type_parse,
+    (void) escm_procedure_new(e, T("type-parse"), 1, 1, escm_prim_type_parse,
                               NULL);
 }
 
@@ -87,9 +87,8 @@ escm_rep_to_data(escm *e, escm_atom *args, escm_type **type)
     atom = escm_cons_pop(e, &args);
 
     if (atom->type != (*type)->d.dyn.basetype) {
-        escm_error(e, "~s: ~s type and basetype for this dynamic type "
+        escm_error(e, _(T("~s: ~s type and basetype for this dynamic type "))
                    "mismatch.~%", escm_fun(e), atom);
-        printf("%ld\n", (*type)->d.dyn.basetype);
         escm_abort(e);
     }
 
@@ -106,7 +105,7 @@ escm_data_to_rep(escm *e, escm_atom *args, void *nil)
     (void) nil;
     atom = escm_cons_pop(e, &args);
     if (e->types[atom->type]->dtype != TYPE_DYN) {
-        escm_error(e, "~s: expect an argument of dynamic type, not ~s.~%",
+        escm_error(e, _(T("~s: expect an argument of dynamic type, not ~s.~%")),
                    escm_fun(e), atom);
         escm_abort(e);
     }

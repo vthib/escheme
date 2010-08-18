@@ -38,7 +38,7 @@
                                  2: check also when printing */
 #endif
 
-#if defined ESCM_USE_UNICODE && !defined ESCM_USE_C99
+#if defined ESCM_UNICODE && !defined ESCM_USE_C99
 # error "unicode needs c99"
 #endif
 
@@ -47,10 +47,93 @@
 #endif
 
 #ifndef ESCM_CIRCULAR_LIST
-# define ESCM_CIRCULAR_LIST 2 /* default */
+# define ESCM_CIRCULAR_LIST 0 /* default */
 #endif
 
 /* typedefs */
+
+#ifdef ESCM_UNICODE
+
+# include <wchar.h>
+# include <wctype.h>
+
+typedef wchar_t tchar;
+typedef wint_t tint;
+
+# define TEOF WEOF
+# define T(a) L ## a
+# define TFMT L"l"
+
+# define tcslen wcslen
+# define tcscmp wcscmp
+# define tcschr wcschr
+
+# define tmemcpy wmemcpy
+# define tmemset wmemset
+
+# define totlower towlower
+# define totupper towupper
+# define istalnum iswalnum
+# define istalpha iswalpha
+# define istdigit iswdigit
+# define istlower iswlower
+# define istprint iswprint
+# define istspace iswspace
+# define istupper iswupper
+# define istxdigit iswxdigit
+
+# define fgettc fgetwc
+# define fputtc fputwc
+
+# define tprintf wprintf
+# define ftprintf fwprintf
+# define vftprintf vfwprintf
+# define vsntprintf vswprintf
+# define sntprintf swprintf
+
+# define tcstod wcstod
+# define tcstol wcstol
+
+#else
+
+typedef char tchar;
+typedef int tint;
+
+# define TEOF EOF
+# define T(a) a
+# define TFMT
+
+# define tcslen strlen
+# define tcscmp strcmp
+# define tcschr strchr
+
+# define tmemcpy memcpy
+# define tmemset memset
+
+# define totlower tolower
+# define totupper toupper
+# define istalnum isalnum
+# define istalpha isalpha
+# define istdigit isdigit
+# define istlower islower
+# define istprint isprint
+# define istspace isspace
+# define istupper isupper
+# define istxdigit isxdigit
+
+# define fgettc fgetc
+# define fputtc fputc
+
+# define tprintf printf
+# define ftprintf fprintf
+# define vftprintf vfprintf
+# define vsntprintf vsnprintf
+# define sntprintf snprintf
+
+# define tcstod strtod
+# define tcstol strtol
+
+#endif
 
 #if __WORDSIZE == 64
 typedef long escm_intptr;
@@ -73,7 +156,7 @@ typedef void (*Escm_Fun_Free)(void *);
 typedef void (*Escm_Fun_Print)(escm *, void *, escm_output *, int);
 typedef int (*Escm_Fun_Equal)(escm *, void *, void *, int);
 
-typedef int (*Escm_Fun_Parsetest)(escm *, escm_input *, int);
+typedef int (*Escm_Fun_Parsetest)(escm *, escm_input *, tint);
 typedef escm_atom *(*Escm_Fun_Parse)(escm *, escm_input *);
 typedef escm_atom *(*Escm_Fun_Eval)(escm *, void *);
 typedef escm_atom *(*Escm_Fun_Exec)(escm *, void *, escm_atom *);

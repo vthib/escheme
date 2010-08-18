@@ -65,41 +65,41 @@ escm_achars_init(escm *e)
 
     e->EOF_OBJ = escm_achar_make(e, EOF);
 
-    (void) escm_procedure_new(e, "char?", 1, 1, escm_achar_p, NULL);
+    (void) escm_procedure_new(e, T("char?"), 1, 1, escm_achar_p, NULL);
 
-    (void) escm_procedure_new(e, "char=?", 2, 2, escm_achar_eq_p, NULL);
-    (void) escm_procedure_new(e, "char<?", 2, 2, escm_achar_lt_p, NULL);
-    (void) escm_procedure_new(e, "char>?", 2, 2, escm_achar_gt_p, NULL);
-    (void) escm_procedure_new(e, "char<=?", 2, 2, escm_achar_le_p, NULL);
-    (void) escm_procedure_new(e, "char>=?", 2, 2, escm_achar_ge_p, NULL);
+    (void) escm_procedure_new(e, T("char=?"), 2, 2, escm_achar_eq_p, NULL);
+    (void) escm_procedure_new(e, T("char<?"), 2, 2, escm_achar_lt_p, NULL);
+    (void) escm_procedure_new(e, T("char>?"), 2, 2, escm_achar_gt_p, NULL);
+    (void) escm_procedure_new(e, T("char<=?"), 2, 2, escm_achar_le_p, NULL);
+    (void) escm_procedure_new(e, T("char>=?"), 2, 2, escm_achar_ge_p, NULL);
 
-    (void) escm_procedure_new(e, "char-ci=?", 2, 2, escm_achar_ci_eq_p, NULL);
-    (void) escm_procedure_new(e, "char-ci<?", 2, 2, escm_achar_ci_lt_p, NULL);
-    (void) escm_procedure_new(e, "char-ci>?", 2, 2, escm_achar_ci_gt_p, NULL);
-    (void) escm_procedure_new(e, "char-ci<=?", 2, 2, escm_achar_ci_le_p, NULL);
-    (void) escm_procedure_new(e, "char-ci>=?", 2, 2, escm_achar_ci_ge_p, NULL);
+    (void) escm_procedure_new(e, T("char-ci=?"), 2, 2, escm_achar_ci_eq_p, NULL);
+    (void) escm_procedure_new(e, T("char-ci<?"), 2, 2, escm_achar_ci_lt_p, NULL);
+    (void) escm_procedure_new(e, T("char-ci>?"), 2, 2, escm_achar_ci_gt_p, NULL);
+    (void) escm_procedure_new(e, T("char-ci<=?"), 2, 2, escm_achar_ci_le_p, NULL);
+    (void) escm_procedure_new(e, T("char-ci>=?"), 2, 2, escm_achar_ci_ge_p, NULL);
 
-    (void) escm_procedure_new(e, "char-alphabetic?", 1, 1,
+    (void) escm_procedure_new(e, T("char-alphabetic?"), 1, 1,
                               escm_achar_alphabetic_p, NULL);
-    (void) escm_procedure_new(e, "char-numeric?", 1, 1,
+    (void) escm_procedure_new(e, T("char-numeric?"), 1, 1,
                               escm_achar_numeric_p, NULL);
-    (void) escm_procedure_new(e, "char-whitespace?", 1, 1,
+    (void) escm_procedure_new(e, T("char-whitespace?"), 1, 1,
                               escm_achar_whitespace_p, NULL);
-    (void) escm_procedure_new(e, "char-upper-case?", 1, 1,
+    (void) escm_procedure_new(e, T("char-upper-case?"), 1, 1,
                               escm_achar_upper_case_p, NULL);
-    (void) escm_procedure_new(e, "char-lower-case?", 1, 1,
+    (void) escm_procedure_new(e, T("char-lower-case?"), 1, 1,
                               escm_achar_lower_case_p, NULL);
 
 #ifdef ESCM_USE_NUMBERS
-    (void) escm_procedure_new(e, "char->integer", 1, 1,
+    (void) escm_procedure_new(e, T("char->integer"), 1, 1,
                               escm_achar_to_integer, NULL);
-    (void) escm_procedure_new(e, "integer->char", 1, 1,
+    (void) escm_procedure_new(e, T("integer->char"), 1, 1,
                               escm_integer_to_achar, NULL);
 #endif
 
-    (void) escm_procedure_new(e, "char-upcase", 1, 1,
+    (void) escm_procedure_new(e, T("char-upcase"), 1, 1,
                               escm_achar_upcase, NULL);
-    (void) escm_procedure_new(e, "char-downcase", 1, 1,
+    (void) escm_procedure_new(e, T("char-downcase"), 1, 1,
                               escm_achar_downcase, NULL);
 }
 
@@ -252,7 +252,7 @@ escm_achar_to_integer(escm *e, escm_atom *args, void *nil)
 
     (void) nil;
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-        escm_error(e, "~s: number type is off.~%", escm_fun(e));
+        escm_error(e, _(T("~s: number type is off.~%")), escm_fun(e));
         escm_abort(e);
     }
 
@@ -269,7 +269,7 @@ escm_integer_to_achar(escm *e, escm_atom *args, void *nil)
 
     (void) nil;
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-        escm_error(e, "~s: number type is off.~%", escm_fun(e));
+        escm_error(e, _(T("~s: number type is off.~%")), escm_fun(e));
         escm_abort(e);
     }
 
@@ -277,7 +277,7 @@ escm_integer_to_achar(escm *e, escm_atom *args, void *nil)
     escm_assert(ESCM_ISINT(n), n, e);
 
     if (escm_number_ival(n) > 255 || escm_number_ival(n) < 0) {
-        escm_error(e, "~s: ~s out of range [0;255].~%", escm_fun(e), n);
+        escm_error(e, _(T("~s: ~s out of range [0;255].~%")), escm_fun(e), n);
         escm_abort(e);
     }
 

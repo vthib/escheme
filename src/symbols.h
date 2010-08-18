@@ -31,7 +31,7 @@
 void escm_symbols_init(escm *);
 size_t escm_symbol_tget(void);
 
-escm_atom *escm_symbol_make(escm *, const char *);
+escm_atom *escm_symbol_make(escm *, const tchar *);
 escm_atom *escm_symbol_make2(escm *, escm_tst *);
 void escm_symbol_set(escm_atom *, escm_atom *);
 

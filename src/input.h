@@ -37,8 +37,8 @@ struct escm_input {
             size_t un;
         } file;
         struct {
-            char *str;
-            char *cur;
+            tchar *str;
+            tchar *cur;
         } str;
     } d;
 
@@ -49,10 +49,10 @@ struct escm_input {
 
 escm_input *escm_input_fopen(const char *);
 escm_input *escm_input_fmng(FILE *, const char *);
-escm_input *escm_input_str(const char *);
+escm_input *escm_input_str(const tchar *);
 
-char *escm_input_gettext(escm_input *, const char *);
-char *escm_input_getstr_fun(escm_input *, int (*)(int), int);
+tchar *escm_input_gettext(escm_input *, const tchar *);
+tchar *escm_input_getstr_fun(escm_input *, int (*)(tint), int);
 
 void escm_input_close(escm_input *);
 
@@ -60,8 +60,8 @@ void escm_input_rewind(escm_input *);
 
 void escm_input_print(escm_input *, escm_output *);
 
-int escm_input_getc(escm_input *);
-int escm_input_peek(escm_input *);
-void escm_input_ungetc(escm_input *, int);
+tint escm_input_getc(escm_input *);
+tint escm_input_peek(escm_input *);
+void escm_input_ungetc(escm_input *, tint);
 
 #endif /* ESCHEME_INPUT_H */

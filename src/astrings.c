@@ -43,51 +43,51 @@ escm_astrings_init(escm *e)
 
     astringtype = escm_type_add(e, t);
 
-    (void) escm_procedure_new(e, "string?", 1, 1, escm_astring_p, NULL);
+    (void) escm_procedure_new(e, T("string?"), 1, 1, escm_astring_p, NULL);
 #ifdef ESCM_USE_CHARACTERS
 # ifdef ESCM_USE_NUMBERS
-    (void) escm_procedure_new(e, "make-string", 1, 2, escm_make_astring, NULL);
-    (void) escm_procedure_new(e, "string-ref", 2, 2, escm_astring_ref, NULL);
-    (void) escm_procedure_new(e, "string-set!", 3, 3, escm_astring_set_x, NULL);
+    (void) escm_procedure_new(e, T("make-string"), 1, 2, escm_make_astring, NULL);
+    (void) escm_procedure_new(e, T("string-ref"), 2, 2, escm_astring_ref, NULL);
+    (void) escm_procedure_new(e, T("string-set!"), 3, 3, escm_astring_set_x, NULL);
 # endif
-    (void) escm_procedure_new(e, "string", 0, -1, escm_prim_astring, NULL);
+    (void) escm_procedure_new(e, T("string"), 0, -1, escm_prim_astring, NULL);
 #endif /* USE_CHARACTERS */
 
 #ifdef ESCM_USE_NUMBERS
-    (void) escm_procedure_new(e, "string-length", 1, 1, escm_astring_length,
+    (void) escm_procedure_new(e, T("string-length"), 1, 1, escm_astring_length,
                               NULL);
 #endif
 
-    (void) escm_procedure_new(e, "string=?", 2, 2, escm_astring_eq_p, NULL);
-    (void) escm_procedure_new(e, "string<?", 2, 2, escm_astring_lt_p, NULL);
-    (void) escm_procedure_new(e, "string>?", 2, 2, escm_astring_gt_p, NULL);
-    (void) escm_procedure_new(e, "string<=?", 2, 2, escm_astring_le_p, NULL);
-    (void) escm_procedure_new(e, "string>=?", 2, 2, escm_astring_ge_p, NULL);
+    (void) escm_procedure_new(e, T("string=?"), 2, 2, escm_astring_eq_p, NULL);
+    (void) escm_procedure_new(e, T("string<?"), 2, 2, escm_astring_lt_p, NULL);
+    (void) escm_procedure_new(e, T("string>?"), 2, 2, escm_astring_gt_p, NULL);
+    (void) escm_procedure_new(e, T("string<=?"), 2, 2, escm_astring_le_p, NULL);
+    (void) escm_procedure_new(e, T("string>=?"), 2, 2, escm_astring_ge_p, NULL);
 
-    (void) escm_procedure_new(e, "string-ci=?", 2, 2, escm_astring_ci_eq_p,
+    (void) escm_procedure_new(e, T("string-ci=?"), 2, 2, escm_astring_ci_eq_p,
                               NULL);
-    (void) escm_procedure_new(e, "string-ci<?", 2, 2, escm_astring_ci_lt_p,
+    (void) escm_procedure_new(e, T("string-ci<?"), 2, 2, escm_astring_ci_lt_p,
                               NULL);
-    (void) escm_procedure_new(e, "string-ci>?", 2, 2, escm_astring_ci_gt_p,
+    (void) escm_procedure_new(e, T("string-ci>?"), 2, 2, escm_astring_ci_gt_p,
                               NULL);
-    (void) escm_procedure_new(e, "string-ci<=?", 2, 2, escm_astring_ci_le_p,
+    (void) escm_procedure_new(e, T("string-ci<=?"), 2, 2, escm_astring_ci_le_p,
                               NULL);
-    (void) escm_procedure_new(e, "string-ci>=?", 2, 2, escm_astring_ci_ge_p,
+    (void) escm_procedure_new(e, T("string-ci>=?"), 2, 2, escm_astring_ci_ge_p,
                               NULL);
 
 #ifdef ESCM_USE_NUMBERS
-    (void) escm_procedure_new(e, "substring", 2, 3, escm_subastring, NULL);
+    (void) escm_procedure_new(e, T("substring"), 2, 3, escm_subastring, NULL);
 #endif
-    (void) escm_procedure_new(e, "string-append", 0, -1, escm_astring_append,
+    (void) escm_procedure_new(e, T("string-append"), 0, -1, escm_astring_append,
                               NULL);
-    (void) escm_procedure_new(e, "string-copy", 1, 1, escm_astring_copy, NULL);
+    (void) escm_procedure_new(e, T("string-copy"), 1, 1, escm_astring_copy, NULL);
 #ifdef ESCM_USE_CHARACTERS
-    (void) escm_procedure_new(e, "string-fill!", 2, 2, escm_astring_fill_x,
+    (void) escm_procedure_new(e, T("string-fill!"), 2, 2, escm_astring_fill_x,
                               NULL);
 
-    (void) escm_procedure_new(e, "string->list", 1, 1, escm_astring_to_list,
+    (void) escm_procedure_new(e, T("string->list"), 1, 1, escm_astring_to_list,
                               NULL);
-    (void) escm_procedure_new(e, "list->string", 1, 1, escm_list_to_astring,
+    (void) escm_procedure_new(e, T("list->string"), 1, 1, escm_list_to_astring,
                               NULL);
 #endif
 }
@@ -129,11 +129,11 @@ escm_make_astring(escm *e, escm_atom *args, void *nil)
 
     (void) nil;
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
-        escm_error(e, "~s: character type is off.~%", escm_fun(e));
+        escm_error(e, _(T("~s: character type is off.~%")), escm_fun(e));
         escm_abort(e);
     }
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-        escm_error(e, "~s: number type is off.~%", escm_fun(e));
+        escm_error(e, _(T("~s: number type is off.~%")), escm_fun(e));
         escm_abort(e);
     }
 
@@ -167,7 +167,7 @@ escm_prim_astring(escm *e, escm_atom *args, void *nil)
 
     (void) nil;
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
-        escm_error(e, "~s: character type is off.~%", escm_fun(e));
+        escm_error(e, _(T("~s: character type is off.~%")), escm_fun(e));
         escm_abort(e);
     }
 
@@ -198,7 +198,7 @@ escm_astring_length(escm *e, escm_atom *args, void *nil)
 
     (void) nil;
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-        escm_error(e, "~s: number type is off.~%", escm_fun(e));
+        escm_error(e, _(T("~s: number type is off.~%")), escm_fun(e));
         escm_abort(e);
     }
 
@@ -218,11 +218,11 @@ escm_astring_ref(escm *e, escm_atom *args, void *nil)
 
     (void) nil;
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
-        escm_error(e, "~s: character type is off.~%", escm_fun(e));
+        escm_error(e, _(T("~s: character type is off.~%")), escm_fun(e));
         escm_abort(e);
     }
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-        escm_error(e, "~s: number type is off.~%", escm_fun(e));
+        escm_error(e, _(T("~s: number type is off.~%")), escm_fun(e));
         escm_abort(e);
     }
 
@@ -235,7 +235,7 @@ escm_astring_ref(escm *e, escm_atom *args, void *nil)
     escm_assert(i >= 0, k, e);
 
     if ((size_t) i >= escm_astr_len(str)) {
-        escm_error(e, "~s: index ~s is out of range.~s", escm_fun(e), k);
+        escm_error(e, _(T("~s: index ~s is out of range.~s")), escm_fun(e), k);
         escm_abort(e);
     }
 
@@ -250,11 +250,11 @@ escm_astring_set_x(escm *e, escm_atom *args, void *nil)
 
     (void) nil;
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
-        escm_error(e, "~s: character type is off.~%", escm_fun(e));
+        escm_error(e, _(T("~s: character type is off.~%")), escm_fun(e));
         escm_abort(e);
     }
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-        escm_error(e, "~s: number type is off.~%", escm_fun(e));
+        escm_error(e, _(T("~s: number type is off.~%")), escm_fun(e));
         escm_abort(e);
     }
 
@@ -270,12 +270,12 @@ escm_astring_set_x(escm *e, escm_atom *args, void *nil)
     escm_assert(ESCM_ISACHAR(c), c, e);
 
     if ((size_t) i >= escm_astr_len(str)) {
-        escm_error(e, "~s: index ~s is out of range.~s", escm_fun(e), k);
+        escm_error(e, _(T("~s: index ~s is out of range.~s")), escm_fun(e), k);
         escm_abort(e);
     }
 
     if (str->ro == 1) {
-        escm_error(e, "~s: Can't modify ~s: immutable string.~%", escm_fun(e),
+        escm_error(e, _(T("~s: Can't modify ~s: immutable string.~%")), escm_fun(e),
                    str);
         escm_abort(e);
     }
@@ -378,7 +378,7 @@ escm_subastring(escm *e, escm_atom *args, void *nil)
 
     (void) nil;
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-        escm_error(e, "~s: number type is off.~%", escm_fun(e));
+        escm_error(e, _(T("~s: number type is off.~%")), escm_fun(e));
         escm_abort(e);
     }
 
@@ -389,7 +389,7 @@ escm_subastring(escm *e, escm_atom *args, void *nil)
     escm_assert(ESCM_ISINT(a), a, e);
     start = escm_number_ival(a);
     if (start < 0 || (size_t) start > escm_astr_len(str)) {
-        escm_error(e, "~s: index ~s is out of range.~s", escm_fun(e), a);
+        escm_error(e, _(T("~s: index ~s is out of range.~s")), escm_fun(e), a);
         escm_abort(e);
     }
 
@@ -398,7 +398,7 @@ escm_subastring(escm *e, escm_atom *args, void *nil)
         escm_assert(ESCM_ISINT(a), a, e);
         end = escm_number_ival(a);
         if (end < 0 || (size_t) end > escm_astr_len(str) || end < start) {
-            escm_error(e, "~s: index ~s is out of range.~s", escm_fun(e), a);
+            escm_error(e, _(T("~s: index ~s is out of range.~s")), escm_fun(e), a);
             escm_abort(e);
         }
     } else
@@ -462,7 +462,7 @@ escm_astring_fill_x(escm *e, escm_atom *args, void *nil)
 
     (void) nil;
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
-        escm_error(e, "~s: character type is off.~%", escm_fun(e));
+        escm_error(e, _(T("~s: character type is off.~%")), escm_fun(e));
         escm_abort(e);
     }
 
@@ -472,7 +472,7 @@ escm_astring_fill_x(escm *e, escm_atom *args, void *nil)
     escm_assert(ESCM_ISCHAR(c), c, e);
 
     if (str->ro == 1) {
-        escm_error(e, "~s: Can't modify ~s: immutable string.~%", escm_fun(e),
+        escm_error(e, _(T("~s: Can't modify ~s: immutable string.~%")), escm_fun(e),
                    str);
         escm_abort(e);
     }
@@ -489,7 +489,7 @@ escm_astring_to_list(escm *e, escm_atom *args, void *nil)
 
     (void) nil;
     if (!escm_type_ison(ESCM_TYPE_CHAR)) {
-        escm_error(e, "~s: character type is off.~%", escm_fun(e));
+        escm_error(e, _(T("~s: character type is off.~%")), escm_fun(e));
         escm_abort(e);
     }
 

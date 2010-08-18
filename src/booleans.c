@@ -27,7 +27,7 @@ static unsigned long booleantype = 0;
 
 static void boolean_print(escm *, void *, escm_output *, int);
 static int boolean_equal(escm *, void *, void *, int);
-static int boolean_parsetest(escm *, escm_input *, int);
+static int boolean_parsetest(escm *, escm_input *, tint);
 static escm_atom *boolean_parse(escm *, escm_input *);
 
 void
@@ -46,8 +46,8 @@ escm_booleans_init(escm *e)
     e->TRUE = escm_atom_new(e, ESCM_TYPE_BOOLEAN, ESCM_BOOL_T);
     e->FALSE = escm_atom_new(e, ESCM_TYPE_BOOLEAN, ESCM_BOOL_F);
 
-    (void) escm_procedure_new(e, "not", 1, 1, escm_not, NULL);
-    (void) escm_procedure_new(e, "boolean?", 1, 1, escm_boolean_p, NULL);
+    (void) escm_procedure_new(e, T("not"), 1, 1, escm_not, NULL);
+    (void) escm_procedure_new(e, T("boolean?"), 1, 1, escm_boolean_p, NULL);
 }
 
 escm_atom *
@@ -76,7 +76,7 @@ boolean_print(escm *e, void *bool, escm_output *stream, int lvl)
     (void) e;
     (void) lvl;
 
-    escm_printf(stream, "#%c", (bool == NULL) ? 'f' : 't');
+    escm_printf(stream, T("#%lc"), (bool == NULL) ? T('f') : T('t'));
 }
 
 static int
@@ -89,15 +89,15 @@ boolean_equal(escm *e, void *b1, void *b2, int lvl)
 }
 
 static int
-boolean_parsetest(escm *e, escm_input *stream, int c)
+boolean_parsetest(escm *e, escm_input *stream, tint c)
 {
-    if (c == '#') {
-        int c2;
+    if (c == T('#')) {
+        tint c2;
 
         c2 = escm_input_peek(stream);
         if (e->casesensitive == 0)
             c2 = tolower(c2);
-        return (c2 == 't' || c2 == 'f');
+        return (c2 == T('t') || c2 == T('f'));
     }
 
     return 0;
@@ -106,12 +106,12 @@ boolean_parsetest(escm *e, escm_input *stream, int c)
 static escm_atom *
 boolean_parse(escm *e, escm_input *stream)
 {
-    int c;
+    tint c;
 
     (void) escm_input_getc(stream); /* skip '#' */
 
     c = escm_input_getc(stream);
     if (e->casesensitive == 0)
         c = tolower(c);
-    return (c == 't') ? e->TRUE : e->FALSE;
+    return (c == T('t')) ? e->TRUE : e->FALSE;
 }

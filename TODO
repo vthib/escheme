@@ -1,3 +1,5 @@
+Stop the ability to activate/desactivate types at runtime (useless)
+
  - Bugs/TODO
    - Verify compatibility with various scheme libraries
    - Try to implement some SRFIs
@@ -7,7 +9,6 @@
    - Remove parsetest and add all in parse?
    - escm_printf does not manage print level.
    - create typedef for char/wchar_t int/wint_t
-   - Parsing of uchars is broken
 
  - Features
    - Bignums

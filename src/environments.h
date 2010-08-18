@@ -44,8 +44,8 @@ escm_atom *escm_prim_eval(escm *, escm_atom *, void *);
 escm_atom *escm_library(escm *, escm_atom *, void *);
 escm_atom *escm_import(escm *, escm_atom *, void *);
 
-escm_atom *escm_library_enter(escm *, char *, int);
-void escm_library_export(escm *, escm_atom *, char *);
+escm_atom *escm_library_enter(escm *, tchar *, int);
+void escm_library_export(escm *, escm_atom *, tchar *);
 void escm_library_exit(escm *);
 
 escm_atom *escm_alpha(escm *, escm_atom *, void *);

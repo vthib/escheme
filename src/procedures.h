@@ -28,7 +28,7 @@
 #define escm_proc_val(x) ((escm_procedure *) (x)->ptr)
 
 typedef struct escm_procedure {
-    char *name;
+    tchar *name;
 
     union {
         struct {
@@ -54,7 +54,7 @@ typedef struct escm_procedure {
 void escm_procedures_init(escm *);
 unsigned long escm_proc_tget(void);
 
-escm_atom *escm_procedure_new(escm *, const char *, unsigned int, int,
+escm_atom *escm_procedure_new(escm *, const tchar *, unsigned int, int,
                               Escm_Fun_Prim, void *);
 
 escm_atom *escm_procedure_exec(escm *, escm_atom *, escm_atom *, int);

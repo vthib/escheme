@@ -28,24 +28,24 @@
 
 #define ESCM_ISTRUE(e, a) ((a) != (e)->FALSE)
 
-#define escm_assert(test, atom, e)                                      \
-    do {                                                                \
-        if (!(test)) {                                                  \
-            escm_error((e), "~s: ~s: wrong argument.~%", escm_fun(e),   \
-                       (atom));                                         \
-            escm_abort(e);                                              \
-        }                                                               \
+#define escm_assert(test, atom, e)                                       \
+    do {                                                                 \
+        if (!(test)) {                                                   \
+            escm_error((e), T("~s: ~s: wrong argument.~%"), escm_fun(e), \
+                       (atom));                                          \
+            escm_abort(e);                                               \
+        }                                                                \
     } while(0)
 
 /* Okay, this is ugly, but there is no other solution */
-#define escm_assert1(test, atom, e, st)                                 \
-    do {                                                                \
-        if (!(test)) {                                                  \
-            escm_error((e), "~s: ~s: wrong argument.~%", escm_fun(e),   \
-                       (atom));                                         \
-            st;                                                         \
-            escm_abort(e);                                              \
-        }                                                               \
+#define escm_assert1(test, atom, e, st)                                  \
+    do {                                                                 \
+        if (!(test)) {                                                   \
+            escm_error((e), T("~s: ~s: wrong argument.~%"), escm_fun(e), \
+                       (atom));                                          \
+            st;                                                          \
+            escm_abort(e);                                               \
+        }                                                                \
     } while(0)
 
 enum { TYPE_BUILT, TYPE_DYN, TYPE_REC };
@@ -97,7 +97,7 @@ struct escm_type {
         struct {
             unsigned long parenttype;
             size_t len;
-            char *name;
+            tchar *name;
             escm_atom *members;
         } rec;
     } d;
@@ -167,7 +167,7 @@ void escm_init(escm *);
 void escm_free(escm *);
 
 int escm_fparse(escm *, const char *);
-int escm_sparse(escm *, const char *);
+int escm_sparse(escm *, const tchar *);
 escm_atom *escm_parse(escm *, escm_input *);
 
 void escm_shell(escm *);

@@ -45,11 +45,11 @@ escm_procedures_init(escm *e)
 
     proctype = escm_type_add(e, t);
 
-    (void) escm_procedure_new(e, "procedure?", 1, 1, escm_procedure_p, NULL);
+    (void) escm_procedure_new(e, T("procedure?"), 1, 1, escm_procedure_p, NULL);
 
-    (void) escm_procedure_new(e, "apply", 2, -1, escm_apply, NULL);
-    (void) escm_procedure_new(e, "map", 2, -1, escm_map, NULL);
-    (void) escm_procedure_new(e, "for-each", 2, -1, escm_for_each, NULL);
+    (void) escm_procedure_new(e, T("apply"), 2, -1, escm_apply, NULL);
+    (void) escm_procedure_new(e, T("map"), 2, -1, escm_map, NULL);
+    (void) escm_procedure_new(e, T("for-each"), 2, -1, escm_for_each, NULL);
 }
 
 unsigned long
@@ -59,7 +59,7 @@ escm_proc_tget(void)
 }
 
 escm_atom *
-escm_procedure_new(escm *e, const char *name, unsigned int min, int max,
+escm_procedure_new(escm *e, const tchar *name, unsigned int min, int max,
                    Escm_Fun_Prim fun, void *data)
 {
     escm_atom *atom;
@@ -73,7 +73,7 @@ escm_procedure_new(escm *e, const char *name, unsigned int min, int max,
     procedure->d.c.min = min, procedure->d.c.max = max;
     procedure->d.c.fun = fun;
     procedure->d.c.data = data;
-    procedure->name = xstrdup(name);
+    procedure->name = tcsdup(name);
 
     atom = escm_atom_new(e, proctype, procedure);
 
@@ -169,11 +169,11 @@ procedure_print(escm *e, escm_procedure *procedure, escm_output *stream,
 
     if (procedure->type == ESCM_CLOSURE) {
         if (procedure->name)
-            escm_printf(stream, "#<closure %s>", procedure->name);
+            escm_printf(stream, T("#<closure %s>"), procedure->name);
         else
-            escm_printf(stream, "#<closure>", procedure->name);
+            escm_printf(stream, T("#<closure>"), procedure->name);
     } else
-        escm_printf(stream, "#<primitive %s>", procedure->name);
+        escm_printf(stream, T("#<primitive %s>"), procedure->name);
 }
 
 static escm_atom *
@@ -205,7 +205,7 @@ runprimitive(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
     for (param = 0; args; args = escm_cons_next(args), param++) {
         /* check parameter's number */
         if (fun->d.c.max != -1 && param >= (unsigned int) fun->d.c.max) {
-            escm_error(e, "~s: too much arguments.~%", atomfun);
+            escm_error(e, _(T("~s: too much arguments.~%")), atomfun);
             goto err;
         }
 
@@ -221,7 +221,7 @@ runprimitive(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
                 if (e->err == 1)
                     goto err;
                 if (!atom) {
-                    escm_error(e, "~s: ~s must return a real value.~%",
+                    escm_error(e, _(T("~s: ~s must return a real value.~%")),
                                atomfun, args->car);
                     goto err;
                 }
@@ -232,7 +232,7 @@ runprimitive(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
     }
 
     if (param < fun->d.c.min) {
-        escm_error(e, "~s: too few arguments.~%", atomfun);
+        escm_error(e, _(T("~s: too few arguments.~%")), atomfun);
         goto err;
     }
 
@@ -295,7 +295,7 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
             else {
                 atom = escm_atom_eval(e, ret);
                 if (!atom) {
-                    escm_error(e, "~s: ~s must return a real value.~%",
+                    escm_error(e, _(T("~s: ~s must return a real value.~%")),
                                atomfun, ret);
                     e->err = 1;
                 }
@@ -326,7 +326,7 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
                  args; funargs = escm_cons_next(funargs),
                      args = escm_cons_next(args)) {
                 if (!funargs) {
-                    escm_error(e, "~s: too much arguments.~%", atomfun);
+                    escm_error(e, _(T("~s: too much arguments.~%")), atomfun);
                     goto erreval;
                 }
 
@@ -339,7 +339,7 @@ runlambda(escm *e, escm_atom *atomfun, escm_atom *atomargs, int eval)
                 }
             }
             if (funargs) {
-                escm_error(e, "~s: too few arguments.~%", atomfun);
+                escm_error(e, _(T("~s: too few arguments.~%")), atomfun);
                 goto erreval;
             }
         }
@@ -416,7 +416,7 @@ foreach(escm *e, escm_atom *args, int map)
                     escm_ctx_discard(e);
                     return NULL;
                 }
-                escm_error(e, "~s: the procedure must yeild a value.~%",
+                escm_error(e, _(T("~s: the procedure must yeild a value.~%")),
                            escm_fun(e));
             }
         } else /* for-each version */
@@ -424,7 +424,8 @@ foreach(escm *e, escm_atom *args, int map)
     }
 
 err_length:
-    escm_error(e, "~s: all lists must have the same length.~%", escm_fun(e));
+    escm_error(e, _(T("~s: all lists must have the same length.~%")),
+               escm_fun(e));
     escm_ctx_discard(e), escm_ctx_discard(e);
     escm_abort(e);
 }

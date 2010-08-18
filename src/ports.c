@@ -19,10 +19,6 @@
 
 #include "escheme.h"
 
-#ifdef ESCM_USE_UNICODE
-# include <wchar.h>
-#endif
-
 static unsigned long porttype = 0;
 
 static void port_free(escm_port *);
@@ -39,31 +35,31 @@ escm_ports_init(escm *e)
 
     porttype = escm_type_add(e, t);
 
-    (void) escm_procedure_new(e, "port?", 1, 1, escm_port_p, NULL);
-    (void) escm_procedure_new(e, "input-port?", 1, 1, escm_input_port_p, NULL);
-    (void) escm_procedure_new(e, "output-port?", 1, 1, escm_output_port_p,
+    (void) escm_procedure_new(e, T("port?"), 1, 1, escm_port_p, NULL);
+    (void) escm_procedure_new(e, T("input-port?"), 1, 1, escm_input_port_p, NULL);
+    (void) escm_procedure_new(e, T("output-port?"), 1, 1, escm_output_port_p,
                               NULL);
 
-    (void) escm_procedure_new(e, "current-input-port", 0, 0,
+    (void) escm_procedure_new(e, T("current-input-port"), 0, 0,
                               (Escm_Fun_Prim) escm_current_input_port, NULL);
-    (void) escm_procedure_new(e, "current-output-port", 0, 0,
+    (void) escm_procedure_new(e, T("current-output-port"), 0, 0,
                               (Escm_Fun_Prim) escm_current_output_port, NULL);
-    (void) escm_procedure_new(e, "current-error-port", 0, 0,
+    (void) escm_procedure_new(e, T("current-error-port"), 0, 0,
                               (Escm_Fun_Prim) escm_current_error_port, NULL);
 
-    (void) escm_procedure_new(e, "with-input-from-file", 2, 2,
+    (void) escm_procedure_new(e, T("with-input-from-file"), 2, 2,
                               (Escm_Fun_Prim) escm_with_input_from_file, NULL);
-    (void) escm_procedure_new(e, "with-output-to-file", 2, 2,
+    (void) escm_procedure_new(e, T("with-output-to-file"), 2, 2,
                               (Escm_Fun_Prim) escm_with_output_to_file, NULL);
 
-    (void) escm_procedure_new(e, "open-input-file", 1, 1, escm_open_input_file,
+    (void) escm_procedure_new(e, T("open-input-file"), 1, 1, escm_open_input_file,
                               NULL);
-    (void) escm_procedure_new(e, "open-output-file", 1, 1,
+    (void) escm_procedure_new(e, T("open-output-file"), 1, 1,
                               escm_open_output_file, NULL);
 
-    (void) escm_procedure_new(e, "close-input-port", 1, 1, escm_close_port,
+    (void) escm_procedure_new(e, T("close-input-port"), 1, 1, escm_close_port,
                               NULL);
-    (void) escm_procedure_new(e, "close-output-port", 1, 1, escm_close_port,
+    (void) escm_procedure_new(e, T("close-output-port"), 1, 1, escm_close_port,
                               NULL);
 
 }
@@ -156,16 +152,17 @@ escm_with_input_from_file(escm *e, escm_atom *args, void *nil)
     thunk = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISPROC(thunk), thunk, e);
 
-#ifdef ESCM_USE_UNICODE
-    if (escm_type_ison(ESCM_TYPE_USTRING)) {
+#ifdef ESCM_UNICODE
+    {
         char *s;
 
-        s = wcstostr(escm_ustr_val(str));
+        s = tcstostr(escm_str_val(str));
         input = escm_input_fopen(s);
         free(s);
-    } else
+    }
+#else
+        input = escm_input_fopen(escm_str_val(str));
 #endif
-        input = escm_input_fopen(escm_astr_val(str));
 
     if (!input)
         escm_abort(e);
@@ -194,16 +191,17 @@ escm_with_output_to_file(escm *e, escm_atom *args, void *nil)
     thunk = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISPROC(thunk), thunk, e);
 
-#ifdef ESCM_USE_UNICODE
-    if (escm_type_ison(ESCM_TYPE_USTRING)) {
+#ifdef ESCM_UNICODE
+    {
         char *s;
 
-        s = wcstostr(escm_ustr_val(str));
+        s = tcstostr(escm_str_val(str));
         o = escm_output_fopen(s);
         free(s);
-    } else
+    }
+#else
+        o = escm_output_fopen(escm_str_val(str));
 #endif
-        o = escm_output_fopen(escm_astr_val(str));
 
     if (!o)
         escm_abort(e);
@@ -232,16 +230,17 @@ escm_with_error_to_file(escm *e, escm_atom *args, void *nil)
     thunk = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISPROC(thunk), thunk, e);
 
-#ifdef ESCM_USE_UNICODE
-    if (escm_type_ison(ESCM_TYPE_USTRING)) {
+#ifdef ESCM_UNICODE
+    {
         char *s;
 
-        s = wcstostr(escm_ustr_val(str));
+        s = tcstostr(escm_str_val(str));
         o = escm_output_fopen(s);
         free(s);
-    } else
+    }
+#else
+        o = escm_output_fopen(escm_str_val(str));
 #endif
-        o = escm_output_fopen(escm_astr_val(str));
 
     if (!o)
         escm_abort(e);
@@ -267,16 +266,17 @@ escm_open_input_file(escm *e, escm_atom *args, void *nil)
     name = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(name), name, e);
 
-#ifdef ESCM_USE_UNICODE
-    if (escm_type_ison(ESCM_TYPE_USTRING)) {
+#ifdef ESCM_UNICODE
+    {
         char *s;
 
-        s = wcstostr(escm_ustr_val(name));
+        s = tcstostr(escm_str_val(name));
         inp = escm_input_fopen(s);
         free(s);
-    } else
+    }
+#else
+    inp = escm_input_fopen(escm_str_val(name));
 #endif
-    inp = escm_input_fopen(escm_astr_val(name));
 
     if (!inp)
         escm_abort(e);
@@ -294,16 +294,17 @@ escm_open_output_file(escm *e, escm_atom *args, void *nil)
     name = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(name), name, e);
 
-#ifdef ESCM_USE_UNICODE
-    if (escm_type_ison(ESCM_TYPE_USTRING)) {
+#ifdef ESCM_UNICODE
+    {
         char *s;
 
-        s = wcstostr(escm_ustr_val(name));
+        s = tcstostr(escm_str_val(name));
         outp = escm_output_fopen(s);
         free(s);
-    } else
+    }
+#else
+        outp = escm_output_fopen(escm_str_val(name));
 #endif
-        outp = escm_output_fopen(escm_astr_val(name));
 
     if (!outp)
         escm_abort(e);
@@ -347,11 +348,11 @@ port_print(escm *e, escm_port *port, escm_output *stream, int lvl)
     (void) lvl;
 
     if (port->input)
-        escm_printf(stream, "#<input-port %s>",
+        escm_printf(stream, T("#<input-port %s>"),
                     (port->d.input->type == INPUT_FILE) ?
                     port->d.input->d.file.name : "(string)");
     else
-        escm_printf(stream, "#<output-port %s>",
+        escm_printf(stream, T("#<output-port %s>"),
                     (port->d.output->type == OUTPUT_FILE) ?
                     port->d.output->d.file.name : "(string)");
 }

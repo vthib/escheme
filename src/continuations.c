@@ -39,11 +39,11 @@ escm_continuations_init(escm *e)
 
     continuationtype = escm_type_add(e, t);
 
-    (void) escm_procedure_new(e, "continuation?", 1, 1, escm_continuation_p,
+    (void) escm_procedure_new(e, T("continuation?"), 1, 1, escm_continuation_p,
                               NULL);
-    (void) escm_procedure_new(e, "call-with-current-continuation", 1, 1,
+    (void) escm_procedure_new(e, T("call-with-current-continuation"), 1, 1,
                               escm_call_with_cc, NULL);
-    (void) escm_procedure_new(e, "call/cc", 1, 1, escm_call_with_cc, NULL);
+    (void) escm_procedure_new(e, T("call/cc"), 1, 1, escm_call_with_cc, NULL);
 }
 
 size_t

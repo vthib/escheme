@@ -56,22 +56,22 @@ escm_env_addprimitives(escm *e)
 
     assert(e != NULL);
 
-    (void) escm_procedure_new(e, "eval", 1, 2, escm_prim_eval, NULL);
+    (void) escm_procedure_new(e, T("eval"), 1, 2, escm_prim_eval, NULL);
 
-    (void) escm_procedure_new(e, "scheme-report-environment", 0, 1,
+    (void) escm_procedure_new(e, T("scheme-report-environment"), 0, 1,
                               escm_scheme_report_environment, NULL);
-    (void) escm_procedure_new(e, "interaction-environment", 0, 0,
+    (void) escm_procedure_new(e, T("interaction-environment"), 0, 0,
                               escm_interaction_environment, NULL);
 
-    o = escm_procedure_new(e, "alpha", 0, -1, escm_alpha, NULL);
+    o = escm_procedure_new(e, T("alpha"), 0, -1, escm_alpha, NULL);
     escm_proc_val(o)->d.c.quoted = 0x1;
 
-    o = escm_procedure_new(e, "with", 2, -1, escm_with, NULL);
+    o = escm_procedure_new(e, T("with"), 2, -1, escm_with, NULL);
     escm_proc_val(o)->d.c.quoted = 0x6;
 
-    o = escm_procedure_new(e, "library", 2, -1, escm_library, NULL);
+    o = escm_procedure_new(e, T("library"), 2, -1, escm_library, NULL);
     escm_proc_val(o)->d.c.quoted = 0x7;
-    o = escm_procedure_new(e, "import", 0, -1, escm_import, NULL);
+    o = escm_procedure_new(e, T("import"), 0, -1, escm_import, NULL);
     escm_proc_val(o)->d.c.quoted = 0x1;
 }
 
@@ -104,12 +104,12 @@ escm_env_set(escm *e, escm_atom *atomenv, escm_atom *sym, escm_atom *atom)
     assert(sym != NULL);
 
     if (atomenv->ro == 1) {
-        escm_error(e, "trying to modify a read-only environment.~%");
+        escm_error(e, _(T("trying to modify a read-only environment.~%")));
         return;
     }
 
     if (!ESCM_ISENV(atomenv)) {
-        escm_error(e, "~s in not an environment.~%", atomenv);
+        escm_error(e, _(T("~s in not an environment.~%")), atomenv);
         return;
     }
 
@@ -197,7 +197,7 @@ escm_library(escm *e, escm_atom *args, void *nil)
 
     a = escm_cons_car(args);
     if (ESCM_ISCONS(a) && a != e->NIL && ESCM_ISSYM(escm_cons_car(a)) &&
-        strcmp(escm_sym_name(escm_cons_car(a)), "export") == 0) {
+        tcscmp(escm_sym_name(escm_cons_car(a)), T("export")) == 0) {
         export = escm_cons_pop(e, &args);
         export = escm_cons_cdr(export); /* skip 'export' symbol */
         a = escm_cons_car(args);
@@ -206,7 +206,7 @@ escm_library(escm *e, escm_atom *args, void *nil)
     prevenv = e->env;
 
     if (ESCM_ISCONS(a) && a != e->NIL && ESCM_ISSYM(escm_cons_car(a)) &&
-        strcmp(escm_sym_name(escm_cons_car(a)), "import") == 0) {
+        tcscmp(escm_sym_name(escm_cons_car(a)), T("import")) == 0) {
         (void) escm_cons_pop(e, &a);
         escm_import(e, a, NULL);
     }
@@ -240,7 +240,7 @@ escm_import(escm *e, escm_atom *args, void *nil)
         escm_assert(ESCM_ISCONS(cons), cons, e);
         env = escm_atom_eval(e, escm_cons_car(cons));
         if (!env) {
-            escm_error(e, "~s: ~s does not return an environment.~%",
+            escm_error(e, _(T("~s: ~s does not return an environment.~%")),
                        escm_fun(e), escm_cons_car(cons));
             escm_abort(e);
         } else if (e->err == 1)
@@ -254,7 +254,7 @@ escm_import(escm *e, escm_atom *args, void *nil)
 }
 
 escm_atom *
-escm_library_enter(escm *e, char *name, int allpublic)
+escm_library_enter(escm *e, tchar *name, int allpublic)
 {
     escm_atom *privenv, *exportenv;
 
@@ -271,7 +271,7 @@ escm_library_enter(escm *e, char *name, int allpublic)
 }
 
 void
-escm_library_export(escm *e, escm_atom *exportenv, char *name)
+escm_library_export(escm *e, escm_atom *exportenv, tchar *name)
 {
     escm_atom *sym;
 
@@ -364,18 +364,18 @@ env_print(escm *e, escm_env *env, escm_output *stream, int lvl)
     (void) lvl;
 
     if (!env) { /* represent eof_object when characters type is not enabled */
-        escm_printf(stream, "#<eof-object>");
+        escm_printf(stream, _(T("#<eof-object>")));
         return;
     }
 
-    escm_printf(stream, "#<Alpha {");
+    escm_printf(stream, _(T("#<Alpha {")));
     for (list = env->list; list; list = list->next) {
-        escm_printf(stream, "\"%s\": ", list->tree->symname);
+        escm_printf(stream, T("\"%s\": "), list->tree->symname);
         escm_atom_print3(e, list->node->atom, stream);
         if (list->next)
-            escm_printf(stream, ", ");
+            escm_printf(stream, T(", "));
     }
-    escm_printf(stream, "}>");
+    escm_printf(stream, T("}>"));
 }
 
 static void

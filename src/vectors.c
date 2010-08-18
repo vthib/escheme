@@ -27,7 +27,7 @@ static void vector_free(escm_vector *);
 static void vector_mark(escm *, escm_vector *);
 static void vector_print(escm *, escm_vector *, escm_output *, int);
 static int vector_equal(escm *, escm_vector *, escm_vector *, int);
-static int vector_parsetest(escm *, escm_input *, int);
+static int vector_parsetest(escm *, escm_input *, tint);
 static escm_atom *vector_parse(escm *, escm_input *);
 
 void
@@ -45,22 +45,22 @@ escm_vectors_init(escm *e)
 
     vectortype = escm_type_add(e, t);
 
-    (void) escm_procedure_new(e, "vector?", 1, 1, escm_vector_p, NULL);
+    (void) escm_procedure_new(e, T("vector?"), 1, 1, escm_vector_p, NULL);
 
-    (void) escm_procedure_new(e, "vector", 0, -1, escm_prim_vector, NULL);
+    (void) escm_procedure_new(e, T("vector"), 0, -1, escm_prim_vector, NULL);
 #ifdef ESCM_USE_NUMBERS
-    (void) escm_procedure_new(e, "make-vector", 1, 2, escm_make_vector, NULL);
-    (void) escm_procedure_new(e, "vector-length", 1, 1, escm_vector_length,
+    (void) escm_procedure_new(e, T("make-vector"), 1, 2, escm_make_vector, NULL);
+    (void) escm_procedure_new(e, T("vector-length"), 1, 1, escm_vector_length,
                               NULL);
-    (void) escm_procedure_new(e, "vector-ref", 2, 2, escm_vector_ref, NULL);
-    (void) escm_procedure_new(e, "vector-set!", 3, 3, escm_vector_set_x, NULL);
+    (void) escm_procedure_new(e, T("vector-ref"), 2, 2, escm_vector_ref, NULL);
+    (void) escm_procedure_new(e, T("vector-set!"), 3, 3, escm_vector_set_x, NULL);
 #endif
-    (void) escm_procedure_new(e, "vector-fill!", 2, 2, escm_vector_fill_x,
+    (void) escm_procedure_new(e, T("vector-fill!"), 2, 2, escm_vector_fill_x,
                               NULL);
 
-    (void) escm_procedure_new(e, "vector->list", 1, 1, escm_vector_to_list,
+    (void) escm_procedure_new(e, T("vector->list"), 1, 1, escm_vector_to_list,
                               NULL);
-    (void) escm_procedure_new(e, "list->vector", 1, 1, escm_list_to_vector,
+    (void) escm_procedure_new(e, T("list->vector"), 1, 1, escm_list_to_vector,
                               NULL);
 }
 
@@ -117,7 +117,7 @@ escm_make_vector(escm *e, escm_atom *args, void *nil)
 
     (void) nil;
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-        escm_error(e, "~s: number type is off.~%", escm_fun(e));
+        escm_error(e, _(T("~s: number type is off.~%")), escm_fun(e));
         escm_abort(e);
     }
 
@@ -143,7 +143,7 @@ escm_vector_length(escm *e, escm_atom *args, void *nil)
 
     (void) nil;
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-        escm_error(e, "~s: number type is off.~%", escm_fun(e));
+        escm_error(e, _(T("~s: number type is off.~%")), escm_fun(e));
         escm_abort(e);
     }
 
@@ -160,7 +160,7 @@ escm_vector_ref(escm *e, escm_atom *args, void *nil)
 
     (void) nil;
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-        escm_error(e, "~s: number type is off.~%", escm_fun(e));
+        escm_error(e, _(T("~s: number type is off.~%")), escm_fun(e));
         escm_abort(e);
     }
 
@@ -170,7 +170,7 @@ escm_vector_ref(escm *e, escm_atom *args, void *nil)
     escm_assert(ESCM_ISINT(k) && escm_number_ival(k) >= 0, k, e);
 
     if ((size_t) escm_number_ival(k) >= escm_vector_len(v)) {
-        escm_error(e, "~s: index ~s out of range.~%", escm_fun(e), k);
+        escm_error(e, _(T("~s: index ~s out of range.~%")), escm_fun(e), k);
         escm_abort(e);
     }
 
@@ -184,7 +184,7 @@ escm_vector_set_x(escm *e, escm_atom *args, void *nil)
 
     (void) nil;
     if (!escm_type_ison(ESCM_TYPE_NUMBER)) {
-        escm_error(e, "~s: number type is off.~%", escm_fun(e));
+        escm_error(e, _(T("~s: number type is off.~%")), escm_fun(e));
         escm_abort(e);
     }
 
@@ -194,12 +194,12 @@ escm_vector_set_x(escm *e, escm_atom *args, void *nil)
     escm_assert(ESCM_ISINT(k) && escm_number_ival(k) >= 0, k, e);
 
     if ((size_t) escm_number_ival(k) >= escm_vector_len(v)) {
-        escm_error(e, "~s: index ~s out of range.~%", escm_fun(e), k);
+        escm_error(e, _(T("~s: index ~s out of range.~%")), escm_fun(e), k);
         escm_abort(e);
     }
 
     if (v->ro == 1) {
-        escm_error(e, "~s: Can't modify an immutable vector.~%", escm_fun(e));
+        escm_error(e, _(T("~s: Can't modify an immutable vector.~%")), escm_fun(e));
         escm_abort(e);
     }
 
@@ -220,7 +220,7 @@ escm_vector_fill_x(escm *e, escm_atom *args, void *nil)
     fill = escm_cons_pop(e, &args);
 
     if (v->ro == 1) {
-        escm_error(e, "~s: Can't modify an immutable vector.~%", escm_fun(e));
+        escm_error(e, _(T("~s: Can't modify an immutable vector.~%")), escm_fun(e));
         escm_abort(e);
     }
 
@@ -281,13 +281,13 @@ vector_print(escm *e, escm_vector *vector, escm_output *stream, int lvl)
 
     (void) lvl;
 
-    escm_printf(stream, "#(");
+    escm_printf(stream, T("#("));
     for (i = 0; i < vector->len; i++) {
         escm_atom_print3(e, vector->vec[i], stream);
         if (i < vector->len - 1)
-            escm_putc(stream, ' ');
+            escm_putc(stream, T(' '));
     }
-    escm_putc(stream, ')');
+    escm_putc(stream, T(')'));
 }
 
 static int
@@ -314,13 +314,13 @@ vector_equal(escm *e, escm_vector *v1, escm_vector *v2, int lvl)
 }
 
 static int
-vector_parsetest(escm *e, escm_input *stream, int c)
+vector_parsetest(escm *e, escm_input *stream, tint c)
 {
-    if (c != '#')
+    if (c != T('#'))
         return 0;
 
     c = escm_input_peek(stream);
-    return (c == '(' || (e->brackets == 1 && c == '['));
+    return (c == T('(') || (e->brackets == 1 && c == T('[')));
 }
 
 static escm_atom *
@@ -349,7 +349,7 @@ vector_parse(escm *e, escm_input *stream)
 
         atom = escm_parse(e, stream);
         if (e->ctx->dotted) {
-            escm_error(e, "parse error: dotted notation is forbidden in a "
+            escm_error(e, _(T("parse error: dotted notation is forbidden in a "))
                        "vector context.~%");
             escm_ctx_discard(e);
             return NULL;

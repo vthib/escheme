@@ -75,11 +75,11 @@ escm_macros_init(escm *e)
 
     macrotype = escm_type_add(e, t);
 
-    o = escm_procedure_new(e, "expand", 1, 1, escm_expand, NULL);
+    o = escm_procedure_new(e, T("expand"), 1, 1, escm_expand, NULL);
     escm_proc_val(o)->d.c.quoted = 0x1;
-    o = escm_procedure_new(e, "syntax-rules", 1, -1, escm_syntax_rules, NULL);
+    o = escm_procedure_new(e, T("syntax-rules"), 1, -1, escm_syntax_rules, NULL);
     escm_proc_val(o)->d.c.quoted = 0x3;
-    o = escm_procedure_new(e, "define-syntax", 2, 2, escm_define_syntax, NULL);
+    o = escm_procedure_new(e, T("define-syntax"), 2, 2, escm_define_syntax, NULL);
     escm_proc_val(o)->d.c.quoted = 0x3;
 }
 
@@ -104,12 +104,12 @@ escm_expand(escm *e, escm_atom *args, void *nil)
     if (e->err == 1)
         return NULL;
     if (!macro) {
-        escm_error(e, "~s: ~s do not yield an applicable value.~%",
+        escm_error(e, _(T("~s: ~s do not yield an applicable value.~%")),
                    escm_fun(e), atom);
         escm_abort(e);
     }
     if (!ESCM_ISMACRO(macro)) {
-        escm_error(e, "~s: ~s is not a macro.~%", escm_fun(e), macro);
+        escm_error(e, _(T("~s: ~s is not a macro.~%")), escm_fun(e), macro);
         escm_abort(e);
     }
 
@@ -129,7 +129,7 @@ escm_define_syntax(escm *e, escm_atom *args, void *nil)
     if (e->err == 1)
         return NULL;
     if (!val) {
-        escm_error(e, "~s: ~s expression not allowed in a definition "
+        escm_error(e, _(T("~s: ~s expression not allowed in a definition "))
                    "context.~%", escm_fun(e), escm_cons_car(args));
         escm_abort(e);
     }
@@ -195,7 +195,7 @@ match(escm *e, escm_macro *m, escm_atom *rule, escm_atom *arg)
         r = escm_cons_pop(e, &rule);
         a = escm_cons_pop(e, &arg);
         if (rule != e->NIL && ESCM_ISSYM(escm_cons_car(rule)) &&
-            strcmp(escm_sym_name(escm_cons_car(rule)), "...") == 0)
+            tcscmp(escm_sym_name(escm_cons_car(rule)), T("...")) == 0)
             return 1;
         if (!match(e, m, r, a))
             return 0;
@@ -225,7 +225,7 @@ bind(escm *e, escm_macro *m, escm_atom *rule, escm_atom *arg,
 
         r = escm_cons_pop(e, &rule);
         if (rule != e->NIL && ESCM_ISSYM(escm_cons_car(rule)) &&
-            strcmp(escm_sym_name(escm_cons_car(rule)), "...") == 0) {
+            tcscmp(escm_sym_name(escm_cons_car(rule)), T("...")) == 0) {
             if (ESCM_ISSYM(r)) {
                 mid = checkup(e, match, r);
                 while ((a = escm_cons_pop(e, &arg)) != NULL) {
@@ -292,7 +292,7 @@ expand(escm *e, escm_macro *m, escm_atom *rule, struct match *match,
         for (c = rule->ptr; c != NULL; c = escm_cons_next(c)) {
             if (ESCM_ISCONS(c->cdr) && c->cdr != e->NIL &&
                 ESCM_ISSYM(escm_cons_car(c->cdr)) &&
-                strcmp(escm_sym_name(escm_cons_car(c->cdr)), "...") == 0) {
+                tcscmp(escm_sym_name(escm_cons_car(c->cdr)), T("...")) == 0) {
                 while ((atom = expand(e, m, c->car, match, 1)) != NULL)
                     escm_ctx_put(e, atom);
                 c = escm_cons_next(c);
@@ -370,7 +370,7 @@ macro_print(escm *e, escm_macro *m, escm_output *stream, int lvl)
     (void) m;
     (void) lvl;
 
-    escm_printf(stream, "#<macro>");
+    escm_printf(stream, T("#<macro>"));
 }
 
 static escm_atom *
@@ -409,7 +409,7 @@ macro_expand(escm *e, escm_macro *m, escm_atom *args)
         }
     }
 
-    escm_error(e, "Can't expand macro ~s.~%",
+    escm_error(e, _(T("Can't expand macro ~s.~%")),
                escm_cons_car(escm_cons_car(escm_cons_car(m->rules))));
     escm_abort(e);
 }

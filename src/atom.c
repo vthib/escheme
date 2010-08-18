@@ -37,7 +37,7 @@ escm_atom_new(escm *e, size_t type, void *ptr)
         mark(e, type, ptr);
         escm_gc_collect(e);
         if (!e->freelist) {
-            fprintf(stderr, "memory is full.\n");
+            ftprintf(stderr, _(T("memory is full.\n")));
             exit(EXIT_FAILURE);
         }
         atom = e->freelist;
@@ -140,7 +140,7 @@ escm_atom_exec(escm *e, escm_atom *atom, escm_atom *args)
     return ret;
 
 noexec:
-    escm_error(e, "~s: object isn't applicable.~%", atom);
+    escm_error(e, T("~s: object isn't applicable.~%"), atom);
     escm_abort(e);
 }
 
@@ -227,5 +227,5 @@ mark(escm *e, size_t type, void *ptr)
 static inline void
 opaque(escm_atom *atom, escm_output *output)
 {
-    escm_printf(output, "#<opaque-type %lu>", atom->type);
+    escm_printf(output, T("#<opaque-type #%lu>"), atom->type);
 }

@@ -26,13 +26,13 @@ struct escm_tstnode {
 
 struct escm_tst {
     escm_tst *lo, *hi, *down;
-    char cval;
+    tchar cval;
     escm_tstnode *node;
-    char *symname;
+    tchar *symname;
 };
 
-escm_tst *escm_tst_gettree(escm_tst **, const char *);
-escm_atom *escm_tst_get(escm_tst *, const char *);
+escm_tst *escm_tst_gettree(escm_tst **, const tchar *);
+escm_atom *escm_tst_get(escm_tst *, const tchar *);
 void escm_tst_add(escm_tst *, escm_atom *);
 
 void escm_tst_free(escm_tst *);

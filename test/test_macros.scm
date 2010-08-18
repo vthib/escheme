@@ -16,6 +16,9 @@
         (let ((x 'inner))
         (m))))
     'outer)
+
+;?number
+
 (test 'hygienic?-3
     (letrec
       ((my-or (syntax-rules ()
@@ -39,7 +42,6 @@
 
 ; define the macros
 
-;?number
 ;?string
 (define-syntax cond
   (syntax-rules (else =>)

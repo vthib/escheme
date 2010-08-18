@@ -34,7 +34,7 @@ escm_records_init(escm *e)
 {
     escm_atom *a;
 
-    a = escm_procedure_new(e, "define-record", 3, -1, escm_define_record,
+    a = escm_procedure_new(e, T("define-record"), 3, -1, escm_define_record,
                            NULL);
     escm_proc_val(a)->d.c.quoted = 0xF;
 }
@@ -46,7 +46,7 @@ escm_define_record(escm *e, escm_atom *args, void *nil)
     escm_atom *herit, *memb, *a;
     unsigned long type;
     size_t ownsize, size, bufsize;
-    char *buf, *name;
+    tchar *buf, *name;
 
     (void) nil;
 
@@ -67,7 +67,7 @@ escm_define_record(escm *e, escm_atom *args, void *nil)
     size = ownsize;
 
     if (herit != e->FALSE) {
-        unsigned long t;
+        unsigned long t2;
 
         /* we run through the list backwards: record & dyn types are defined
            after the built-in, so if we encounter a built-in type, there is an
@@ -75,11 +75,11 @@ escm_define_record(escm *e, escm_atom *args, void *nil)
         for (type = e->ntypes - 1;; type--) {
             switch (e->types[type]->dtype) {
             case TYPE_BUILT:
-                escm_error(e, "~s: ~s is not a defined record.~%", escm_fun(e),
-                           herit);
+                escm_error(e, _(T("~s: ~s is not a defined record.~%")),
+                           escm_fun(e), herit);
                 escm_abort(e);
             case TYPE_REC:
-                if (0 == strcmp(escm_sym_name(herit),
+                if (0 == tcscmp(escm_sym_name(herit),
                                 e->types[type]->d.rec.name))
                     goto out;
             default:
@@ -87,8 +87,8 @@ escm_define_record(escm *e, escm_atom *args, void *nil)
             }
         }
     out:
-        for (t = type; t != 0; t = e->types[t]->d.rec.parenttype)
-            size += e->types[t]->d.rec.len;
+        for (t2 = type; t2 != 0; t2 = e->types[t2]->d.rec.parenttype)
+            size += e->types[t2]->d.rec.len;
     }
 
     /* create the according type */
@@ -99,7 +99,7 @@ escm_define_record(escm *e, escm_atom *args, void *nil)
     t->dtype = TYPE_REC;
     t->d.rec.members = memb;
     t->d.rec.len = size;
-    t->d.rec.name = xstrdup(name);
+    t->d.rec.name = tcsdup(name);
     t->d.rec.parenttype = (herit != e->FALSE) ? type : 0;
     escm_type_add(e, t);
 
@@ -107,30 +107,32 @@ escm_define_record(escm *e, escm_atom *args, void *nil)
        set-name:member! */
 
     /* + 30 for the moment. If short, we will realloc it */
-    bufsize = strlen(name) + 30;
+    bufsize = tcslen(name) + 30;
     buf = xmalloc(sizeof *buf * bufsize);
 
-    snprintf(buf, bufsize, "make-%s", name);
+    sntprintf(buf, bufsize, T("make-%") TFMT T("s"), name);
     (void) escm_procedure_new(e, buf, size, size,
                               (Escm_Fun_Prim) make_record,
                               (void *) (e->ntypes - 1));
-    snprintf(buf, bufsize, "%s?", name);
+    sntprintf(buf, bufsize, T("%") TFMT T("s?"), name);
     (void) escm_procedure_new(e, buf, 1, 1, (Escm_Fun_Prim) record_p,
                               (void *) (e->ntypes - 1));
 
     ownsize = size - ownsize;
     while (memb != e->NIL) {
         a = escm_cons_pop(e, &memb);
-        if (snprintf(buf, bufsize, "set-%s:%s!", name, escm_sym_name(a))
-            >= (int) bufsize) {
-            bufsize += strlen(escm_sym_name(a));
+        if (sntprintf(buf, bufsize, T("set-%") TFMT T("s:%") TFMT T("s!"),
+                     name, escm_sym_name(a)) >= (int) bufsize) {
+            bufsize += tcslen(escm_sym_name(a));
             buf = xrealloc(buf, sizeof *buf * bufsize);
-            snprintf(buf, bufsize, "set-%s:%s!", name, escm_sym_name(a));
+            sntprintf(buf, bufsize, T("set-%") TFMT T("s:%") TFMT T("s!"),
+                     name, escm_sym_name(a));
         }
         (void) escm_procedure_new(e, buf, 2, 2,
                                   (Escm_Fun_Prim) set_record_member,
                                   (void *) (((e->ntypes - 1) << 8) | ownsize));
-        snprintf(buf, bufsize, "%s:%s", name, escm_sym_name(a));
+        sntprintf(buf, bufsize, T("%") TFMT T("s:%") TFMT T("s"), name,
+                 escm_sym_name(a));
         (void) escm_procedure_new(e, buf, 1, 1,
                                   (Escm_Fun_Prim) get_record_member,
                                   (void *) (((e->ntypes - 1) << 8) | ownsize));
@@ -229,14 +231,15 @@ record_print(escm *e, escm_atom **rec, escm_output *stream, int lvl)
     (void) rec;
     (void) lvl;
 
-    escm_printf(stream, "#<record %s {",e->types[e->curobj->type]->d.rec.name);
+    escm_printf(stream, T("#<record %s {"),
+                e->types[e->curobj->type]->d.rec.name);
     max = e->types[e->curobj->type]->d.rec.len;
     for (i = 0; i < max; i++) {
         escm_atom_print4(e, rec[i], stream, lvl);
         if (i < max - 1)
-            escm_putc(stream, ' ');
+            escm_putc(stream, T(' '));
     }
-    escm_printf(stream, "} >");
+    escm_printf(stream, T("} >"));
 }
 
 static int

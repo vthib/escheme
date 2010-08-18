@@ -18,21 +18,21 @@
 
 #include "escheme.h"
 
-static escm_tst *createpath(escm_tst **, const char *s);
+static escm_tst *createpath(escm_tst **, const tchar *s);
 
 escm_tst *
-escm_tst_gettree(escm_tst **t, const char *s)
+escm_tst_gettree(escm_tst **t, const tchar *s)
 {
     escm_tst *tree;
 
     tree = createpath(t, s);
     if (!tree->symname)
-        tree->symname = xstrdup(s);
+        tree->symname = tcsdup(s);
     return tree;
 }
 
 escm_atom *
-escm_tst_get(escm_tst *t, const char *s)
+escm_tst_get(escm_tst *t, const tchar *s)
 {
     if (!t)
         return NULL;
@@ -42,7 +42,7 @@ escm_tst_get(escm_tst *t, const char *s)
     else if (*s > t->cval)
         return escm_tst_get(t->hi, s);
     else {
-        if (*(s + 1) == '\0')
+        if (*(s + 1) == T('\0'))
             return t->node->atom;
         else
             return escm_tst_get(t->down, s + 1);
@@ -94,9 +94,9 @@ escm_tst_free(escm_tst *t)
 }
 
 static escm_tst *
-createpath(escm_tst **t, const char *s)
+createpath(escm_tst **t, const tchar *s)
 {
-    if (*s == '\0')
+    if (*s == T('\0'))
         return NULL;
 
     if (!*t) {
@@ -109,7 +109,7 @@ createpath(escm_tst **t, const char *s)
     else if (*s > (*t)->cval)
         return createpath(&(*t)->hi, s);
     else {
-        if (*(s + 1) == '\0')
+        if (*(s + 1) == T('\0'))
             return *t;
         else
             return createpath(&(*t)->down, s + 1);

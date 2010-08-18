@@ -19,27 +19,40 @@
 
 #include "types.h"
 
-#ifndef ESCM_USE_UNICODE
+#define ESCM_TYPE_CHAR escm_char_tget()
 
-# include "achars.h"
+#define ESCM_ISCHAR(x) ((x)->type == ESCM_TYPE_CHAR)
 
-# define ESCM_TYPE_CHAR ESCM_TYPE_ACHAR
-# define ESCM_ISCHAR ESCM_ISACHAR
-# define escm_char_val escm_achar_val
-# define escm_char_make escm_achar_make
+#define escm_char_val(x) ((tint) (escm_intptr) (x)->ptr)
 
-#else
-# include "achars.h"
-# include "uchars.h"
+void escm_chars_init(escm *);
+size_t escm_char_tget(void);
+escm_atom *escm_char_make(escm *, tint);
 
-# define ESCM_TYPE_CHAR (ESCM_TYPE_ACHAR | ESCM_TYPE_UCHAR)
+escm_atom *escm_char_p(escm *, escm_atom *, void *);
 
-# define ESCM_ISCHAR(x) ((x)->type == ESCM_TYPE_CHAR)
-# define escm_char_val(x)                                                \
-    ((escm_type_ison(ESCM_TYPE_ACHAR)) ? escm_achar_val(x) : escm_uchar_val(x))
-# define escm_char_make(e, c)                                                \
-    ((escm_type_ison(ESCM_TYPE_ACHAR)) ? escm_achar_make(e, c) :        \
-     escm_uchar_make(e, c))
-#endif
+escm_atom *escm_char_eq_p(escm *, escm_atom *, void *);
+escm_atom *escm_char_lt_p(escm *, escm_atom *, void *);
+escm_atom *escm_char_gt_p(escm *, escm_atom *, void *);
+escm_atom *escm_char_le_p(escm *, escm_atom *, void *);
+escm_atom *escm_char_ge_p(escm *, escm_atom *, void *);
+
+escm_atom *escm_char_ci_eq_p(escm *, escm_atom *, void *);
+escm_atom *escm_char_ci_lt_p(escm *, escm_atom *, void *);
+escm_atom *escm_char_ci_gt_p(escm *, escm_atom *, void *);
+escm_atom *escm_char_ci_le_p(escm *, escm_atom *, void *);
+escm_atom *escm_char_ci_ge_p(escm *, escm_atom *, void *);
+
+escm_atom *escm_char_alphabetic_p(escm *, escm_atom *, void *);
+escm_atom *escm_char_numeric_p(escm *, escm_atom *, void *);
+escm_atom *escm_char_whitespace_p(escm *, escm_atom *, void *);
+escm_atom *escm_char_upper_case_p(escm *, escm_atom *, void *);
+escm_atom *escm_char_lower_case_p(escm *, escm_atom *, void *);
+
+escm_atom *escm_char_to_integer(escm *, escm_atom *, void *);
+escm_atom *escm_integer_to_char(escm *, escm_atom *, void *);
+
+escm_atom *escm_char_upcase(escm *, escm_atom *, void *);
+escm_atom *escm_char_downcase(escm *, escm_atom *, void *);
 
 #endif /* ESCHEME_CHARS_H */

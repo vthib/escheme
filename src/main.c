@@ -76,7 +76,7 @@ static struct types desc[MAXTYPE] = {
 #endif
 #ifdef ESCM_USE_STRINGS
     { "strings", "strings: the string implementation.",
-      escm_astrings_init, 1 },
+      escm_strings_init, 1 },
 #endif
 #ifdef ESCM_USE_VECTORS
     { "vectors", "vectors: the vector implementation.",
@@ -84,7 +84,7 @@ static struct types desc[MAXTYPE] = {
 #endif
 #ifdef ESCM_USE_CHARACTERS
     { "characters", "characters: the character implementation.",
-      escm_achars_init, 1 },
+      escm_chars_init, 1 },
 #endif
 #ifdef ESCM_USE_PROMISES
     { "promises", "promises: the promises implementation (delay and force).",
@@ -120,7 +120,6 @@ main(int argc, char **argv)
     escm *e;
     int i, j;
     int casesens = 1;
-    int useascii = 0;
     int resume = 0;
     char *p;
     char *evalstr;
@@ -128,7 +127,7 @@ main(int argc, char **argv)
 
     if (!setlocale(LC_ALL, "") ||
         !setlocale(LC_NUMERIC, "C"))  /* corrects strtod interpretation */
-        fprintf(stderr, "can't set the locale.\n");
+        ftprintf(stderr, T("can't set the locale.\n"));
 
     evalstr = NULL;
 
@@ -141,7 +140,8 @@ main(int argc, char **argv)
                     char *comma;
 
                     if (i+1 == argc) {
-                        fprintf(stderr, "missing arguments to --noload.\n");
+                        ftprintf(stderr,
+                                 _(T("missing arguments to --noload.\n")));
                         break;
                     }
                     p = argv[i+1], ret = 1;
@@ -160,18 +160,17 @@ main(int argc, char **argv)
                         }
 
                         if (j == MAXTYPE)
-                            fprintf(stderr, "unknown argument to --noload: "
-                                    "%s.\n", p);
+                            ftprintf(stderr, _(T("unknown argument to "))
+                                    _(T("--noload:%s.\n")), p);
 
                         p = comma + 1;
                     }
                     i++;
                 } else
-                    fprintf(stderr, "unknown option %s.\n", argv[i]);
+                    ftprintf(stderr, _(T("unknown option %s.\n")), argv[i]);
             } else {
                 for (p = argv[i] + 1; *p != '\0'; p++) {
                     switch (*p) {
-                    case 'a': useascii = 1; break;
                     case 'g': casesens = 1; break;
                     case 'G': casesens = 0; break;
                     case 'r': resume = 1; break;
@@ -180,7 +179,7 @@ main(int argc, char **argv)
                         usage(argv[0]);
                         return EXIT_SUCCESS;
                     default:
-                        fprintf(stderr, "unknown option -%c.\n", *p);
+                        ftprintf(stderr, _(T("unknown option -%c.\n")), *p);
                     }
                 }
             }
@@ -191,17 +190,6 @@ main(int argc, char **argv)
     e = escm_new();
     if (!e)
         return EXIT_FAILURE;
-
-#ifdef ESCM_USE_UNICODE
-    if (!useascii) {
-# ifdef ESCM_USE_STRINGS
-        desc[STRING].funinit = escm_ustrings_init;
-# endif
-# ifdef ESCM_USE_CHARACTERS
-        desc[CHAR].funinit = escm_uchars_init;
-# endif
-    }
-#endif /* ESCM_USE_UNICODE */
 
     for (j = 0; j < MAXTYPE; j++) {
         if (desc[j].load)
@@ -215,7 +203,11 @@ main(int argc, char **argv)
 
     ret = 1;
     if (evalstr) {
-        ret = escm_sparse(e, evalstr);
+        tchar *tcs;
+
+        tcs = strtotcs(evalstr);
+        ret = escm_sparse(e, tcs);
+        free(tcs);
         if (ret == 0)
             goto end;
         if (i >= argc) {
@@ -253,7 +245,6 @@ usage(char *name)
            "if no file is present, display a prompt.\n"
            "\n"
            "-h\tprint this help.\n"
-           "-a\tuse ascii (do not use unicode version of char and string).\n"
            "-G\tSymbols are treated case-insensitively.\n"
            "-g\tSymbols are treated case-sensitively (default).\n"
            "-e expr\tEvaluates expr.\n\n"

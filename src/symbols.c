@@ -18,22 +18,19 @@
 #include <assert.h>
 #include <string.h>
 #include <ctype.h>
-#ifdef ESCM_USE_UNICODE
-#include <wchar.h>
-#endif
 
 #include "escheme.h"
 
 static unsigned long symboltype = 2;
 
 static void symbol_print(escm *, escm_tst *, escm_output *, int);
-static int symbol_parsetest(escm *, escm_input *, int);
+static int symbol_parsetest(escm *, escm_input *, tint);
 static escm_atom *symbol_parse(escm *, escm_input *);
 static escm_atom *symbol_eval(escm *, escm_tst *);
 static void symbol_mark(escm *, escm_tst *);
 static int symbol_equal(escm *, escm_tst *, escm_tst *, int);
 
-static inline int issymbol(int);
+static inline int issymbol(tint);
 
 void
 escm_symbols_init(escm *e)
@@ -51,16 +48,16 @@ escm_symbols_init(escm *e)
 
     symboltype = escm_type_add(e, t);
 
-    (void) escm_procedure_new(e, "symbol?", 1, 1, escm_symbol_p, NULL);
+    (void) escm_procedure_new(e, T("symbol?"), 1, 1, escm_symbol_p, NULL);
 
 #ifdef ESCM_USE_STRINGS
-    (void) escm_procedure_new(e, "symbol->string", 1, 1, escm_symbol_to_string,
+    (void) escm_procedure_new(e, T("symbol->string"), 1, 1, escm_symbol_to_string,
                               NULL);
-    (void) escm_procedure_new(e, "string->symbol", 1, 1, escm_string_to_symbol,
+    (void) escm_procedure_new(e, T("string->symbol"), 1, 1, escm_string_to_symbol,
                               NULL);
 #endif
 
-    a = escm_procedure_new(e, "lookup", 1, 1, escm_lookup, NULL);
+    a = escm_procedure_new(e, T("lookup"), 1, 1, escm_lookup, NULL);
     escm_proc_val(a)->d.c.quoted = 0x1;
 }
 
@@ -71,7 +68,7 @@ escm_symbol_tget(void)
 }
 
 escm_atom *
-escm_symbol_make(escm *e, const char *str)
+escm_symbol_make(escm *e, const tchar *str)
 {
     return escm_atom_new(e, symboltype, escm_tst_gettree(&e->tree, str));
 }
@@ -111,7 +108,7 @@ escm_symbol_to_string(escm *e, escm_atom *args, void *nil)
 
     (void) nil;
     if (!escm_type_ison(ESCM_TYPE_STRING)) {
-        escm_error(e, "~s: string type is off.~%", escm_fun(e));
+        escm_error(e, _(T("~s: string type is off.~%")), escm_fun(e));
         escm_abort(e);
     }
 
@@ -128,27 +125,14 @@ escm_string_to_symbol(escm *e, escm_atom *args, void *nil)
 
     (void) nil;
     if (!escm_type_ison(ESCM_TYPE_STRING)) {
-        escm_error(e, "~s: string type is off.~%", escm_fun(e));
+        escm_error(e, _(T("~s: string type is off.~%")), escm_fun(e));
         escm_abort(e);
     }
 
     str = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(str), str, e);
 
-#ifdef ESCM_USE_UNICODE
-    if (escm_type_ison(ESCM_TYPE_USTRING)) {
-        char *s;
-        escm_atom *ret;
-
-        s = wcstostr(escm_ustr_val(str));
-        ret = escm_symbol_make(e, s);
-        free(s);
-        return ret;
-    } else
-        return escm_symbol_make(e, escm_astr_val(str));
-#else
     return escm_symbol_make(e, escm_str_val(str));
-#endif /* ESCM_USE_UNICODE */
 }
 #endif /* ESCM_USE_STRINGS */
 
@@ -174,28 +158,28 @@ symbol_print(escm *e, escm_tst *symbol, escm_output *stream, int lvl)
         return;
     }
 
-    escm_printf(stream, "%s", symbol->symname);
+    escm_printf(stream, T("%s"), symbol->symname);
 }
 
 static int
-symbol_parsetest(escm *e, escm_input *stream, int c)
+symbol_parsetest(escm *e, escm_input *stream, tint c)
 {
     (void) e;
 
-    if (c == '+' || c == '-') {
+    if (c == T('+') || c == T('-')) {
         c = escm_input_getc(stream);
-        if (c == '.') {
+        if (c == T('.')) {
             int ret;
 
             ret = !isdigit(escm_input_peek(stream));
             escm_input_ungetc(stream, c);
             return ret;
-        } else if (c == EOF)
+        } else if (c == TEOF)
             return 1;
 
         escm_input_ungetc(stream, c);
-        return !(isdigit(c) || c == 'i');
-    } else if (c == '.')
+        return !(isdigit(c) || c == T('i'));
+    } else if (c == T('.'))
         return !isdigit(escm_input_peek(stream));
     else if (isdigit(c))
         return 0;
@@ -206,7 +190,7 @@ symbol_parsetest(escm *e, escm_input *stream, int c)
 static escm_atom *
 symbol_parse(escm *e, escm_input *stream)
 {
-    char *str;
+    tchar *str;
     escm_atom *a;
 
     str = escm_input_getstr_fun(stream, issymbol, e->casesensitive);
@@ -220,7 +204,7 @@ static escm_atom *
 symbol_eval(escm *e, escm_tst *sym)
 {
     if (!sym->node || !sym->node->atom) {
-        escm_error(e, "unknown symbol `~s'.~%", e->curobj);
+        escm_error(e, _(T("unknown symbol `~s'.~%")), e->curobj);
         escm_abort(e);
     }
 
@@ -244,7 +228,7 @@ symbol_mark(escm *e, escm_tst *sym)
 }
 
 static inline int
-issymbol(int c)
+issymbol(tint c)
 {
-    return (strchr("!$%&*+-./:<=>?@^_~", c) != NULL || isalnum(c));
+    return (tcschr(T("!$%&*+-./:<=>?@^_~"), c) != NULL || istalnum(c));
 }

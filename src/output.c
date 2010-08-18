@@ -25,29 +25,29 @@
 
 #define vscmpf(e, stream, format, next)                                 \
     {                                                                   \
-        char *p;                                                        \
+        tchar *p;                                                       \
                                                                         \
         if (!(stream))                                                  \
             return;                                                     \
                                                                         \
-        for (p = (char *) (format); *p != '\0'; p++) {                  \
-            if (*p == '~') {                                            \
+        for (p = (tchar *) (format); *p != T('\0'); p++) {              \
+            if (*p == T('~')) {                                         \
                 p++;                                                    \
                 switch (*p) {                                           \
-                case '~':                                               \
-                    escm_putc((stream), '~');                           \
+                case T('~'):                                            \
+                    escm_putc((stream), T('~'));                        \
                     break;                                              \
-                case 'a':                                               \
+                case T('a'):                                            \
                     escm_atom_print4((e), (next), (stream), 1);         \
                     break;                                              \
-                case 's':                                               \
+                case T('s'):                                            \
                     escm_atom_print4((e), (next), (stream), 0);         \
                     break;                                              \
-                case 'n': case '%':                                     \
-                    escm_putc((stream), '\n');                          \
+                case T('n'): case T('%'):                               \
+                    escm_putc((stream), T('\n'));                       \
                     break;                                              \
                 default:                                                \
-                    escm_putc((stream), '~');                           \
+                    escm_putc((stream), T('~'));                        \
                     escm_putc((stream), *p);                            \
                     break;                                              \
                 }                                                       \
@@ -117,7 +117,7 @@ escm_output_str(void)
     return f;
 }
 
-char *
+tchar *
 escm_output_getstr(escm_output *o)
 {
     assert(o != NULL);
@@ -125,7 +125,7 @@ escm_output_getstr(escm_output *o)
     if (o->type == OUTPUT_FILE)
         return NULL;
 
-    *o->d.str.cur = '\0';
+    *o->d.str.cur = T('\0');
     return o->d.str.str;
 }
 
@@ -146,7 +146,7 @@ escm_output_close(escm_output *f)
 }
 
 void
-escm_vprintf(escm_output *f, const char *format, va_list args)
+escm_vprintf(escm_output *f, const tchar *format, va_list args)
 {
     va_list va;
 
@@ -156,7 +156,7 @@ escm_vprintf(escm_output *f, const char *format, va_list args)
         return;
 
     if (f->type == OUTPUT_FILE)
-        (void) vfprintf(f->d.file.fp, format, args);
+        (void) vftprintf(f->d.file.fp, format, args);
     else {
         size_t offset;
         int write;
@@ -176,7 +176,7 @@ escm_vprintf(escm_output *f, const char *format, va_list args)
             f->d.str.str = xrealloc(f->d.str.str, f->d.str.maxlen);
             f->d.str.cur = f->d.str.str + offset;
 
-            write = vsnprintf(f->d.str.cur, f->d.str.maxlen - offset, format,
+            write = vsntprintf(f->d.str.cur, f->d.str.maxlen - offset, format,
                               va);
 
             if ((size_t) write < f->d.str.maxlen - offset) {
@@ -191,7 +191,7 @@ escm_vprintf(escm_output *f, const char *format, va_list args)
 }
 
 void
-escm_printf(escm_output *stream, const char *format, ...)
+escm_printf(escm_output *stream, const tchar *format, ...)
 {
     va_list args;
 
@@ -203,7 +203,7 @@ escm_printf(escm_output *stream, const char *format, ...)
 }
 
 void
-escm_parse_print(escm_input *input, escm_output *stream, const char *format,
+escm_parse_print(escm_input *input, escm_output *stream, const tchar *format,
                  ...)
 {
     va_list args;
@@ -217,7 +217,7 @@ escm_parse_print(escm_input *input, escm_output *stream, const char *format,
 }
 
 void
-escm_scmpf(escm *e, escm_output *stream, const char *format, ...)
+escm_scmpf(escm *e, escm_output *stream, const tchar *format, ...)
 {
     va_list va;
 
@@ -229,13 +229,13 @@ escm_scmpf(escm *e, escm_output *stream, const char *format, ...)
 }
 
 void
-escm_scmpf2(escm *e, escm_output *stream, const char *format, escm_atom *args)
+escm_scmpf2(escm *e, escm_output *stream, const tchar *format, escm_atom *args)
 {
     vscmpf(e, stream, format, escm_cons_pop(e, &args));
 }
 
 void
-escm_notice(escm *e, const char *format, ...)
+escm_notice(escm *e, const tchar *format, ...)
 {
     va_list va;
 
@@ -247,7 +247,7 @@ escm_notice(escm *e, const char *format, ...)
 }
 
 void
-escm_warning(escm *e, const char *format, ...)
+escm_warning(escm *e, const tchar *format, ...)
 {
     va_list va;
 
@@ -259,7 +259,7 @@ escm_warning(escm *e, const char *format, ...)
 }
 
 void
-escm_error(escm *e, const char *format, ...)
+escm_error(escm *e, const tchar *format, ...)
 {
     va_list va;
 
@@ -274,40 +274,40 @@ escm_error(escm *e, const char *format, ...)
 }
 
 void
-escm_print_slashify(escm_output *stream, const char *str)
+escm_print_slashify(escm_output *stream, const tchar *str)
 {
     size_t i;
 
     if (!stream)
         return;
 
-    for (i = 0; str[i] != '\0'; i++) {
+    for (i = 0; str[i] != T('\0'); i++) {
         switch (str[i]) {
-        case '"':
-        case '\\':
-            escm_putc(stream, '\\');
+        case T('"'):
+        case T('\\'):
+            escm_putc(stream, T('\\'));
             escm_putc(stream, str[i]);
             break;
-        case '\a':
-            escm_putc(stream, '\\'); escm_putc(stream, 'a');
+        case T('\a'):
+            escm_putc(stream, T('\\')); escm_putc(stream, T('a'));
             break;
-        case '\b':
-            escm_putc(stream, '\\'); escm_putc(stream, 'b');
+        case T('\b'):
+            escm_putc(stream, T('\\')); escm_putc(stream, T('b'));
             break;
-        case '\f':
-            escm_putc(stream, '\\'); escm_putc(stream, 'f');
+        case T('\f'):
+            escm_putc(stream, T('\\')); escm_putc(stream, T('f'));
             break;
-        case '\n':
-            escm_putc(stream, '\\'); escm_putc(stream, 'n');
+        case T('\n'):
+            escm_putc(stream, T('\\')); escm_putc(stream, T('n'));
             break;
-        case '\r':
-            escm_putc(stream, '\\'); escm_putc(stream, 'r');
+        case T('\r'):
+            escm_putc(stream, T('\\')); escm_putc(stream, T('r'));
             break;
-        case '\t':
-            escm_putc(stream, '\\'); escm_putc(stream, 't');
+        case T('\t'):
+            escm_putc(stream, T('\\')); escm_putc(stream, T('t'));
             break;
-        case '\v':
-            escm_putc(stream, '\\'); escm_putc(stream, 'v');
+        case T('\v'):
+            escm_putc(stream, T('\\')); escm_putc(stream, T('v'));
             break;
         default:
             escm_putc(stream, str[i]);
@@ -317,14 +317,14 @@ escm_print_slashify(escm_output *stream, const char *str)
 }
 
 void
-escm_putc(escm_output *f, int c)
+escm_putc(escm_output *f, tint c)
 {
     if (!f)
         return;
 
     if (f->type == OUTPUT_FILE) {
-        if (EOF == fputc(c, f->d.file.fp))
-            fprintf(stderr, "fputc('%c') failed.\n", c);
+        if (TEOF == fputtc(c, f->d.file.fp))
+            ftprintf(stderr, T("fputc('%") TFMT _(T("c') failed.\n")), c);
     } else {
         size_t offset;
 

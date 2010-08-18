@@ -18,9 +18,7 @@
 # define ESCHEME_UTILS_H
 
 #include <float.h>
-#ifdef ESCM_USE_UNICODE
-# include <wchar.h>
-#endif
+#include "types.h"
 
 #ifdef _
 # undef _
@@ -48,18 +46,15 @@
 void *xmalloc(size_t);
 void *xcalloc(size_t, size_t);
 void *xrealloc(void *, size_t);
+tchar *tcsdup(const tchar *);
 char *xstrdup(const char *);
 
-int xstrcasecmp(const char *, const char *);
+int xtcscasecmp(const tchar *, const tchar *);
 double xround(double);
 
-#ifdef ESCM_USE_UNICODE
-char *wcstostr(const wchar_t *);
-wchar_t *strtowcs(const char *);
+char *tcstostr(const tchar *);
+tchar *strtotcs(const char *);
 
-wchar_t *xwcsdup(const wchar_t *);
-int xwcscasecmp(const wchar_t *, const wchar_t *);
-#endif
 
 #define xfree(p) free(p), (p) = NULL;
 
