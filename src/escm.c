@@ -286,9 +286,9 @@ escm_parse(escm *e, escm_input *in)
                 atom = escm_type_parse(e, i, in);
             }
         }
-        if (i >= e->ntypes) {
-            escm_parse_print(in, e->errp, _(T("unknown character `%c'.\n")),
-                             c);
+        if (!atom) {
+            escm_parse_print(in, e->errp, _(T("unknown character `%")) TFMT
+                             T("c'.\n"), c);
             escm_abort(e);
         }
     }
@@ -320,7 +320,7 @@ escm_type_add(escm *e, escm_type *type)
 }
 
 int
-escm_type_parsetest(escm *e, size_t i, escm_input *stream, int c)
+escm_type_parsetest(escm *e, size_t i, escm_input *stream, tint c)
 {
     switch (e->types[i]->parsetesttype) {
     case TYPE_BUILT:
@@ -335,12 +335,13 @@ escm_type_parsetest(escm *e, size_t i, escm_input *stream, int c)
             if (!e->types[i]->parsetest.pparsetest)
                 return 0;
 
-            a = escm_cons_make(e, escm_port_make(e, stream, 1),
-                               escm_cons_make(e, escm_char_make(e, c),
-                                              e->NIL));
+            escm_ctx_enter(e);
+            a = escm_port_make(e, stream, 1);
+            escm_port_val(a)->nofree = 1;
+            escm_ctx_put(e, a); escm_ctx_put(e, escm_char_make(e, c));
             return ESCM_ISTRUE(e,
                 escm_procedure_exec(e, e->types[i]->parsetest.pparsetest,
-                                    a, 0))
+                                    escm_ctx_leave(e), 0))
                 ? 1 : 0;
         }
 #endif
@@ -357,12 +358,19 @@ escm_type_parse(escm *e, size_t i, escm_input *stream)
             ? e->types[i]->parse.fparse(e, stream)
             : NULL;
     case TYPE_DYN:
+    {
+        escm_atom *a;
+
+        a = escm_port_make(e, stream, 1);
+        escm_port_val(a)->nofree = 1;
+
         return (e->types[i]->parse.pparse)
             ? escm_procedure_exec(
                 e, e->types[i]->parse.pparse,
-                escm_cons_make(e, escm_port_make(e, stream, 1), e->NIL),
+                escm_cons_make(e, a, e->NIL),
                 0)
             : NULL;
+    }
     }
     return NULL;
 }

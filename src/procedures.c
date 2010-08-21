@@ -169,11 +169,11 @@ procedure_print(escm *e, escm_procedure *procedure, escm_output *stream,
 
     if (procedure->type == ESCM_CLOSURE) {
         if (procedure->name)
-            escm_printf(stream, T("#<closure %s>"), procedure->name);
+            escm_printf(stream, T("#<closure %") TFMT T("s>"), procedure->name);
         else
             escm_printf(stream, T("#<closure>"), procedure->name);
     } else
-        escm_printf(stream, T("#<primitive %s>"), procedure->name);
+        escm_printf(stream, T("#<primitive %") TFMT T("s>"), procedure->name);
 }
 
 static escm_atom *

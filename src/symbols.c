@@ -158,7 +158,7 @@ symbol_print(escm *e, escm_tst *symbol, escm_output *stream, int lvl)
         return;
     }
 
-    escm_printf(stream, T("%s"), symbol->symname);
+    escm_printf(stream, T("%") TFMT T("s"), symbol->symname);
 }
 
 static int

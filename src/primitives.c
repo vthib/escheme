@@ -1053,8 +1053,10 @@ escm_prim_assert(escm *e, escm_atom *args, void *nil)
     ret = escm_atom_eval(e, test);
     if (e->err == 1)
         return NULL;
-    if (!ESCM_ISTRUE(e, ret))
+    if (!ESCM_ISTRUE(e, ret)) {
         escm_error(e, _(T("assert failed: ~s.~%")), test);
+        escm_abort(e);
+    }
 
     return NULL;
 }

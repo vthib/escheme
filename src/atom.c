@@ -97,6 +97,7 @@ escm_atom_eval(escm *e, escm_atom *atom)
             ? e->types[atom->type]->eval.feval(e, atom->ptr)
             : atom;
         break;
+    default:
     case TYPE_DYN:
         ret = (e->types[atom->type]->eval.peval)
             ? escm_procedure_exec(e, e->types[atom->type]->eval.peval,
@@ -127,6 +128,7 @@ escm_atom_exec(escm *e, escm_atom *atom, escm_atom *args)
         else
             goto noexec;
         break;
+    default:
     case TYPE_DYN:
         if (e->types[atom->type]->exec.pexec)
             ret = escm_procedure_exec(e, e->types[atom->type]->exec.pexec,

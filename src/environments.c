@@ -370,7 +370,7 @@ env_print(escm *e, escm_env *env, escm_output *stream, int lvl)
 
     escm_printf(stream, _(T("#<Alpha {")));
     for (list = env->list; list; list = list->next) {
-        escm_printf(stream, T("\"%s\": "), list->tree->symname);
+        escm_printf(stream, T("\"%") TFMT T("s\": "), list->tree->symname);
         escm_atom_print3(e, list->node->atom, stream);
         if (list->next)
             escm_printf(stream, T(", "));

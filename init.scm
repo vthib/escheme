@@ -75,6 +75,7 @@
      (define name (lambda args (apply begin body))))))
 ;>
 
+;?strings
 ;?records
 (define-syntax define-record-field
   (syntax-rules ()
@@ -114,4 +115,4 @@
     ((check-arg pred val caller)
      (if (not (pred val))
          (error 'caller val ": wrong argument.")))))
-
+;>

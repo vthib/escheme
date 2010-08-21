@@ -246,7 +246,10 @@ escm_atom *
 escm_list_p(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *arg;
-    escm_cons *c, *end;
+    escm_cons *c;
+#if ESCM_CIRCULAR_LIST >= 1
+    escm_cons *end;
+#endif
     unsigned int res;
 
     (void) nil;
@@ -260,9 +263,11 @@ escm_list_p(escm *e, escm_atom *args, void *nil)
 
 #if ESCM_CIRCULAR_LIST >= 1
         arg->marked = 1; /* mark all atoms to check circular lists */
-#endif
         for (c = escm_cons_val(arg), end = c; c; c = escm_cons_next(c),
                  end = c) {
+#else
+        for (c = escm_cons_val(arg); c; c = escm_cons_next(c)) {
+#endif
             if (!ESCM_ISCONS(c->cdr)
 #if ESCM_CIRCULAR_LIST >= 1
                 || c->cdr->marked == 1
@@ -352,8 +357,11 @@ escm_atom *
 escm_length(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *arg;
-    escm_cons *c, *end;
-    long n;
+    escm_cons *c;
+#if ESCM_CIRCULAR_LIST >= 1
+    escm_cons *end;
+#endif
+long n;
 
     (void) nil;
 
@@ -369,9 +377,11 @@ escm_length(escm *e, escm_atom *args, void *nil)
 
 #if ESCM_CIRCULAR_LIST >= 1
     arg->marked = 1; /* mark all atoms to check circular lists */
-#endif
     for (c = escm_cons_val(arg), end = c; c; c = escm_cons_next(c),
              end = c) {
+#else
+    for (c = escm_cons_val(arg); c; c = escm_cons_next(c)) {
+#endif
         if (!ESCM_ISCONS(c->cdr)
 #if ESCM_CIRCULAR_LIST >= 1
             || (c->cdr->marked == 1)

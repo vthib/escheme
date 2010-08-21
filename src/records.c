@@ -231,7 +231,7 @@ record_print(escm *e, escm_atom **rec, escm_output *stream, int lvl)
     (void) rec;
     (void) lvl;
 
-    escm_printf(stream, T("#<record %s {"),
+    escm_printf(stream, T("#<record %") TFMT T("s {"),
                 e->types[e->curobj->type]->d.rec.name);
     max = e->types[e->curobj->type]->d.rec.len;
     for (i = 0; i < max; i++) {

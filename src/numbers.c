@@ -949,7 +949,7 @@ escm_number_to_string(escm *e, escm_atom *args, void *nil)
         len = maxlen - 1;
     }
 
-    a = escm_string_make2(e, str);
+    a = escm_string_make(e, str, len);
     free(str);
     return a;
 }
@@ -1078,8 +1078,8 @@ inputtonumber(escm *e, escm_input *input, int radix)
         case T('d'): radix = 10; break;
         case T('x'): radix = 16; break;
         default:
-            escm_parse_print(input, e->errp, _(T("unknown character #%c.\n")),
-                             c);
+            escm_parse_print(input, e->errp, _(T("unknown character #%")) TFMT
+                             T("c.\n"), c);
             return NULL;
         }
     } else if (c == TEOF)
@@ -1124,8 +1124,8 @@ inputtonumber(escm *e, escm_input *input, int radix)
             input->d.file.car -= tcslen(str) - (ec - str) - 1;
         else
             input->d.str.cur = input->d.str.str + (ec - str + 1);
-        escm_parse_print(input, e->errp, _(T("Character `%c' unexpected.\n")),
-                         *ec);
+        escm_parse_print(input, e->errp, _(T("Character `%")) TFMT
+                         T("c' unexpected.\n"), *ec);
         free(str);
         free(n);
         return NULL;
