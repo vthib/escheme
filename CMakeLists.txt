@@ -5,6 +5,7 @@ include(CheckFunctionExists)
 project(escheme C)
 
 enable_testing()
+add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
 add_test(test_symbols escheme test/test_symbols.scm)
 add_test(test_lists escheme test/test_lists.scm)
 
