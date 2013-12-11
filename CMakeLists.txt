@@ -15,7 +15,7 @@ set (HEADER src/types.h src/escheme.h src/atom.h src/cons.h src/environments.h
   src/escm.h src/input.h src/output.h src/primitives.h src/procedures.h
   src/srfi.h src/symbols.h src/tst.h src/utils.h)
 set (DEFINES -Dinline="__inline__" -I.. -I. -Wall -W -Wmissing-prototypes
-  -pedantic-errors)
+  -pedantic-errors -g -coverage -O0)
 #set (DEFINES -I.. -I. -Wall -W -pedantic)
 #set (CMAKE_C_COMPILER "clang")
 
@@ -122,7 +122,7 @@ if (records)
   append_define(-DESCM_USE_RECORDS)
   append_dep(src/records.c)
   append_header(src/records.h)
-#  add_test(test_records escheme test/test_records.scm)
+  add_test(test_records escheme test/test_records.scm)
 endif(records)
 
 if (promises)
@@ -154,12 +154,14 @@ else (NOT libmath)
   target_link_libraries(escm m)
 endif (NOT libmath)
 
-#set(ESCM_SHARE_PATH "${CMAKE_INSTALL_PREFIX}/share/escheme/")
-set(ESCM_SHARE_PATH "./")
+target_link_libraries(escm gcov)
+
+set(ESCM_SHARE_PATH "${CMAKE_INSTALL_PREFIX}/share/escheme/")
+#set(ESCM_SHARE_PATH "./")
 
 configure_file(config.h.cmake config.h)
 
 install(FILES init.scm DESTINATION ${ESCM_SHARE_PATH})
-install(PROGRAMS escheme DESTINATION bin)
+install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/escheme DESTINATION bin)
 install(TARGETS escm DESTINATION lib)
 install(FILES ${HEADER} DESTINATION include)
