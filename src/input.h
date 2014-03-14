@@ -48,6 +48,7 @@ struct escm_input {
 };
 
 escm_input *escm_input_fopen(const char *);
+escm_input *escm_input_fopen_prefixed(const char *, escm_input *);
 escm_input *escm_input_fmng(FILE *, const char *);
 escm_input *escm_input_str(const tchar *);
 

@@ -36,6 +36,8 @@ endmacro(append_define)
 append_define(-g)
 append_define($ENV{CFLAGS})
 
+set(CMAKE_C_FLAGS "-W -Wall -pedantic -coverage")
+
 check_function_exists(_vsnwprintf HAVE_VSNWPRINTF)
 
 option(unicode "build the unicode version of strings and characters" 0)

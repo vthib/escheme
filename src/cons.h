@@ -40,7 +40,6 @@ unsigned long escm_cons_tget(void);
 
 escm_atom *escm_cons_make(escm *, escm_atom *, escm_atom *);
 
-void escm_cons_put(escm *, escm_atom **, escm_atom *);
 escm_atom *escm_cons_pop(escm *, escm_atom **);
 int escm_cons_isin(escm *, escm_atom *, escm_atom *, int);
 

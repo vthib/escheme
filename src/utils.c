@@ -121,15 +121,12 @@ xtcscasecmp(const tchar *s1, const tchar *s2)
 double
 xround(double a)
 {
-#ifdef ESCM_USE_C99
-    return round(a);
-#else
     double c;
 
     c = ceil(a);
 
-    if (DBL_EQ(a - c, 0.5)) { /* round to even */
-        if (((long) c) % 2 == 0)
+    if (DBL_EQ(c - a, 0.5)) { /* round to even */
+		if (((long) c) % 2 == 0)
             return c;
         else
             return c - 1;
@@ -137,7 +134,6 @@ xround(double a)
         return c;
     else
         return c - 1;
-#endif
 }
 
 char *

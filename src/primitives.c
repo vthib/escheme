@@ -790,17 +790,21 @@ escm_load(escm *e, escm_atom *args, void *nil)
         s = tcstostr(escm_str_val(str));
         if (!escm_fparse(e, s)) {
             free(s);
-            escm_abort(e);
+			goto err;
         }
         free(s);
     }
 #else
     if (!escm_fparse(e, escm_str_val(str)))
-        escm_abort(e);
+        goto err;
 #endif
-    e->ctx = ctx;
 
+    e->ctx = ctx;
     return NULL;
+
+err:
+	e->ctx = ctx;
+	escm_abort(e);
 }
 #endif
 

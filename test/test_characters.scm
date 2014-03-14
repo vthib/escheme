@@ -168,3 +168,9 @@
 (test 'char->integer-4 (char->integer #\space) 32)
 (test 'char->integer-5 (char->integer #\`) 96)
 ;>
+
+(test 'char-equal (equal? #\a #\b) #f)
+
+(test 'char-eqv (eqv? #\a #\b) #f)
+
+(test 'char-eq (eq? #\a #\b) #f)

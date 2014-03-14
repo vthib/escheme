@@ -156,6 +156,6 @@
 ; run the tests
 
 (let ((test-macros #t))
-	(load "test/test_primitives.scm"))
+	(load "test_primitives.scm"))
 
 ;> string

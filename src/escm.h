@@ -155,6 +155,8 @@ struct escm {
     escm_type **types;
     unsigned long ntypes;
 
+	escm_input *current_input; /* the file or str we are currently parsing */
+
     unsigned int backtrace : 1;
     unsigned int casesensitive : 1;
     unsigned int brackets : 1;
@@ -168,6 +170,7 @@ void escm_free(escm *);
 
 int escm_fparse(escm *, const char *);
 int escm_sparse(escm *, const tchar *);
+int escm_iparse(escm *, escm_input *);
 escm_atom *escm_parse(escm *, escm_input *);
 
 void escm_shell(escm *);

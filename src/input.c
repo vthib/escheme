@@ -55,6 +55,32 @@ escm_input_fopen(const char *name)
     return f;
 }
 
+escm_input *
+escm_input_fopen_prefixed(const char *name, escm_input *prefix)
+{
+	char *dir, *buf, *s;
+	escm_input *input;
+
+	assert(name != NULL);
+
+	if (prefix == NULL || prefix->type != INPUT_FILE || name[0] == '/')
+		return escm_input_fopen(name);
+
+	dir = prefix->d.file.name;
+	s = strrchr(dir, '/');
+	if (*s == '\0')
+		return escm_input_fopen(name);
+
+ 	buf = xmalloc((s - dir + strlen(name) + 2) * sizeof *buf);
+	strncpy(buf, dir, (s - dir + 1));
+	strncpy(buf + (s - dir + 1), name, strlen(name) + 1);
+
+	input = escm_input_fopen(buf);
+
+	free(buf);
+	return input;
+}
+
 /**
  * @brief manage a file pointer
  */

@@ -55,6 +55,8 @@ escm_continuation_tget(void)
 escm_atom *
 escm_continuation_p(escm *e, escm_atom *args, void *nil)
 {
+	(void) nil;
+
     return (ESCM_ISCONTINUATION(escm_cons_val(args)->car)) ? e->TRUE : e->FALSE;
 }
 
@@ -65,7 +67,9 @@ escm_call_with_cc(escm *e, escm_atom *args, void *nil)
     escm_continuation *c;
     int i;
 
-    proc = escm_cons_pop(e, &args);
+    (void) nil;
+
+	proc = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISPROC(proc), proc, e);
 
     c = xmalloc(sizeof *c);
@@ -110,7 +114,7 @@ continuation_print(escm *e, escm_continuation *cont, escm_output *stream,
     (void) lvl;
     (void) cont;
 
-    escm_printf(stream, "#<continuation>");
+    escm_printf(stream, T("#<continuation>"));
 }
 
 static escm_context *

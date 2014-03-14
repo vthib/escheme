@@ -98,15 +98,6 @@ escm_cons_make(escm *e, escm_atom *car, escm_atom *cdr)
     return escm_atom_new(e, ESCM_TYPE_CONS, p);
 }
 
-void
-escm_cons_put(escm *e, escm_atom **cons, escm_atom *atom)
-{
-    escm_atom *new;
-
-    new = escm_cons_make(e, atom, (*cons) ? *cons : e->NIL);
-    *cons = new;
-}
-
 escm_atom *
 escm_cons_pop(escm *e, escm_atom **cons)
 {
