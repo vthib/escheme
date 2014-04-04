@@ -14,25 +14,26 @@
  * You should have received a copy of the GNU General Public License
  * along with Escheme; If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef ESCHEME_SRFI_H
-# define ESCHEME_SRFI_H
+#ifndef ESCHEME_SYMBOLS_H
+# define ESCHEME_SYMBOLS_H
 
 #include "types.h"
+#include "tst.h"
 
-void escm_srfi_init(escm *);
+#define ESCM_TYPE_SYMBOL escm_symbol_tget()
 
-/* srfi-2 */
-escm_atom *escm_and_let_star(escm *, escm_atom *, void *);
+#define ESCM_ISSYM(x) ((x)->type == ESCM_TYPE_SYMBOL)
 
-/* srfi 6 */
-escm_atom *escm_open_input_string(escm *, escm_atom *, void *);
-escm_atom *escm_open_output_string(escm *, escm_atom *, void *);
-escm_atom *escm_get_output_string(escm *, escm_atom *, void *);
+#define escm_sym_node(x) ((escm_tst *) (x)->ptr)
+#define escm_sym_val(x)                                                \
+    ((escm_sym_node(x)->node) ? escm_sym_node(x)->node->atom : NULL)
+#define escm_sym_name(x) escm_sym_node(x)->symname
 
-/* srfi 23 */
-escm_atom *escm_srfi_error(escm *, escm_atom *, void *);
+void escm_symbols_init(escm *);
+size_t escm_symbol_tget(void);
 
-/* srfi 28 */
-escm_atom *escm_format(escm *, escm_atom *, void *);
+escm_atom *escm_symbol_make(escm *, const tchar *);
+escm_atom *escm_symbol_make2(escm *, escm_tst *);
+void escm_symbol_set(escm_atom *, escm_atom *);
 
-#endif /* ESCHEME_SRFI_H */
+#endif /* ESCHEME_SYMBOLS_H */

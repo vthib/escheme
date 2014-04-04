@@ -14,25 +14,33 @@
  * You should have received a copy of the GNU General Public License
  * along with Escheme; If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef ESCHEME_SRFI_H
-# define ESCHEME_SRFI_H
+#ifndef ESCHEME_CONS_H
+# define ESCHEME_CONS_H
 
 #include "types.h"
 
-void escm_srfi_init(escm *);
+#define ESCM_TYPE_CONS (escm_cons_tget())
 
-/* srfi-2 */
-escm_atom *escm_and_let_star(escm *, escm_atom *, void *);
+#define ESCM_ISCONS(x) ((x)->type == ESCM_TYPE_CONS)
 
-/* srfi 6 */
-escm_atom *escm_open_input_string(escm *, escm_atom *, void *);
-escm_atom *escm_open_output_string(escm *, escm_atom *, void *);
-escm_atom *escm_get_output_string(escm *, escm_atom *, void *);
+#define escm_cons_next(x) (ESCM_ISCONS((x)->cdr) ? \
+                           escm_cons_val((x)->cdr) : NULL)
 
-/* srfi 23 */
-escm_atom *escm_srfi_error(escm *, escm_atom *, void *);
+#define escm_cons_val(x) ((escm_cons *) (x)->ptr)
+#define escm_cons_car(x) (escm_cons_val(x)->car)
+#define escm_cons_cdr(x) (escm_cons_val(x)->cdr)
 
-/* srfi 28 */
-escm_atom *escm_format(escm *, escm_atom *, void *);
+typedef struct escm_cons {
+    escm_atom *car;
+    escm_atom *cdr;
+} escm_cons;
 
-#endif /* ESCHEME_SRFI_H */
+void escm_cons_init(escm *);
+size_t escm_cons_tget(void);
+
+escm_atom *escm_cons_make(escm *, escm_atom *, escm_atom *);
+
+escm_atom *escm_cons_pop(escm *, escm_atom **);
+int escm_cons_isin(escm *, escm_atom *, escm_atom *, int);
+
+#endif /* ESCHEME_CONS_H */

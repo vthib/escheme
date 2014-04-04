@@ -41,7 +41,6 @@ escm_atom *escm_case(escm *, escm_atom *, void *);
 escm_atom *escm_and(escm *, escm_atom *, void *);
 escm_atom *escm_or(escm *, escm_atom *, void *);
 
-escm_atom *escm_begin(escm *, escm_atom *, void *);
 escm_atom *escm_do(escm *, escm_atom *, void *);
 
 escm_atom *escm_eq_p(escm *, escm_atom *, void *);

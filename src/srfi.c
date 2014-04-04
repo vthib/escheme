@@ -16,7 +16,11 @@
  */
 #include <stdlib.h>
 
-#include "escheme.h"
+#include "srfi.h"
+#include "base.h"
+#include "type/strings.h"
+#include "type/ports.h"
+#include "primitives.h"
 
 void
 escm_srfi_init(escm *e)

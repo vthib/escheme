@@ -14,25 +14,30 @@
  * You should have received a copy of the GNU General Public License
  * along with Escheme; If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef ESCHEME_SRFI_H
-# define ESCHEME_SRFI_H
+#ifndef ESCHEME_MACROS_H
+# define ESCHEME_MACROS_H
 
-#include "types.h"
+#ifdef ESCM_USE_MACROS
 
-void escm_srfi_init(escm *);
+# include "types.h"
 
-/* srfi-2 */
-escm_atom *escm_and_let_star(escm *, escm_atom *, void *);
+# define ESCM_TYPE_MACRO escm_macro_tget()
 
-/* srfi 6 */
-escm_atom *escm_open_input_string(escm *, escm_atom *, void *);
-escm_atom *escm_open_output_string(escm *, escm_atom *, void *);
-escm_atom *escm_get_output_string(escm *, escm_atom *, void *);
+# define ESCM_ISMACRO(x) ((x)->type == ESCM_TYPE_MACRO)
 
-/* srfi 23 */
-escm_atom *escm_srfi_error(escm *, escm_atom *, void *);
+typedef struct escm_macro {
+    escm_atom *literals;
+    escm_atom *rules;
+    escm_atom *env;
+} escm_macro;
 
-/* srfi 28 */
-escm_atom *escm_format(escm *, escm_atom *, void *);
+void escm_macros_init(escm *);
+size_t escm_macro_tget(void);
 
-#endif /* ESCHEME_SRFI_H */
+escm_atom *escm_expand(escm *, escm_atom *, void *);
+escm_atom *escm_define_syntax(escm *, escm_atom *, void *);
+escm_atom *escm_syntax_rules(escm *, escm_atom *, void *);
+
+#endif /* ESCM_USE_MACROS */
+
+#endif /* ESCHEME_MACROS_H */

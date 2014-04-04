@@ -14,23 +14,33 @@
  * You should have received a copy of the GNU General Public License
  * along with Escheme; If not, see <http://www.gnu.org/licenses/>.
  */
-#include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "escheme.h"
+#include "primitives.h"
+#include "base.h"
+#include "type/strings.h"
+#include "type/chars.h"
+#include "type/vectors.h"
+#include "type/ports.h"
 
 struct list {
     escm_atom *atom;
     struct list *next;
 };
 
+struct e_args {
+	escm *e;
+	escm_atom *args;
+};
+
 static escm_atom *named_let(escm *, escm_atom *, escm_atom *);
 static escm_atom *quasiquote(escm *, escm_atom *, unsigned int);
-static escm_atom *begin(escm *, escm_atom *, int);
 #ifdef ESCM_USE_VECTORS
 static escm_atom *quasiquote_vector(escm *, escm_atom *, unsigned int);
 #endif
+static escm_atom *next_arg(struct e_args *);
 
 void
 escm_primitives_load(escm *e)
@@ -69,8 +79,6 @@ escm_primitives_load(escm *e)
     o = escm_procedure_new(e, T("or"), 0, -1, escm_or, NULL);
     escm_proc_val(o)->d.c.quoted = 0x1;
 
-    o = escm_procedure_new(e, T("begin"), 1, -1, escm_begin, NULL);
-    escm_proc_val(o)->d.c.quoted = 0x3;
     o = escm_procedure_new(e, T("do"), 2, -1, escm_do, NULL);
     escm_proc_val(o)->d.c.quoted = 0x7;
 
@@ -297,7 +305,7 @@ escm_let(escm *e, escm_atom *args, void *nil)
        result */
     escm_gc_ungard(e, env);
     prevenv = escm_env_enter(e, env);
-    ret = begin(e, args, 1);
+    ret = escm_begin(e, args, 1);
 
     escm_env_leave(e, prevenv);
 
@@ -346,7 +354,7 @@ escm_let_star(escm *e, escm_atom *args, void *nil)
     }
 
     /* we now eval the body */
-    ret = begin(e, args, 1);
+    ret = escm_begin(e, args, 1);
 
     escm_env_leave(e, prevenv);
 
@@ -426,7 +434,7 @@ escm_letrec(escm *e, escm_atom *args, void *nil)
     }
 
     /* we now eval the body */
-    ret = begin(e, args, 1);
+    ret = escm_begin(e, args, 1);
 
     escm_env_leave(e, prevenv);
 
@@ -480,7 +488,7 @@ escm_cond(escm *e, escm_atom *args, void *nil)
         test = escm_cons_pop(e, &clause);
 
         if (ESCM_ISSYM(test) && 0 == tcscmp(T("else"), escm_sym_name(test)))
-            return begin(e, clause, 1);
+            return escm_begin(e, clause, 1);
 
         ret = escm_atom_eval(e, test);
         if (!ret) {
@@ -509,7 +517,7 @@ escm_cond(escm *e, escm_atom *args, void *nil)
                 return escm_procedure_exec(e, proc,
                                            escm_cons_make(e, ret, e->NIL), 0);
             } else
-                return begin(e, clause, 1);
+                return escm_begin(e, clause, 1);
         }
     }
 
@@ -540,11 +548,11 @@ escm_case(escm *e, escm_atom *args, void *nil)
         escm_assert(ESCM_ISCONS(d) || ESCM_ISSYM(d), d, e);
 
         if (ESCM_ISSYM(d) && 0 == tcscmp(T("else"), escm_sym_name(d)))
-            return begin(e, clause, 1);
+            return escm_begin(e, clause, 1);
 
         for (list = escm_cons_val(d); list; list = escm_cons_next(list)) {
             if (escm_atom_equal(e, list->car, expr, 0))
-                return begin(e, clause, 1);
+                return escm_begin(e, clause, 1);
         }
     }
 
@@ -610,13 +618,6 @@ escm_or(escm *e, escm_atom *args, void *nil)
 }
 
 escm_atom *
-escm_begin(escm *e, escm_atom *args, void *nil)
-{
-    (void) nil;
-    return begin(e, args, 1);
-}
-
-escm_atom *
 escm_do(escm *e, escm_atom *args, void *nil)
 {
     escm_cons *c;
@@ -673,14 +674,14 @@ escm_do(escm *e, escm_atom *args, void *nil)
         atom = escm_atom_eval(e, escm_cons_val(test)->car);
         if (ESCM_ISTRUE(e, atom)) {
             if (escm_cons_val(test)->cdr != e->NIL)
-                ret = begin(e, escm_cons_val(test)->cdr, 1);
+                ret = escm_begin(e, escm_cons_val(test)->cdr, 1);
             else
                 ret = NULL;
             goto end;
         } else {
             /* execute command */
             if (args != e->NIL)
-                (void) begin(e, args, 0);
+                (void) escm_begin(e, args, 0);
 
             /* run steps and rebound vars */
 
@@ -1154,12 +1155,16 @@ escm_atom *
 escm_prim_printf(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *format;
+	struct e_args s;
 
     (void) nil;
     format = escm_cons_pop(e, &args);
     escm_assert(ESCM_ISSTR(format), format, e);
 
-    escm_scmpf2(e, e->output, escm_str_val(format), args);
+	s.e = e;
+	s.args = args;
+    escm_scmpf_fun(e, e->output, escm_str_val(format), &s,
+				   (Escm_Fun_Next_Args) next_arg);
 
     return NULL;
 }
@@ -1169,6 +1174,7 @@ escm_format(escm *e, escm_atom *args, void *nil)
 {
     escm_atom *atom;
     escm_output *out;
+	struct e_args s;
 
     (void) nil;
     atom = escm_cons_pop(e, &args);
@@ -1176,7 +1182,10 @@ escm_format(escm *e, escm_atom *args, void *nil)
 
     out = escm_output_str();
 
-    escm_scmpf2(e, out, escm_str_val(atom), args);
+	s.e = e;
+	s.args = args;
+    escm_scmpf_fun(e, out, escm_str_val(atom), &s,
+				   (Escm_Fun_Next_Args) next_arg);
 
     atom = escm_string_make(e, escm_output_getstr(out),
                             out->d.str.cur - out->d.str.str);
@@ -1374,26 +1383,6 @@ err:
     return NULL;
 }
 
-static escm_atom *
-begin(escm *e, escm_atom *args, int tailrec)
-{
-    escm_atom *a, *ret;
-
-    ret = NULL;
-    for (a = escm_cons_pop(e, &args); a; a = escm_cons_pop(e, &args)) {
-        if (args == e->NIL && tailrec) {
-            e->ctx->tailrec = 1;
-            if (!escm_tailrec(e, a))
-                return NULL;
-        }
-        ret = escm_atom_eval(e, a);
-        if (!ret && e->err == 1)
-            return ret;
-    }
-
-    return ret;
-}
-
 #ifdef ESCM_USE_VECTORS
 static escm_atom *
 quasiquote_vector(escm *e, escm_atom *atom, unsigned int lvl)
@@ -1488,3 +1477,10 @@ err:
     return NULL;
 }
 #endif
+
+static escm_atom *
+next_arg(struct e_args *s)
+{
+	return escm_cons_pop(s->e, &(s->args));
+}
+

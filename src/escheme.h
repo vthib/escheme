@@ -17,18 +17,8 @@
 #ifndef ESCHEME_ESCHEME_H
 # define ESCHEME_ESCHEME_H
 
-#include "types.h"
-#include "utils.h"
-#include "input.h"
-#include "output.h"
-#include "escm.h"
-#include "atom.h"
-#include "tst.h"
-#include "environments.h"
-#include "cons.h"
-#include "procedures.h"
+#include "base.h"
 #include "primitives.h"
-#include "symbols.h"
 #include "srfi.h"
 
 #ifdef ESCM_USE_DYNTYPES

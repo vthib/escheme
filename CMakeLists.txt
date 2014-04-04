@@ -9,15 +9,26 @@ set(TDIR ${CMAKE_SOURCE_DIR}/test)
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
 add_test(test_symbols escheme ${TDIR}/test_symbols.scm)
 add_test(test_lists escheme ${TDIR}/test_lists.scm)
+add_test(test_srfi-2 escheme ${TDIR}/test_srfi-2.scm)
 
-set (FILES src/atom.c src/cons.c src/environments.c src/escm.c src/input.c
-  src/output.c src/primitives.c src/procedures.c src/srfi.c src/symbols.c
-  src/tst.c src/utils.c)
-set (HEADER src/types.h src/escheme.h src/atom.h src/cons.h src/environments.h
-  src/escm.h src/input.h src/output.h src/primitives.h src/procedures.h
-  src/srfi.h src/symbols.h src/tst.h src/utils.h)
-set (DEFINES -Dinline="__inline__" -I.. -I. -Wall -W -Wmissing-prototypes
-  -pedantic-errors -g -coverage -O0)
+set (FILES src/core/atom.c src/core/escm.c src/core/input.c src/core/output.c
+  src/core/scmpf.c src/core/tst.c src/core/utils.c)
+set (FILES ${FILES} src/core/type/cons.c src/core/type/env.c
+  src/core/type/procedures.c src/core/type/symbols.c)
+set (FILES ${FILES} src/core/proc/cons.c src/core/proc/env.c
+  src/core/proc/procedures.c src/core/proc/symbols.c)
+set (FILES ${FILES} src/primitives.c src/srfi.c)
+set (HEADER src/core/atom.h src/core/escm.h src/core/input.h src/core/output.h
+  src/core/scmpf.h src/core/tst.h src/core/utils.h)
+set (HEADER ${HEADER} src/core/type/cons.h src/core/type/env.h
+  src/core/type/procedures.h src/core/type/symbols.h)
+set (HEADER ${HEADER} src/core/proc/cons.h src/core/proc/env.h
+  src/core/proc/procedures.h src/core/proc/symbols.h)
+set (HEADER ${HEADER} src/primitives.h src/srfi.h)
+
+set (DEFINES -Dinline="__inline__" -Wall -W -Wmissing-prototypes
+  -pedantic-errors -g -coverage -O0 -std=c99
+  -I. -I${CMAKE_SOURCE_DIR}/src/core)
 #set (DEFINES -I.. -I. -Wall -W -pedantic)
 #set (CMAKE_C_COMPILER "clang")
 
@@ -41,8 +52,6 @@ set(CMAKE_C_FLAGS "-W -Wall -pedantic -coverage")
 check_function_exists(_vsnwprintf HAVE_VSNWPRINTF)
 
 option(unicode "build the unicode version of strings and characters" 0)
-option(c99 "use the c99 standard" 0)
-option(math "build math functions (sqrt, log, ...)" 1)
 
 option(continuations "build the (partial) implementation of continuations" 0)
 option(numbers "build the basic implementation of numbers" 1)
@@ -57,103 +66,93 @@ option(dyntypes "build support for dynamic types" 1)
 option(records "build support for record types" 1)
 
 if (unicode)
-  if (NOT c99)
-    message("Unicode support is enabled but c99 isn't. Forcing c99 support...")
-  endif(NOT c99)
-  set(c99 1)
   append_define(-DESCM_UNICODE)
 endif(unicode)
 
-if (c99)
-  append_define(-DESCM_USE_C99 -D_ISOC99_SOURCE)
-endif(c99)
-
 if (continuations)
   append_define(-DESCM_USE_CONTINUATIONS)
-  append_dep(src/continuations.c)
-  append_header(src/continuations.h)
+  append_dep(src/type/continuations.c)
+  append_header(src/type/continuations.h)
 endif(continuations)
 
 if (numbers)
   append_define(-DESCM_USE_NUMBERS)
-  append_dep(src/numbers.c)
-  append_header(src/numbers.h)
+  append_dep(src/type/numbers.c)
+  append_header(src/type/numbers.h)
   add_test(test_numbers escheme ${TDIR}/test_numbers.scm)
 endif(numbers)
 
 if (booleans)
   append_define(-DESCM_USE_BOOLEANS)
-  append_dep(src/booleans.c)
-  append_header(src/booleans.h)
+  append_dep(src/type/booleans.c)
+  append_header(src/type/booleans.h)
   add_test(test_booleans escheme ${TDIR}/test_booleans.scm)
 endif(booleans)
 
 if (strings)
   append_define(-DESCM_USE_STRINGS)
-  append_dep(src/strings.c)
-  append_header(src/strings.h)
+  append_dep(src/type/strings.c)
+  append_header(src/type/strings.h)
   add_test(test_strings escheme ${TDIR}/test_strings.scm)
 endif(strings)
 
 if (characters)
   append_define(-DESCM_USE_CHARACTERS)
-  append_dep(src/chars.c)
-  append_header(src/chars.h)
+  append_dep(src/type/chars.c)
+  append_header(src/type/chars.h)
   add_test(test_characters escheme ${TDIR}/test_characters.scm)
 endif(characters)
 
 if (ports)
   append_define(-DESCM_USE_PORTS)
-  append_dep(src/ports.c)
-  append_header(src/ports.h)
+  append_dep(src/type/ports.c)
+  append_header(src/type/ports.h)
 endif(ports)
 
 if (vectors)
   append_define(-DESCM_USE_VECTORS)
-  append_dep(src/vectors.c)
-  append_header(src/vectors.h)
+  append_dep(src/type/vectors.c)
+  append_header(src/type/vectors.h)
   add_test(test_vectors escheme ${TDIR}/test_vectors.scm)
 endif(vectors)
 
 if (macros)
   append_define(-DESCM_USE_MACROS)
-  append_dep(src/macros.c)
-  append_header(src/macros.h)
+  append_dep(src/type/macros.c)
+  append_header(src/type/macros.h)
   add_test(test_macros escheme ${TDIR}/test_macros.scm)
 endif(macros)
 
 if (records)
   append_define(-DESCM_USE_RECORDS)
-  append_dep(src/records.c)
-  append_header(src/records.h)
+  append_dep(src/type/records.c)
+  append_header(src/type/records.h)
   add_test(test_records escheme ${TDIR}/test_records.scm)
 endif(records)
 
 if (promises)
   append_define(-DESCM_USE_PROMISES)
-  append_dep(src/promises.c)
-  append_header(src/promises.h)
+  append_dep(src/type/promises.c)
+  append_header(src/type/promises.h)
   add_test(test_promises escheme ${TDIR}/test_promises.scm)
 endif(promises)
 
 if (dyntypes)
   append_define(-DESCM_USE_DYNTYPES)
-  append_dep(src/dyntypes.c)
-  append_header(src/dyntypes.h)
+  append_dep(src/type/dyntypes.c)
+  append_header(src/type/dyntypes.h)
 endif(dyntypes)
 
-if (math)
-  append_define(-DESCM_USE_MATH)
-  find_library(libmath m)
-endif (math)
 
 add_library(escm SHARED ${FILES} ${HEADER})
 add_executable(escheme src/main.c)
 target_link_libraries(escheme escm)
 
 add_definitions(${DEFINES})
+
+find_library(libmath m)
 if (NOT libmath)
-  message(STATUS "Math library not found, disabling math support.")
+  error(STATUS "Math library not found.")
 else (NOT libmath)
   target_link_libraries(escm m)
 endif (NOT libmath)

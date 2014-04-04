@@ -14,25 +14,28 @@
  * You should have received a copy of the GNU General Public License
  * along with Escheme; If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef ESCHEME_SRFI_H
-# define ESCHEME_SRFI_H
+#ifndef ESCHEME_ENV_H
+# define ESCHEME_ENV_H
 
 #include "types.h"
 
-void escm_srfi_init(escm *);
+typedef struct escm_env {
+    struct escm_envlist *list;
+    escm_atom *prev;
+} escm_env;
 
-/* srfi-2 */
-escm_atom *escm_and_let_star(escm *, escm_atom *, void *);
+#define ESCM_TYPE_ENV (escm_env_tget())
+#define ESCM_ISENV(x) ((x)->type == ESCM_TYPE_ENV)
+#define escm_env_val(x) ((escm_env *) (x)->ptr)
 
-/* srfi 6 */
-escm_atom *escm_open_input_string(escm *, escm_atom *, void *);
-escm_atom *escm_open_output_string(escm *, escm_atom *, void *);
-escm_atom *escm_get_output_string(escm *, escm_atom *, void *);
+void escm_env_init(escm *);
+size_t escm_env_tget(void);
 
-/* srfi 23 */
-escm_atom *escm_srfi_error(escm *, escm_atom *, void *);
+escm_atom *escm_env_new(escm *, escm_atom *);
 
-/* srfi 28 */
-escm_atom *escm_format(escm *, escm_atom *, void *);
+void escm_env_set(escm *, escm_atom *, escm_atom *, escm_atom *);
 
-#endif /* ESCHEME_SRFI_H */
+escm_atom *escm_env_enter(escm *, escm_atom *);
+void escm_env_leave(escm *, escm_atom *);
+
+#endif /* ESCHEME_ENV_H */

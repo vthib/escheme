@@ -14,25 +14,24 @@
  * You should have received a copy of the GNU General Public License
  * along with Escheme; If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef ESCHEME_SRFI_H
-# define ESCHEME_SRFI_H
+#ifndef ESCHEME_BOOLEANS_H
+# define ESCHEME_BOOLEANS_H
 
-#include "types.h"
+#ifdef ESCM_USE_BOOLEANS
 
-void escm_srfi_init(escm *);
+# include "types.h"
 
-/* srfi-2 */
-escm_atom *escm_and_let_star(escm *, escm_atom *, void *);
+# define ESCM_TYPE_BOOLEAN escm_boolean_tget()
 
-/* srfi 6 */
-escm_atom *escm_open_input_string(escm *, escm_atom *, void *);
-escm_atom *escm_open_output_string(escm *, escm_atom *, void *);
-escm_atom *escm_get_output_string(escm *, escm_atom *, void *);
+# define ESCM_ISBOOL(x) ((x)->type == ESCM_TYPE_BOOLEAN)
 
-/* srfi 23 */
-escm_atom *escm_srfi_error(escm *, escm_atom *, void *);
+void escm_booleans_init(escm *);
 
-/* srfi 28 */
-escm_atom *escm_format(escm *, escm_atom *, void *);
+escm_atom *escm_not(escm *, escm_atom *, void *);
+escm_atom *escm_boolean_p(escm *, escm_atom *, void *);
 
-#endif /* ESCHEME_SRFI_H */
+size_t escm_boolean_tget(void);
+
+#endif /* ESCM_USE_NUMBERS */
+
+#endif /* ESCHEME_BOOLEANS_H */

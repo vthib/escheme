@@ -14,25 +14,19 @@
  * You should have received a copy of the GNU General Public License
  * along with Escheme; If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef ESCHEME_SRFI_H
-# define ESCHEME_SRFI_H
+#ifndef ESCHEME_SCMPF_H
+# define ESCHEME_SCMPF_H
 
-#include "types.h"
+# include "types.h"
 
-void escm_srfi_init(escm *);
+typedef escm_atom *(*Escm_Fun_Next_Args)(void *);
 
-/* srfi-2 */
-escm_atom *escm_and_let_star(escm *, escm_atom *, void *);
+void escm_scmpf(escm *, escm_output *, const tchar *, ...);
 
-/* srfi 6 */
-escm_atom *escm_open_input_string(escm *, escm_atom *, void *);
-escm_atom *escm_open_output_string(escm *, escm_atom *, void *);
-escm_atom *escm_get_output_string(escm *, escm_atom *, void *);
+/* A trick to make scmpf work with variadic macros (see escm_notice, ...) */
+void escm_scmpf_2(escm *, escm_output *, ...);
 
-/* srfi 23 */
-escm_atom *escm_srfi_error(escm *, escm_atom *, void *);
+void escm_scmpf_fun(escm *e, escm_output *stream, const tchar *format,
+					void *data, Escm_Fun_Next_Args next);
 
-/* srfi 28 */
-escm_atom *escm_format(escm *, escm_atom *, void *);
-
-#endif /* ESCHEME_SRFI_H */
+#endif /* ESCHEME_SCMPF_H */
