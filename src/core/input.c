@@ -284,12 +284,12 @@ escm_input_prefix(escm_input *f)
 		all = len + 50; /* well enough for "name":LONG_MAX: " */
 		buf = xmalloc(all * sizeof *buf);
 
-		n = sntprintf(buf, all, T("\"%") TFMT T("s\":%ld: "), f->d.str.str,
+		n = sntprintf(buf, all, T("\"%") TFMT T("s\":%td: "), f->d.str.str,
 					  f->d.str.cur - f->d.str.str);
 		while (n >= all) {
 			all += 50;
 			buf = xrealloc(buf, all * sizeof *buf);
-			n = sntprintf(buf, all, T("\"%") TFMT T("s\":%ld: "), f->d.str.str,
+			n = sntprintf(buf, all, T("\"%") TFMT T("s\":%td: "), f->d.str.str,
 						  f->d.str.cur - f->d.str.str);
 		}
     }

@@ -20,7 +20,6 @@
 #include "base.h"
 #include "numbers.h"
 #include "chars.h"
-#include "symbols.h"
 
 void
 escm_dyntypes_init(escm *e)

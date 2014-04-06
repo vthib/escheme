@@ -22,7 +22,6 @@
 
 #include "numbers.h"
 #include "base.h"
-#include "strings.h"
 
 static size_t numbertype = 0;
 
@@ -33,9 +32,6 @@ static escm_atom *number_parse(escm *, escm_input *);
 
 static escm_number *inputtonumber(escm *, escm_input *, int);
 static long pgcd(long, long);
-#ifdef ESCM_USE_STRINGS
-static tchar *bintostr(long);
-#endif
 static inline int isnumber(tint);
 static inline escm_atom *exeround(escm *, escm_atom *, double (*)(double));
 static inline escm_atom *exemath(escm *, escm_atom *, double (*)(double));
@@ -102,13 +98,6 @@ escm_numbers_init(escm *e)
 
     (void) escm_procedure_new(e, T("sqrt"), 1, 1, escm_sqrt, NULL);
     (void) escm_procedure_new(e, T("expt"), 2, 2, escm_expt, NULL);
-
-#ifdef ESCM_USE_STRINGS
-    (void) escm_procedure_new(e, T("number->string"), 1, 2, escm_number_to_string,
-                              NULL);
-    (void) escm_procedure_new(e, T("string->number"), 1, 2, escm_string_to_number,
-                              NULL);
-#endif
 }
 
 size_t
@@ -136,6 +125,17 @@ escm_real_make(escm *e, double r)
     n = xmalloc(sizeof *n);
     n->fixnum = 0, n->d.rval = r;
 
+    return escm_atom_new(e, numbertype, n);
+}
+
+escm_atom *
+escm_number_parse(escm *e, escm_input *stream, int base)
+{
+    escm_number *n;
+
+    n = inputtonumber(e, stream, base);
+    if (!n)
+        return NULL;
     return escm_atom_new(e, numbertype, n);
 }
 
@@ -983,127 +983,6 @@ escm_expt(escm *e, escm_atom *args, void *nil)
         return escm_real_make(e, a);
 }
 
-#ifdef ESCM_USE_STRINGS
-escm_atom *
-escm_number_to_string(escm *e, escm_atom *args, void *nil)
-{
-    escm_atom *a, *b;
-    tchar *str;
-    int radix;
-    int len, maxlen;
-
-    (void) nil;
-    if (!escm_type_ison(ESCM_TYPE_STRING)) {
-        escm_error(e, _(T("~s: string type is off.~%")), escm_fun(e));
-        escm_abort(e);
-    }
-
-    a = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISNUMBER(a), a, e);
-
-    radix = 10;
-
-    b = escm_cons_pop(e, &args);
-    if (b) { /* radix */
-        escm_assert(ESCM_ISINT(b), b, e);
-        radix = (int) escm_number_ival(b);
-        if (radix != 2 && radix != 8 && radix != 10 && radix != 16) {
-            escm_error(e, _(T("~s: radix must be either 2, 8, 10 or 16.~%")),
-                       escm_fun(e));
-            escm_abort(e);
-        }
-    }
-
-    if (ESCM_ISINT(a)) {
-        if (radix == 2) {
-            str = bintostr(escm_number_ival(a));
-            len = tcslen(str);
-            maxlen = len + 1;
-        } else {
-
-            maxlen = 22;
-            str = xmalloc(sizeof *str * maxlen);
-
-            switch (radix) {
-            case 8:
-                len = sntprintf(str, maxlen, T("%lo"), escm_number_ival(a));
-                break;
-            case 16:
-                len = sntprintf(str, maxlen, T("%lx"), escm_number_ival(a));
-                break;
-            default:
-                len = sntprintf(str, maxlen, T("%ld"), escm_number_ival(a));
-                break;
-            }
-        }
-    } else {
-        maxlen = 30;
-        str = xmalloc(sizeof *str * maxlen);
-        len = sntprintf(str, maxlen, T("%.15g"), escm_number_rval(a));
-    }
-
-
-    if (len >= maxlen) { /* output truncated */
-        escm_warning(e, _(T("~s: the output was been truncated. The "))
-                     _(T("read/write invariance may not be respected.~%")),
-                     escm_fun(e));
-        len = maxlen - 1;
-    }
-
-    a = escm_string_make(e, str, len);
-    free(str);
-    return a;
-}
-
-escm_atom *
-escm_string_to_number(escm *e, escm_atom *args, void *nil)
-{
-    escm_atom *a, *b;
-    escm_input *input;
-    escm_number *number;
-    int radix;
-
-    (void) nil;
-    if (!escm_type_ison(ESCM_TYPE_STRING)) {
-        escm_error(e, _(T("~s: string type is off.~%")), escm_fun(e));
-        escm_abort(e);
-    }
-
-    a = escm_cons_pop(e, &args);
-    escm_assert(ESCM_ISSTR(a), a, e);
-
-    radix = 10;
-
-    b = escm_cons_pop(e, &args);
-    if (b) { /* radix */
-        escm_assert(ESCM_ISINT(b), b, e);
-        radix = (int) escm_number_ival(b);
-        if (radix != 2 && radix != 8 && radix != 10 && radix != 16) {
-            escm_error(e, _(T("~s: radix must be either 2, 8, 10 or 16.~%")),
-                       escm_fun(e));
-            escm_abort(e);
-        }
-    }
-
-    input = escm_input_str(escm_str_val(a));
-
-    number = inputtonumber(e, input, radix);
-    if (!number)
-        goto err;
-    if (input->end == 0) {
-        free(number);
-        goto err;
-    }
-
-    escm_input_close(input);
-    return escm_atom_new(e, numbertype, number);
-
-err:
-    escm_input_close(input);
-    return e->FALSE;
-}
-#endif
-
 static void
 number_print(escm *e, escm_number *number, escm_output *stream, int lvl)
 {
@@ -1155,15 +1034,10 @@ number_parsetest(escm *e, escm_input *stream, tint c)
 static escm_atom *
 number_parse(escm *e, escm_input *stream)
 {
-    escm_number *n;
-
-    n = inputtonumber(e, stream, 10);
-    if (!n)
-        return NULL;
-    return escm_atom_new(e, numbertype, n);
+	return escm_number_parse(e, stream, 10);
 }
 
-static escm_number *
+escm_number *
 inputtonumber(escm *e, escm_input *input, int radix)
 {
     escm_number *n;
@@ -1257,29 +1131,6 @@ pgcd(long a, long b)
 
     return a;
 }
-
-#ifdef ESCM_USE_STRINGS
-static tchar *
-bintostr(long a)
-{
-    tchar *buf, *p;
-    long off;
-
-    buf = xmalloc((sizeof(a) * CHAR_BIT + 1) * sizeof *buf);
-
-    p = buf;
-    for (off = (long) sizeof(a) * CHAR_BIT - 1; off >= 0; off--) {
-        if (p == buf) {
-            if (((a >> off) & 0x1) != 0)
-                *p++ = ((a >> off) & 0x1) ? T('1') : T('0');
-        } else
-            *p++ = (((a >> off) & 0x1)) ? T('1') : T('0');
-    }
-    *p = T('\0');
-
-    return buf;
-}
-#endif
 
 static inline int
 isnumber(tint c)

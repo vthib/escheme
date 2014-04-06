@@ -46,6 +46,8 @@ size_t escm_number_tget(void);
 escm_atom *escm_int_make(escm *, long);
 escm_atom *escm_real_make(escm *, double);
 
+escm_atom *escm_number_parse(escm *e, escm_input *stream, int base);
+
 escm_atom *escm_length(escm *, escm_atom *, void *);
 escm_atom *escm_list_tail(escm *, escm_atom *, void *);
 escm_atom *escm_list_ref(escm *, escm_atom *, void *);
@@ -93,11 +95,6 @@ escm_atom *escm_atan(escm *, escm_atom *, void *);
 
 escm_atom *escm_sqrt(escm *, escm_atom *, void *);
 escm_atom *escm_expt(escm *, escm_atom *, void *);
-
-#ifdef ESCM_USE_STRINGS
-escm_atom *escm_number_to_string(escm *, escm_atom *, void *);
-escm_atom *escm_string_to_number(escm *, escm_atom *, void *);
-#endif
 
 #endif /* ESCM_USE_NUMBERS */
 

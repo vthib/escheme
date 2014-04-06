@@ -19,7 +19,6 @@
 
 #include "records.h"
 #include "base.h"
-#include "symbols.h"
 
 static escm_atom *make_record(escm *, escm_atom *, size_t);
 static escm_atom *record_p(escm *, escm_atom *, size_t);

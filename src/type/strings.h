@@ -68,6 +68,11 @@ escm_atom *escm_list_to_string(escm *, escm_atom *, void *);
 escm_atom *escm_symbol_to_string(escm *, escm_atom *, void *);
 escm_atom *escm_string_to_symbol(escm *, escm_atom *, void *);
 
+# ifdef ESCM_USE_NUMBERS
+escm_atom *escm_number_to_string(escm *, escm_atom *, void *);
+escm_atom *escm_string_to_number(escm *, escm_atom *, void *);
+# endif /* ESCM_USE_NUMBERS */
+
 #endif /* ESCM_USE_STRINGS */
 
 #endif /* ESCHEME_STRINGS_H */

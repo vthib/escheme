@@ -28,7 +28,7 @@ set (HEADER ${HEADER} src/primitives.h src/srfi.h)
 
 set (DEFINES -Dinline="__inline__" -Wall -W -Wmissing-prototypes
   -pedantic-errors -g -coverage -O0 -std=c99
-  -I. -I${CMAKE_SOURCE_DIR}/src/core)
+  -I. -I${CMAKE_SOURCE_DIR}/src -I${CMAKE_SOURCE_DIR}/src/core)
 #set (DEFINES -I.. -I. -Wall -W -pedantic)
 #set (CMAKE_C_COMPILER "clang")
 

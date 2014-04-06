@@ -21,7 +21,33 @@
 #include <ctype.h>
 
 #include "config.h"
-#include "../escheme.h"
+#include "utils.h"
+#include "escm.h"
+#include "atom.h"
+#include "output.h"
+#include "input.h"
+
+#include "type/symbols.h"
+#include "type/env.h"
+#include "type/cons.h"
+#include "type/procedures.h"
+
+#include "proc/symbols.h"
+#include "proc/env.h"
+#include "proc/cons.h"
+#include "proc/procedures.h"
+
+#include "type/macros.h"
+#include "type/ports.h"
+#include "type/chars.h"
+#include "type/promises.h"
+#include "type/vectors.h"
+#include "type/numbers.h"
+#include "type/booleans.h"
+#include "type/strings.h"
+
+#include "srfi.h"
+#include "primitives.h"
 
 #ifndef ESCM_NSEG
 # define ESCM_NSEG 10

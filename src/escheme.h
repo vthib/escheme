@@ -17,52 +17,53 @@
 #ifndef ESCHEME_ESCHEME_H
 # define ESCHEME_ESCHEME_H
 
+#include "types.h"
 #include "base.h"
 #include "primitives.h"
 #include "srfi.h"
 
 #ifdef ESCM_USE_DYNTYPES
-# include "dyntypes.h"
+# include "type/dyntypes.h"
 #endif
 
 #ifdef ESCM_USE_BOOLEANS
-# include "booleans.h"
+# include "type/booleans.h"
 #endif
 
 #ifdef ESCM_USE_NUMBERS
-# include "numbers.h"
+# include "type/numbers.h"
 #endif
 
 #ifdef ESCM_USE_CHARACTERS
-# include "chars.h"
+# include "type/chars.h"
 #endif
 
 #ifdef ESCM_USE_STRINGS
-# include "strings.h"
+# include "type/strings.h"
 #endif
 
 #ifdef ESCM_USE_PROMISES
-# include "promises.h"
+# include "type/promises.h"
 #endif
 
 #ifdef ESCM_USE_VECTORS
-# include "vectors.h"
+# include "type/vectors.h"
 #endif
 
 #ifdef ESCM_USE_MACROS
-# include "macros.h"
+# include "type/macros.h"
 #endif
 
 #ifdef ESCM_USE_PORTS
-# include "ports.h"
+# include "type/ports.h"
 #endif
 
 #ifdef ESCM_USE_CONTINUATIONS
-# include "continuations.h"
+# include "type/continuations.h"
 #endif
 
 #ifdef ESCM_USE_RECORDS
-# include "records.h"
+# include "type/records.h"
 #endif
 
 #endif /* ESCHEME_ESCHEME_H */
